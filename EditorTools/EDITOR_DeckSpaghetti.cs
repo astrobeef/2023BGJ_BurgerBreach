@@ -33,46 +33,66 @@ namespace Deck{
         };
 
         private static readonly Card[] CardSet_NoBases = CardSet
-            .Where(card => card._type != Card.CardType.Base)
+            .Where(card => card.type != Card.CardType.Base)
             .ToArray();
 
 
         // INSTANCE
+        Random random = new Random();
+
+        #region  DECK DATA
+
         private Card[][] Decks = new Card[PLAYER_COUNT][];
-        private Card[] _userDeck{
-            get {
+        private Card[] _userDeck
+        {
+            get
+            {
                 return Decks[0];
             }
-            set{
+            set
+            {
                 Decks[0] = value;
             }
         }
-        private Card[] _enemyDeck{
-            get {
+        private Card[] _enemyDeck
+        {
+            get
+            {
                 return Decks[1];
             }
-            set{
+            set
+            {
                 Decks[1] = value;
             }
         }
 
         private Card[][] Hands = new Card[PLAYER_COUNT][];
-        private Card[] _userHand{
-            get {
+        private Card[] _userHand
+        {
+            get
+            {
                 return Hands[0];
             }
-            set{
+            set
+            {
                 Hands[0] = value;
             }
         }
-        private Card[] _enemyHand{
-            get {
+        private Card[] _enemyHand
+        {
+            get
+            {
                 return Hands[1];
             }
-            set{
+            set
+            {
                 Hands[1] = value;
             }
         }
+
+        private int[] CardsDrawn = new int[PLAYER_COUNT];       // How many cards each player has drawn
+
+        #endregion
 
         private int _turnCounter = 0;
 
@@ -93,10 +113,9 @@ namespace Deck{
             });
         }
 
-        private async void DisplayCardSet(){
+        private void DisplayCardSet(){
             GD.Print("----- CARD SET W/ BASES -----");
 
-            Task task = new Task(() => {
             for (int i = 0; i < CardSet.Length; i++)
             {
                 Card card = CardSet[i];
@@ -118,11 +137,6 @@ namespace Deck{
             GD.Print("-----------------------------");
 
             Thread.Sleep(1000);
-            });
-
-            task.RunSynchronously();
-            await task;
-            return;
         }
 
         private void StartRound(){
@@ -132,17 +146,15 @@ namespace Deck{
 
                 Thread.Sleep(1000);
 
-                InitDeck();
+                InitDecks();
+                InitHands();
         }
 
-        private void InitDeck(){
-            Random random = new Random();
-
-            for (int i = 0; i < Decks.Length; i++)
+        private void InitDecks(){
+            for (int i = 0; i < PLAYER_COUNT; i++)
             {
                 GD.Print($"----- Initializing deck[{i}] -----");
                 Thread.Sleep(500);
-
 
                 ref Card[] refDeck = ref Decks[i];
                 refDeck = new Card[DECK_COUNT];
@@ -151,11 +163,82 @@ namespace Deck{
                     int rand = random.Next(0,CardSet_NoBases.Length);
                     refDeck[j] = CardSet_NoBases[rand];
                     GD.Print($"Deck [{i}][{j}] : {refDeck[j]}");
-                Thread.Sleep(150);
                 }
                 
                 GD.Print($"----- Initialized deck[{i}] -----");
                 GD.Print("-------------------------------");
+            }
+        }
+
+        private void InitHands()
+        {
+            for (int i = 0; i < PLAYER_COUNT; i++)
+            {
+                GD.Print($"----- Initializing hand[{i}] -----");
+                Thread.Sleep(500);
+
+                ref Card[] refHand = ref Hands[i];
+                ref Card[] refDeck = ref Decks[i];
+
+                refHand = null;
+
+                for (int j = 0; j < HAND_START_COUNT; j++)
+                {
+                    TryDrawCard(i);
+                    Thread.Sleep(150);
+                }
+
+                GD.Print($"----- Initialized hand[{i}] -----");
+                GD.Print("-------------------------------");
+
+                DisplayHand(i);
+
+            }
+        }
+
+        private void DisplayHand(int player_index){
+
+                GD.Print(new string('-', 28));
+                GD.Print($"----- Displaying hand[{player_index}] -----");
+
+                ref Card[] refHand = ref Hands[player_index];
+
+                for (int i = 0; i < refHand.Length; i++)
+                {
+                    GD.Print($"[{i}] : {refHand[i].name}");
+                }
+
+                GD.Print(new string('-', 28));
+                GD.Print(new string('-', 28));
+        }
+
+        private bool TryDrawCard(int player_index){
+            Card[] iDeck = Decks[player_index];
+            ref Card[] refHand = ref Hands[player_index];
+            int deckCount = iDeck.Length;
+            ref int refDrawnCount = ref CardsDrawn[player_index]; 
+
+            if(refDrawnCount < deckCount){
+                Card newCard = iDeck[refDrawnCount];
+
+                if(refHand != null){
+                    Card[] newHand = new Card[refHand.Length + 1];
+                    refHand.CopyTo(newHand, 0);
+                    newHand[newHand.Length - 1] = newCard;
+                    refHand = newHand;
+                }
+                else{
+                    refHand = new Card[1] {newCard};
+                }
+
+                refDrawnCount++;
+
+                GD.Print($"Player {player_index} drew a card ({newCard.name}). Their drawn count has incremented to ({refDrawnCount})");
+                return true;
+            }
+            else{
+                GD.Print($"Player {player_index} cannot draw any more cards because their drawn count ({refDrawnCount}) is equal to their deck count ({deckCount})");
+                return false;
             }
         }
 
@@ -164,36 +247,64 @@ namespace Deck{
 
     internal struct Card{
 
-        internal string _name;
+        internal string name;
 
         public enum CardType {Base, Resource, Offense};
-        internal CardType _type;
+        internal CardType type;
 
-        internal int _hp;
-        internal int _move;
-        internal int _atk;
+        internal int hp;
+        internal int move;
+        internal int atk;
+
+        internal static Card EMPTY = new Card("NULL", CardType.Base, -1);
 
         public Card (string name, CardType type, int hp){
-            _name = name;
-            _type = type;
-            _hp = hp;
+            this.name = name;
+            this.type = type;
+            this.hp = hp;
 
-            _move = 0;
-            _atk = 0;
+            move = 0;
+            atk = 0;
         }
 
         public Card (string name, int hp, int move, int atk){
-            _name = name;
-            _type = CardType.Offense;
+            this.name = name;
+            type = CardType.Offense;
 
-            _hp = hp;
-            _move = move;
-            _atk = atk;            
+            this.hp = hp;
+            this.move = move;
+            this.atk = atk;            
         }
 
         public override string ToString()
         {
-            return $"({_name}, {_type}, HP:{_hp}, MOVE:{_move}, ATK:{_atk})";
+            return $"({name}, {type}, HP:{hp}, MOVE:{move}, ATK:{atk})";
         }
+
+        public static bool operator ==(Card a, Card b){
+            return a.name == b.name;
+        }
+        public static bool operator !=(Card a, Card b){
+            return a.name != b.name;
+        }
+		public override bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object obj)
+		{
+			if (obj is Card obj_card)
+			{
+				return this == obj_card;
+			}
+
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			// Use a prime number to combine hash codes in a way that reduces the chance of collisions
+			const int prime = 31;
+			int hash = 17;  // Another prime number
+			hash = hash * prime + name.GetHashCode();
+			return hash;
+		}
+
     }
 }

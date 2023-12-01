@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 using System.Threading;
 using EditorTools;
 using GodotPlugins.Game;
-using Utility;
+using AxialCS;
+using Deck;
 
-namespace AxialCS
+namespace EditorTools
 {
 	[Tool]
 	public partial class EDITOR_Tool : Control
@@ -21,7 +22,8 @@ namespace AxialCS
 		public event ProcessEvent OnProcess_PlayOnly;
 		public event ProcessEvent OnProcess;
 
-		public DetectMouseMovement detectMouseMovement;
+		public MouseMoveObserver MouseMoveObserver;
+		public EDITOR_DeckSpaghetti DeckSpaghetti;
 
 		[Export]
 		bool _disableScript = false, _disableInput = false, _disableDraw = false;
@@ -62,7 +64,8 @@ namespace AxialCS
 				GD.Print("Executing _Ready");
 			}
 
-			detectMouseMovement = new DetectMouseMovement(this, OnMouseMovement_UpdateSelectedAxial);
+			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
+			DeckSpaghetti = new EDITOR_DeckSpaghetti(this);
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
@@ -90,12 +93,23 @@ namespace AxialCS
 			
 			GD.Print("Executing after wait");
 			HexAxialGrid = AxialGrid.CalcHexAxialGrid(axialGrid.Axials, _offset, _sideLength);
-			GD.Print($"TOTAL HEXES: {HexAxialGrid.Count}");
+			// GD.Print($"TOTAL HEXES: {HexAxialGrid.Count}");
 		}
 
 		// Called every frame. 'delta' is the elapsed time since the previous frame.
 		public override void _Process(double delta)
 		{
+
+			if (MouseMoveObserver == null)
+			{
+				GD.PrintErr("Setting detect mouse movement script because it did not get set in 'ready'");
+				MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
+			}
+			if(DeckSpaghetti == null){
+				GD.PrintErr("Setting deck spaghetti script because it did not get set in 'ready'");
+			DeckSpaghetti = new EDITOR_DeckSpaghetti(this);
+			}
+
 			// Execute in EDITOR only
 			if (Engine.IsEditorHint() && !_disableScript)
 			{
@@ -164,8 +178,8 @@ namespace AxialCS
 				Vector2 pxMouse = Axial.AxToPx(_offset, _sideLength, _axMousePosition);
 				DrawCircle(pxMouse, 3.0f, Colors.GreenYellow);
 
-				DrawLine(detectMouseMovement._pos_cur, pxMouse, Colors.SeaGreen, 1.0f, true);
-				DrawString(GetThemeFont("font"), detectMouseMovement._pos_cur + new Vector2(5, -5), _axMousePosition.ToString(), HorizontalAlignment.Left, -1, 16, Colors.GreenYellow);
+				DrawLine(MouseMoveObserver._pos_cur, pxMouse, Colors.SeaGreen, 1.0f, true);
+				DrawString(GetThemeFont("font"), MouseMoveObserver._pos_cur + new Vector2(5, -5), _axMousePosition.ToString(), HorizontalAlignment.Left, -1, 16, Colors.GreenYellow);
 
 				foreach (int i in Enum.GetValues(typeof(Axial.Cardinal)))
 				{
@@ -194,22 +208,22 @@ namespace AxialCS
 				if (!_leftMouseClicked)
 				{
 					_leftMouseClicked = true;
-					detectMouseMovement._pos_cur = GetViewport().GetMousePosition();
-					GD.Print($"Registered mouse input. Mouse position: {detectMouseMovement._pos_cur}");
+					MouseMoveObserver._pos_cur = GetViewport().GetMousePosition();
+					GD.Print($"Registered mouse input. Mouse position: {MouseMoveObserver._pos_cur}");
 
 					float maxX = GetViewportRect().End.X;
 					float maxY = GetViewportRect().End.Y;
 
 					GD.Print($"maxX:{maxX}, maxY:{maxY}");
 
-					if (detectMouseMovement._pos_cur.X < 0 || detectMouseMovement._pos_cur.X > maxX
-						|| detectMouseMovement._pos_cur.Y < 0 || detectMouseMovement._pos_cur.Y > maxY)
+					if (MouseMoveObserver._pos_cur.X < 0 || MouseMoveObserver._pos_cur.X > maxX
+						|| MouseMoveObserver._pos_cur.Y < 0 || MouseMoveObserver._pos_cur.Y > maxY)
 					{
 						GD.Print($"Input is out of bounds. Ignoring input");
 						return;
 					}
 
-					Axial axMouse = Axial.PxToAx(_offset, _sideLength, detectMouseMovement._pos_cur);
+					Axial axMouse = Axial.PxToAx(_offset, _sideLength, MouseMoveObserver._pos_cur);
 
 					int foundAxialIndex = -1;
 
@@ -232,7 +246,7 @@ namespace AxialCS
 							_hexDraws[i] = _hexDraws[i - 1];
 						}
 
-						_pxPoints[0] = detectMouseMovement._pos_cur;
+						_pxPoints[0] = MouseMoveObserver._pos_cur;
 						_axPoints[0] = axMouse;
 
 						HexagonDraw hexagonDraw = new HexagonDraw(Axial.AxToPx(_offset, _sideLength, _axPoints[0]), _sideLength, Colors.Black);
@@ -257,8 +271,8 @@ namespace AxialCS
 		}
 
 		private void OnMouseMovement_UpdateSelectedAxial(){
-                // _axMousePosition = Axial.PxToAx(_offset, _sideLength, detectMouseMovement._pos_cur);
-                // QueueRedraw();
+				_axMousePosition = Axial.PxToAx(_offset, _sideLength, MouseMoveObserver._pos_cur);
+				QueueRedraw();
 		}
 
 		private bool OnSideLengthChanged(float old_length, float new_length)

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Threading;
+using EditorTools;
 
 
 namespace AxialCS
@@ -45,7 +46,8 @@ namespace AxialCS
                         Axial[] grid = await Build_Hexagon(_width, GridProgress);
                         _axials.Clear();
                         _axials.AddRange(grid);
-                        GD.Print($"Set _axials. New count is {_axials.Count} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
+                        
+                        // GD.Print($"Set _axials. New count is {_axials.Count} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
                     }
                     break;
                 default:
@@ -122,7 +124,7 @@ namespace AxialCS
 
                     for (int i = 0; i < taskGrid.Length; i++)
                     {
-                        GD.Print($"Adding {taskGrid[i]}@[{i}] from task grid {iterateTask} to grid @[{index}]");
+                        // GD.Print($"Adding {taskGrid[i]}@[{i}] from task grid {iterateTask} to grid @[{index}]");
 
                         grid[index] = taskGrid[i];
 
@@ -133,7 +135,7 @@ namespace AxialCS
                 for (int i = 0; i < grid.Length; i++)
                 {
                     Axial ax = grid[i];
-                    GD.Print($"grid to return[{i}]: {ax}");
+                    // GD.Print($"grid to return[{i}]: {ax}");
                 }
 
                 return grid;
@@ -156,13 +158,13 @@ namespace AxialCS
                 {
                     if (newAxial.LengthSquared < radiusSquared)
                     {
-                        GD.Print($"Adding new ax {newAxial} to grid");
+                        // GD.Print($"Adding new ax {newAxial} to grid");
                         taskGrid.Add(newAxial);
                         progress.Report(taskGrid);
                     }
                     else
                     {
-                        GD.Print($"Not adding new ax {newAxial} to grid because it exceeds the max length");
+                        // GD.Print($"Not adding new ax {newAxial} to grid because it exceeds the max length");
                     }
                 }
                 else
@@ -276,12 +278,12 @@ namespace AxialCS
         public static Dictionary<Axial, HexagonDraw> CalcHexAxialGrid(Axial[] GridAxials, Vector2 offset, float side_length){
             Dictionary<Axial, HexagonDraw> dictionary = new Dictionary<Axial, HexagonDraw>();
 
-            GD.Print($"We are calculating HexAxial. The _axials length is: {GridAxials.Length} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
+            // GD.Print($"We are calculating HexAxial. The _axials length is: {GridAxials.Length} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
             foreach(Axial ax in GridAxials){
                 HexagonDraw hexDraw = CalcHexDraw(ax, offset, side_length);
                 if(!dictionary.ContainsKey(ax) && ax != Axial.Empty)
                 {
-                    GD.Print($"Adding {ax} @ {hexDraw.origin}px to dictionary");
+                    // GD.Print($"Adding {ax} @ {hexDraw.origin}px to dictionary");
                     dictionary.Add(ax, hexDraw);
                 }
                 else{

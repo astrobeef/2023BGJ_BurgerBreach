@@ -26,13 +26,13 @@ public partial class HexagonRenderer : Node2D
 		}
 	}
 
-    public override void _Process(double delta)
-    {
+	public override void _Process(double delta)
+	{
 		if(_triggerRedraw){
 			_triggerRedraw = false;
 			QueueRedraw();
 		}
-    }
+	}
 
 	//---DICTIONARY METHODS---
 

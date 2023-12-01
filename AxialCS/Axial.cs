@@ -13,9 +13,9 @@ namespace AxialCS
 	/// </summary>
 	public struct Axial
 	{
-	public static readonly double _SQ3 = Math.Sqrt(3);
-	public static readonly double _COS30 = _SQ3 * 0.5;
-	
+		public static readonly double _SQ3 = Math.Sqrt(3);
+		public static readonly double _COS30 = _SQ3 * 0.5;
+
 		//---FIELD DEFINITION---
 		private readonly int[] _axial;
 
@@ -36,18 +36,21 @@ namespace AxialCS
 			_axial[2] = s;
 		}
 
-		public Axial(int[] axial){
-			if(axial.Length == 3)
+		public Axial(int[] axial)
+		{
+			if (axial.Length == 3)
 				this._axial = axial;
-			else if(axial.Length == 2){
+			else if (axial.Length == 2)
+			{
 				this._axial = new int[3];
 				this._axial[0] = axial[0];
 				this._axial[1] = axial[1];
-				this._axial[2] = -axial[0]-axial[1];
+				this._axial[2] = -axial[0] - axial[1];
 			}
-			else{
+			else
+			{
 				GD.PrintErr("parameter is not of valid length");
-				_axial = new int[3] {0,0,0};
+				_axial = new int[3] { 0, 0, 0 };
 			}
 		}
 
@@ -59,13 +62,13 @@ namespace AxialCS
 		/// True if the Axial (as a direction) can be scaled down to one of the 6 relevant <see cref="Cardinal"/> <see cref="_axialDirections"/>.
 		/// </summary>
 		public bool IsCardinalScalar => Array.Exists(_axial, element => element == 0);
-		public int LengthSquared => Q*Q + R*R + S*S;
+		public int LengthSquared => Q * Q + R * R + S * S;
 
 		//---GENERICS---
 
-		private static readonly Axial _zero = new Axial(0,0);
+		private static readonly Axial _zero = new Axial(0, 0);
 		public static Axial Zero => _zero;
-		private static readonly Axial _empty = new Axial(0,0,100);		//This is not a possible Axial
+		private static readonly Axial _empty = new Axial(0, 0, 100);        //This is not a possible Axial
 		public static Axial Empty => _empty;
 
 		//---OPERATOR OVERLOADS---
@@ -76,10 +79,11 @@ namespace AxialCS
 
 		public override bool Equals([NotNullWhen(true)] object obj)
 		{
-			if(obj is Axial obj_axial){
+			if (obj is Axial obj_axial)
+			{
 				return this == obj_axial;
 			}
-			
+
 			return false;
 		}
 
@@ -123,7 +127,8 @@ namespace AxialCS
 				a.S * b.S);
 		}
 
-		public static Axial operator *(Axial a, int scalar){
+		public static Axial operator *(Axial a, int scalar)
+		{
 			return new Axial(
 				a.Q * scalar,
 				a.R * scalar,
@@ -131,14 +136,15 @@ namespace AxialCS
 			);
 		}
 
-		public static Axial operator *(int scalar, Axial a){
+		public static Axial operator *(int scalar, Axial a)
+		{
 			return new Axial(
 				a.Q * scalar,
 				a.R * scalar,
 				a.S * scalar
 			);
 		}
-		
+
 		public static Axial operator /(Axial a, Axial b)
 		{
 			return new Axial(
@@ -146,12 +152,12 @@ namespace AxialCS
 				a.R / b.R,
 				a.S / b.S);
 		}
-		
+
 		public static Axial operator /(Axial a, double scalar)
 		{
 			return Justify(a.Q / scalar, a.R / scalar, a.S / scalar);
 		}
-		
+
 		public static Axial operator /(double scalar, Axial a)
 		{
 			return Justify(a.Q / scalar, a.R / scalar, a.S / scalar);
@@ -162,7 +168,8 @@ namespace AxialCS
 			return $"({Q}, {R}, {S})";
 		}
 
-		public int[] ToArray(){
+		public int[] ToArray()
+		{
 			return _axial;
 		}
 
@@ -202,10 +209,12 @@ namespace AxialCS
 
 		public static Axial Direction(Cardinal direction)
 		{
-			if((int)direction >= 0 && (int)direction < _axialDirections.Length){
-			return _axialDirections[(int)direction];
+			if ((int)direction >= 0 && (int)direction < _axialDirections.Length)
+			{
+				return _axialDirections[(int)direction];
 			}
-			else{
+			else
+			{
 				GD.PrintErr($"Direction index {(int)direction} is not within range.");
 				Debug.Assert(true, $"Direction index {(int)direction} is not within range.");
 				throw new System.Exception($"Direction index {(int)direction} is not within range.");
@@ -217,7 +226,8 @@ namespace AxialCS
 		/// Given an input Axial direction, approximate the closest cardinal unit direction
 		/// </summary>
 		/// <returns></returns>
-		public static Axial ApproximateCardinal(Axial dir){
+		public static Axial ApproximateCardinal(Axial dir)
+		{
 			/* I made a great revelation in how Axials work in terms of direction.
 			* An axial which is perfectly aligned with one of the 6 relevant cardinal directions will:
 			*	1. Have one component equal 0.
@@ -237,15 +247,17 @@ namespace AxialCS
 			Axial cardinalDirection;
 			bool isCardinalScalar = dir.IsCardinalScalar;
 
-			if(isCardinalScalar){
-				
+			if (isCardinalScalar)
+			{
+
 				//Scale components to +/- 1
 				int q = (dir.Q == 0) ? 0 : dir.Q / Mathf.Abs(dir.Q);
 				int r = (dir.R == 0) ? 0 : dir.R / Mathf.Abs(dir.R);
-				
-				cardinalDirection = new Axial(q,r);
+
+				cardinalDirection = new Axial(q, r);
 			}
-			else{
+			else
+			{
 				//Get array of the Axial
 				int[] dirArray = dir.ToArray();
 				//Create tuple for finding the component with the minimum absolute value
@@ -256,7 +268,8 @@ namespace AxialCS
 				{
 					int absValue = Mathf.Abs(dirArray[i]);
 
-					if (absValue < min.value){
+					if (absValue < min.value)
+					{
 						min.index = i;
 					}
 				}
@@ -269,7 +282,7 @@ namespace AxialCS
 				{
 					int value = dirArray[i];
 					int absValue = Mathf.Abs(dirArray[i]);
-					if(value != 0)
+					if (value != 0)
 						dirArray[i] = value / absValue;
 				}
 
@@ -279,32 +292,39 @@ namespace AxialCS
 			return cardinalDirection;
 		}
 
-		public static bool isCardinal(Axial ax, out Cardinal direction){
+		public static bool isCardinal(Axial ax, out Cardinal direction)
+		{
 
 			// Is it a cardinal direction with a square length of 2 ?
-			if(ax.IsCardinalScalar && ax.LengthSquared == 2){
+			if (ax.IsCardinalScalar && ax.LengthSquared == 2)
+			{
 
 				bool foundComparison = false;
-				direction = Cardinal.E;		//Must initialize to some value to satisfy logic
+				direction = Cardinal.E;     //Must initialize to some value to satisfy logic
 
 				for (int i = 0; i < _axialDirections.Length; i++)
 				{
 					Axial dir = _axialDirections[i];
-					if (ax == dir){
+					if (ax == dir)
+					{
 						foundComparison = true;
 						direction = (Cardinal)i;
 						break;
 					}
 				}
 
-				if(foundComparison){
+				if (foundComparison)
+				{
 					return true;
-				}else{
+				}
+				else
+				{
 					GD.PrintErr($"Axial {ax} is scalar of cardinal and has length of a unit Axial direction, yet found no match.");
 					return false;
 				}
 			}
-			else{
+			else
+			{
 				GD.PrintErr($"Is cardinal ? {ax.IsCardinalScalar}");
 				GD.PrintErr($"Length squared : {ax.LengthSquared}");
 				direction = Cardinal.E;
@@ -312,7 +332,8 @@ namespace AxialCS
 			}
 		}
 
-		public static Axial Neighbor(Axial ax, Cardinal direction){
+		public static Axial Neighbor(Axial ax, Cardinal direction)
+		{
 			return ax + Axial.Direction(direction);
 		}
 
@@ -338,14 +359,16 @@ namespace AxialCS
 			return side_length * displacement;
 		}
 
-		public static Vector2 AxToPx(Vector2 offset, float side_length, Axial ax){
+		public static Vector2 AxToPx(Vector2 offset, float side_length, Axial ax)
+		{
 			float x = side_length * (ax.Q * (float)_SQ3 + ax.R * (float)_SQ3 * 0.5f);
 			float y = side_length * (ax.Q * 0.0f + ax.R * 1.5f);
 
-			return offset + new Vector2(x,y);
+			return offset + new Vector2(x, y);
 		}
 
-		public static Axial PxToAx(Vector2 offset, float side_length, Vector2 position){
+		public static Axial PxToAx(Vector2 offset, float side_length, Vector2 position)
+		{
 			Vector2 pt = new Vector2((position.X - offset.X) / side_length, (position.Y - offset.Y) / side_length);
 
 			double b0 = _SQ3 / 3.0;
@@ -355,7 +378,7 @@ namespace AxialCS
 
 			double q_dub = b0 * pt.X + b1 * pt.Y;
 			double r_dub = b2 * pt.X + b3 * pt.Y;
-			double s_dub= -q_dub-r_dub;
+			double s_dub = -q_dub - r_dub;
 
 			return Justify(q_dub, r_dub, s_dub);
 		}

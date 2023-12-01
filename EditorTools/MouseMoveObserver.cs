@@ -4,9 +4,9 @@ using System.Linq;
 using AxialCS;
 using Godot;
 
-namespace Utility
+namespace EditorTools
 {
-    public class DetectMouseMovement
+    public class MouseMoveObserver
     {
         public EDITOR_Tool editor;
 
@@ -21,7 +21,7 @@ namespace Utility
 
         private bool _isDisplaced => IsDisplaced(_pos_cur, _pos_last, _MOVE_CHECK_THRESH);
 
-        public DetectMouseMovement(EDITOR_Tool editor, MouseMovementEvent action){
+        public MouseMoveObserver(EDITOR_Tool editor, MouseMovementEvent action){
             this.editor = editor;
             editor.OnProcess += DetectMovement;
             OnMouseMovement += action;

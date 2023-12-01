@@ -8,12 +8,21 @@ using System.Threading.Tasks;
 using System.Threading;
 using EditorTools;
 using GodotPlugins.Game;
+using Utility;
 
 namespace AxialCS
 {
 	[Tool]
 	public partial class EDITOR_Tool : Control
 	{
+
+		public delegate void ProcessEvent();
+		public event ProcessEvent OnProcess_EditorOnly;
+		public event ProcessEvent OnProcess_PlayOnly;
+		public event ProcessEvent OnProcess;
+
+		public DetectMouseMovement detectMouseMovement;
+
 		[Export]
 		bool _disableScript = false, _disableInput = false, _disableDraw = false;
 
@@ -52,6 +61,8 @@ namespace AxialCS
 			{
 				GD.Print("Executing _Ready");
 			}
+
+			detectMouseMovement = new DetectMouseMovement(this, OnMouseMovement_UpdateSelectedAxial);
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
@@ -88,10 +99,16 @@ namespace AxialCS
 			// Execute in EDITOR only
 			if (Engine.IsEditorHint() && !_disableScript)
 			{
+				OnProcess_EditorOnly?.Invoke();
 				// ...
 				if (!_disableInput)
 					ProcessInput();
 			}
+			else{
+				OnProcess_PlayOnly?.Invoke();
+			}
+
+			OnProcess?.Invoke();
 		}
 
 		private static int _POINTS_LENGTH = 100;
@@ -147,8 +164,8 @@ namespace AxialCS
 				Vector2 pxMouse = Axial.AxToPx(_offset, _sideLength, _axMousePosition);
 				DrawCircle(pxMouse, 3.0f, Colors.GreenYellow);
 
-				DrawLine(_mousePos_cur, pxMouse, Colors.SeaGreen, 1.0f, true);
-				DrawString(GetThemeFont("font"), _mousePos_cur + new Vector2(5, -5), _axMousePosition.ToString(), HorizontalAlignment.Left, -1, 16, Colors.GreenYellow);
+				DrawLine(detectMouseMovement._pos_cur, pxMouse, Colors.SeaGreen, 1.0f, true);
+				DrawString(GetThemeFont("font"), detectMouseMovement._pos_cur + new Vector2(5, -5), _axMousePosition.ToString(), HorizontalAlignment.Left, -1, 16, Colors.GreenYellow);
 
 				foreach (int i in Enum.GetValues(typeof(Axial.Cardinal)))
 				{
@@ -162,13 +179,12 @@ namespace AxialCS
 
 		private void ProcessInput()
 		{
-			OnMouseClick();
-			DetectMouseMovement();
+			OnMouseClick_DrawHexagon();
 		}
 
 		bool _leftMouseClicked = false;
 
-		private void OnMouseClick()
+		private void OnMouseClick_DrawHexagon()
 		{
 			if (_leftMouseClicked)
 				_leftMouseClicked = Input.IsMouseButtonPressed(MouseButton.Left);
@@ -178,22 +194,22 @@ namespace AxialCS
 				if (!_leftMouseClicked)
 				{
 					_leftMouseClicked = true;
-					_mousePos_cur = GetViewport().GetMousePosition();
-					GD.Print($"Registered mouse input. Mouse position: {_mousePos_cur}");
+					detectMouseMovement._pos_cur = GetViewport().GetMousePosition();
+					GD.Print($"Registered mouse input. Mouse position: {detectMouseMovement._pos_cur}");
 
 					float maxX = GetViewportRect().End.X;
 					float maxY = GetViewportRect().End.Y;
 
 					GD.Print($"maxX:{maxX}, maxY:{maxY}");
 
-					if (_mousePos_cur.X < 0 || _mousePos_cur.X > maxX
-						|| _mousePos_cur.Y < 0 || _mousePos_cur.Y > maxY)
+					if (detectMouseMovement._pos_cur.X < 0 || detectMouseMovement._pos_cur.X > maxX
+						|| detectMouseMovement._pos_cur.Y < 0 || detectMouseMovement._pos_cur.Y > maxY)
 					{
 						GD.Print($"Input is out of bounds. Ignoring input");
 						return;
 					}
 
-					Axial axMouse = Axial.PxToAx(_offset, _sideLength, _mousePos_cur);
+					Axial axMouse = Axial.PxToAx(_offset, _sideLength, detectMouseMovement._pos_cur);
 
 					int foundAxialIndex = -1;
 
@@ -206,9 +222,9 @@ namespace AxialCS
 						}
 					}
 
+					//If the selected axial is NOT already rendering a hexagon,
 					if (foundAxialIndex < 0)
 					{
-						GD.Print($"Is new axial ({axMouse})");
 						for (int i = _pxPoints.Length - 1; i > 0; i--)
 						{
 							_pxPoints[i] = _pxPoints[i - 1];
@@ -216,15 +232,15 @@ namespace AxialCS
 							_hexDraws[i] = _hexDraws[i - 1];
 						}
 
-						_pxPoints[0] = _mousePos_cur;
+						_pxPoints[0] = detectMouseMovement._pos_cur;
 						_axPoints[0] = axMouse;
 
 						HexagonDraw hexagonDraw = new HexagonDraw(Axial.AxToPx(_offset, _sideLength, _axPoints[0]), _sideLength, Colors.Black);
 						_hexDraws[0] = hexagonDraw;
 					}
+					// Else, it is already rendering a hexagon,
 					else
 					{
-						GD.Print($"Is NOT new axial ({axMouse})");
 						bool isBlack = _hexDraws[foundAxialIndex].Colors[0] == Colors.Black;
 						if (isBlack)
 							_hexDraws[foundAxialIndex].Colors[0] = Colors.White;
@@ -236,62 +252,13 @@ namespace AxialCS
 					}
 
 					QueueRedraw();
-
-					// Use the mouse position to render a point on the screen
 				}
 			}
 		}
 
-
-		private Vector2 _mousePos_last = Vector2.Zero;
-		private Vector2 _mousePos_cur = Vector2.Zero;
-		private int _movement_check = 0;
-		private static int _MOVEMENT_CHECK_MOD = 10;
-		private static float _MOVE_CHECK_THRESH = 1f;
-
-		private bool _mouseMovement => CompareMouseMovements(_mousePos_cur, _mousePos_last, _MOVE_CHECK_THRESH);
-
-		private void DetectMouseMovement()
-		{
-			_movement_check = (_movement_check > 100)
-			? 0
-			: _movement_check++;
-
-			if (_mouseMovement)
-			{
-				UpdateMousePositions();
-
-				OnMouseMovement(_mouseMovement);
-			}
-			else
-			{
-				if (_movement_check % _MOVEMENT_CHECK_MOD == 0)
-				{
-					UpdateMousePositions();
-					OnMouseMovement(_mouseMovement);
-				}
-			}
-		}
-
-		private void UpdateMousePositions()
-		{
-			_mousePos_last = _mousePos_cur;
-			_mousePos_cur = GetViewport().GetMousePosition();
-		}
-
-		private static bool CompareMouseMovements(Vector2 current, Vector2 last, float threshold)
-		{
-
-			return (current - last).LengthSquared() > threshold;
-		}
-
-		private void OnMouseMovement(bool mouseMovement)
-		{
-			if (mouseMovement)
-			{
-				_axMousePosition = Axial.PxToAx(_offset, _sideLength, _mousePos_cur);
-				QueueRedraw();
-			}
+		private void OnMouseMovement_UpdateSelectedAxial(){
+                // _axMousePosition = Axial.PxToAx(_offset, _sideLength, detectMouseMovement._pos_cur);
+                // QueueRedraw();
 		}
 
 		private bool OnSideLengthChanged(float old_length, float new_length)

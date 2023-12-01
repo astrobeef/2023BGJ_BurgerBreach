@@ -1,0 +1,54 @@
+[gd_scene load_steps=5 format=3 uid="uid://cxhllvolv8otr"]
+
+[ext_resource type="Script" path="res://AxialCS/EDITOR_Tool.cs" id="1_kqd81"]
+[ext_resource type="Script" path="res://EditorTools/SceneTreeObserver.cs" id="2_aa7hq"]
+[ext_resource type="PackedScene" uid="uid://tvemq1c0u0s0" path="res://hex_30.tscn" id="3_00rjq"]
+
+[sub_resource type="Theme" id="Theme_rf727"]
+
+[node name="main" type="Node2D"]
+
+[node name="Hex" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(640, 360)
+
+[node name="Hex2" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(691.962, 360)
+
+[node name="Hex3" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(588.038, 360)
+
+[node name="Hex4" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(614.019, 405)
+
+[node name="Hex5" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(665.981, 405)
+
+[node name="Hex6" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(614.019, 315)
+
+[node name="Hex7" parent="." instance=ExtResource("3_00rjq")]
+visible = false
+position = Vector2(665.981, 315)
+
+[node name="EDITOR" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+theme = SubResource("Theme_rf727")
+script = ExtResource("1_kqd81")
+sideLength = 20.0
+gridSize = 3
+
+[node name="SceneTreeObserver" type="Control" parent="EDITOR" node_paths=PackedStringArray("_sceneTree")]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("2_aa7hq")
+_sceneTree = [NodePath("../../Hex"), NodePath("../../Hex2"), NodePath("../../Hex3"), NodePath("../../Hex4"), NodePath("../../Hex5"), NodePath("../../Hex6"), NodePath("../../Hex7"), NodePath("..")]

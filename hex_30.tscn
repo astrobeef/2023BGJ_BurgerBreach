@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://tvemq1c0u0s0"]
+
+[ext_resource type="Texture2D" uid="uid://dsgueg2wmriwx" path="res://Hex.png" id="1_m6mc0"]
+
+[node name="Hex" type="Sprite2D"]
+rotation = -0.523598
+scale = Vector2(0.231311, 0.231311)
+texture = ExtResource("1_m6mc0")

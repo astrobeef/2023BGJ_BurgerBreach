@@ -6,6 +6,7 @@ using EditorTools;
 using AxialCS;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Reflection.Metadata;
 
 namespace Deck{
     public class EDITOR_DeckSpaghetti
@@ -94,6 +95,13 @@ namespace Deck{
 
         #endregion
 
+        #region BOARD DATA
+
+        private AxialGrid_DataOnly Board;
+        private Dictionary<Axial, Card> BoardOccupants = new Dictionary<Axial, Card>();
+
+        #endregion
+
         private int _turnCounter = 0;
 
         #endregion
@@ -139,15 +147,61 @@ namespace Deck{
             Thread.Sleep(1000);
         }
 
-        private void StartRound(){
+        private void StartRound()
+        {
             GD.Print("-------------------------");
             GD.Print("----- START ROUND 1 -----");
             GD.Print("-------------------------");
 
-                Thread.Sleep(1000);
+            Thread.Sleep(1000);
 
-                InitDecks();
-                InitHands();
+            InitDecks();
+            InitHands();
+
+            Board = new AxialGrid_DataOnly(2);
+
+            for (_turnCounter = 0; _turnCounter < 10; _turnCounter++)
+            {
+
+                GD.Print("------------------------");
+                GD.Print($"----- START TURN {_turnCounter} -----");
+                GD.Print("------------------------");
+
+                Thread.Sleep(500);
+
+                int iPlayerIndex = _turnCounter % PLAYER_COUNT;
+
+                // 1. Draw a card
+                // 2. Place card(s)
+                // 3. Move card(s)
+                // 4. Attack card(s)
+                // 5. End turn
+                TryDrawCard(iPlayerIndex);
+                Thread.Sleep(500);
+
+                int rand = random.Next(1,Hands[iPlayerIndex].Length);
+
+                for(int i = 0; i < rand; i++)
+                {
+                    if (TryGetEmptyTile(out Axial openTile))
+                        TryPlaceCard(iPlayerIndex, 0, openTile);
+                    else
+                        GD.Print("Could not place card because all tiles are filled");
+                    Thread.Sleep(500);
+                }
+            }
+        }
+
+        private bool TryGetEmptyTile(out Axial Axial){
+            foreach(Axial ax in Board.Axials){
+                if(!BoardOccupants.ContainsKey(ax)){
+                    Axial = ax;
+                    return true;
+                }
+            }
+
+            Axial = Axial.Empty;
+            return false;
         }
 
         private void InitDecks(){
@@ -238,6 +292,63 @@ namespace Deck{
             }
             else{
                 GD.Print($"Player {player_index} cannot draw any more cards because their drawn count ({refDrawnCount}) is equal to their deck count ({deckCount})");
+                return false;
+            }
+        }
+
+        private Card RemoveCard(int player_index, int card_index)
+        {
+            ref Card[] refHand = ref Hands[player_index];
+
+            if (card_index < refHand.Length && card_index >= 0)
+            {
+                Card card = refHand[card_index];
+
+                Card[] newHand = new Card[refHand.Length - 1];
+
+                for (int i = 0, j = 0; i < refHand.Length; i++)
+                {
+                    if (i != card_index)
+                    {
+                        newHand[j++] = refHand[i];
+                    }
+                }
+
+                refHand = newHand;
+                return card;
+            }
+            else{
+                GD.PrintErr($"Cannot remove index {card_index} from hand[{player_index}] because it is not within the bounds of the hand.");
+                return Card.EMPTY;
+            }
+        }
+
+        /// <summary>
+        /// Try to place a card from a hand at a location on the board
+        /// </summary>
+        /// <param name="player_index">Player placing the card (needed to get hand)</param>
+        /// <param name="card_index">Index of the card (within the hand)</param>
+        /// <param name="location">Axial placement</param>
+        /// <returns>True if the card is placed, false if not</returns>
+        /// <remarks>Purpose of passing indexes rather than arrays/cards is to manage references and minimize parameter data</remarks>
+        private bool TryPlaceCard(int player_index, int card_index, Axial location){
+
+            ref Card[] refHand = ref Hands[player_index];
+            Card card = refHand[card_index];
+
+            if(BoardOccupants.ContainsKey(location)){
+                GD.Print($"Cannot place card {card.name} because the location {location} is already occupied by {BoardOccupants[location].name}");
+                return false;
+            }
+            else if(Board.IsAxialOnGrid(location))
+            {
+                RemoveCard(player_index, card_index);
+                BoardOccupants.Add(location, card);
+                GD.Print($"Placed card {card.name} at location {location}");
+                return true;
+            }
+            else{
+                GD.Print($"Cannot place card {card.name} because the location {location} does not exist on the board.");
                 return false;
             }
         }

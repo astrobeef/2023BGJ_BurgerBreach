@@ -97,7 +97,7 @@ namespace Deck{
 
         #region BOARD DATA
 
-        private AxialGrid_DataOnly Board;
+        private AxialGrid Board;
         private Dictionary<Axial, Card> BoardOccupants = new Dictionary<Axial, Card>();
 
         #endregion
@@ -158,7 +158,7 @@ namespace Deck{
             InitDecks();
             InitHands();
 
-            Board = new AxialGrid_DataOnly(2);
+            Board = new AxialGrid(2);
 
             for (_turnCounter = 0; _turnCounter < 10; _turnCounter++)
             {

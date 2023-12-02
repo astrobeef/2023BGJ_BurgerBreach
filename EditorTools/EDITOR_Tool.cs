@@ -69,13 +69,13 @@ namespace EditorTools
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
-			HexAxialGrid = AxialGrid.CalcHexAxialGrid(GridProgress, _offset, _sideLength);
+			HexAxialGrid = AxialGrid_DEMO.CalcHexAxialGrid(GridProgress, _offset, _sideLength);
 			QueueRedraw();
 		}
 
 		private async void TestAxialGrid(EDITOR_Tool This, int gridSize)
 		{
-			AxialGrid axialGrid = new AxialGrid(This, gridSize);
+			AxialGrid_DEMO axialGrid = new AxialGrid_DEMO(This, gridSize);
 
 			await Task.Run(() =>
 			{
@@ -92,7 +92,7 @@ namespace EditorTools
 			});
 			
 			GD.Print("Executing after wait");
-			HexAxialGrid = AxialGrid.CalcHexAxialGrid(axialGrid.Axials, _offset, _sideLength);
+			HexAxialGrid = AxialGrid_DEMO.CalcHexAxialGrid(axialGrid.Axials, _offset, _sideLength);
 			// GD.Print($"TOTAL HEXES: {HexAxialGrid.Count}");
 		}
 

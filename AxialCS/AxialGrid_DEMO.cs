@@ -14,7 +14,7 @@ namespace AxialCS
     /// <summary>
     /// Currently handles HEXAGON shaped grids only. Generates an axial grid.
     /// </summary>
-    public struct AxialGrid_DataOnly
+    public struct AxialGrid_DEMO
     {
         private readonly int _width;
         public Axial[] Axials => _axials.ToArray();
@@ -25,27 +25,29 @@ namespace AxialCS
 
         public enum GridType { Hexagon };
 
-        public AxialGrid_DataOnly(int width)
+        public AxialGrid_DEMO(EDITOR_Tool progressDraw, int width)
         {
             this._width = width;
 
             _axials = new List<Axial>{Axial.Empty};
-            Build();
+            Build(progressDraw);
         }
 
-        private void Build()
+        private async void Build(EDITOR_Tool progressDraw)
         {
             GD.Print("Beginning build");
+
+            IProgress<List<Axial>> GridProgress = ProgressReporting(progressDraw);
 
             switch (_type)
             {
                 case GridType.Hexagon:
                     {
-                        Axial[] grid = Build_Hexagon(_width);
+                        Axial[] grid = await Build_Hexagon(_width, GridProgress);
                         _axials.Clear();
                         _axials.AddRange(grid);
                         
-                        GD.Print($"Set _axials. New count is {_axials.Count} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
+                        // GD.Print($"Set _axials. New count is {_axials.Count} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
                     }
                     break;
                 default:
@@ -53,7 +55,33 @@ namespace AxialCS
             }
         }
 
-        private static Axial[] Build_Hexagon(int width)
+        private IProgress<List<Axial>> ProgressReporting(EDITOR_Tool progressDraw){
+
+            Dictionary<List<Axial>, Axial[]> listReferences = new Dictionary<List<Axial>, Axial[]>();
+
+            IProgress<List<Axial>> GridProgress = new Progress<List<Axial>>((List<Axial> gridProgress) =>
+            {
+                if(listReferences.ContainsKey(gridProgress))
+                {
+                    listReferences[gridProgress] = gridProgress.ToArray();
+                }
+                else{
+                    listReferences.Add(gridProgress, gridProgress.ToArray());
+                }
+
+                List<Axial> Grid = new List<Axial>();
+                foreach(Axial[] progress in listReferences.Values){
+                    Grid.AddRange(progress);
+                }                
+
+                progressDraw.TestAxialGridProgress(Grid.ToArray());
+
+            });
+
+            return GridProgress;
+        }
+
+        private static async Task<Axial[]> Build_Hexagon(int width, IProgress<List<Axial>> progress)
         {
 
             Axial[] grid;
@@ -76,12 +104,14 @@ namespace AxialCS
 
                     taskGrid.Add(taskDirection);
 
-                    RecursiveAxialBuild_Hexagon(ref failsafe, ref taskGrid, taskDirection, taskDirection, width);
+                    RecursiveAxialBuild_Hexagon(ref failsafe, ref taskGrid, taskDirection, taskDirection, width, progress);
 
                     return taskGrid.ToArray();
                 });
             }
-            
+
+            return await Task.WhenAll(tasks).ContinueWith((waitTask) =>
+            {
                 int count = 1 + tasks.Sum(innerArray => innerArray.Result.Length);
                 grid = new Axial[count];
                 grid[0] = Axial.Zero;
@@ -94,7 +124,7 @@ namespace AxialCS
 
                     for (int i = 0; i < taskGrid.Length; i++)
                     {
-                        GD.Print($"Adding {taskGrid[i]}@[{i}] from task grid {iterateTask} to grid @[{index}]");
+                        // GD.Print($"Adding {taskGrid[i]}@[{i}] from task grid {iterateTask} to grid @[{index}]");
 
                         grid[index] = taskGrid[i];
 
@@ -105,13 +135,14 @@ namespace AxialCS
                 for (int i = 0; i < grid.Length; i++)
                 {
                     Axial ax = grid[i];
-                    GD.Print($"grid to return[{i}]: {ax}");
+                    // GD.Print($"grid to return[{i}]: {ax}");
                 }
 
                 return grid;
+            });
         }
 
-        private static void RecursiveAxialBuild_Hexagon(ref int iteration, ref List<Axial> taskGrid, Axial origin, Axial inputDirection, float width)
+        private static void RecursiveAxialBuild_Hexagon(ref int iteration, ref List<Axial> taskGrid, Axial origin, Axial inputDirection, float width, IProgress<List<Axial>> progress)
         {
             iteration++;
             Axial[] newNeighborDirections = ParsedDirections(inputDirection);
@@ -127,12 +158,13 @@ namespace AxialCS
                 {
                     if (newAxial.LengthSquared < radiusSquared)
                     {
-                        GD.Print($"Adding new ax {newAxial} to grid");
+                        // GD.Print($"Adding new ax {newAxial} to grid");
                         taskGrid.Add(newAxial);
+                        progress.Report(taskGrid);
                     }
                     else
                     {
-                        GD.Print($"Not adding new ax {newAxial} to grid because it exceeds the max length");
+                        // GD.Print($"Not adding new ax {newAxial} to grid because it exceeds the max length");
                     }
                 }
                 else
@@ -146,7 +178,7 @@ namespace AxialCS
                 if (newAxial.LengthSquared < radiusSquared && iteration < 100000)
                 {
                     Axial newDirection = newAxial - origin;
-                    RecursiveAxialBuild_Hexagon(ref iteration, ref taskGrid, newAxial, newDirection, width);
+                    RecursiveAxialBuild_Hexagon(ref iteration, ref taskGrid, newAxial, newDirection, width, progress);
                 }
             }
         }
@@ -246,11 +278,12 @@ namespace AxialCS
         public static Dictionary<Axial, HexagonDraw> CalcHexAxialGrid(Axial[] GridAxials, Vector2 offset, float side_length){
             Dictionary<Axial, HexagonDraw> dictionary = new Dictionary<Axial, HexagonDraw>();
 
+            // GD.Print($"We are calculating HexAxial. The _axials length is: {GridAxials.Length} @ {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
             foreach(Axial ax in GridAxials){
                 HexagonDraw hexDraw = CalcHexDraw(ax, offset, side_length);
                 if(!dictionary.ContainsKey(ax) && ax != Axial.Empty)
                 {
-                    GD.Print($"Adding {ax} @ {hexDraw.origin}px to dictionary");
+                    // GD.Print($"Adding {ax} @ {hexDraw.origin}px to dictionary");
                     dictionary.Add(ax, hexDraw);
                 }
                 else{
@@ -270,13 +303,6 @@ namespace AxialCS
 
             return hexDraw;
 		}
-
-        /// <summary>
-        /// Returns true if the parameter exists in the grid
-        /// </summary>
-        public bool IsAxialOnGrid(Axial axial){
-            return _axials.Contains(axial);
-        }
 
     }
 }

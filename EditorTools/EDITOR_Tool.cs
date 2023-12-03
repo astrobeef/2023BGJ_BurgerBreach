@@ -10,6 +10,7 @@ using EditorTools;
 using GodotPlugins.Game;
 using AxialCS;
 using Deck;
+using Model;
 
 namespace EditorTools
 {
@@ -23,7 +24,7 @@ namespace EditorTools
 		public event ProcessEvent OnProcess;
 
 		public MouseMoveObserver MouseMoveObserver;
-		public EDITOR_DeckSpaghetti DeckSpaghetti;
+		public Model_DEMO DeckSpaghetti;
 
 		[Export]
 		bool _disableScript = true, _disableInput = true, _disableDraw = true;
@@ -69,7 +70,7 @@ namespace EditorTools
 
 			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			if(!_disableBoardgame)
-				DeckSpaghetti = new EDITOR_DeckSpaghetti();
+				DeckSpaghetti = new Model_DEMO();
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
@@ -111,7 +112,7 @@ namespace EditorTools
 			}
 			if(!_disableBoardgame && DeckSpaghetti == null){
 				GD.PrintErr("Setting deck spaghetti script because it did not get set in 'ready'");
-			DeckSpaghetti = new EDITOR_DeckSpaghetti();
+			DeckSpaghetti = new Model_DEMO();
 			}
 
 			// Execute in EDITOR only

@@ -121,8 +121,6 @@ namespace AxialCS
             {
                 Axial newAxial = origin + direction;
 
-                Thread.Sleep(100);
-
                 if (!taskGrid.Contains(newAxial))
                 {
                     if (newAxial.LengthSquared < radiusSquared)

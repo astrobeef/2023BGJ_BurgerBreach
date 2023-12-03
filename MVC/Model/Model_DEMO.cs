@@ -7,6 +7,7 @@ using AxialCS;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
 
 namespace Model
 {
@@ -37,7 +38,7 @@ namespace Model
         };
 
         private static readonly Card[] CardSet_NoBases = CardSet
-            .Where(card => card.type != Card.CardType.Base)
+            .Where(card => card.TYPE != Card.CardType.Base)
             .ToArray();
 
 
@@ -85,8 +86,8 @@ namespace Model
         private int[] CardsDrawn = new int[PLAYER_COUNT];       // How many cards each player has drawn
 
         // Hands data
-        private Card[][] Hands = new Card[PLAYER_COUNT][];
-        private Card[] _userHand
+        private CardInst[][] Hands = new CardInst[PLAYER_COUNT][];
+        private CardInst[] _userHand
         {
             get
             {
@@ -97,7 +98,7 @@ namespace Model
                 Hands[0] = value;
             }
         }
-        private Card[] _enemyHand
+        private CardInst[] _enemyHand
         {
             get
             {
@@ -111,7 +112,9 @@ namespace Model
 
         // Board Data
         private AxialGrid Board;
-        private Dictionary<Axial, Card>[] PlayersActiveBoards = new Dictionary<Axial, Card>[PLAYER_COUNT];
+        private Dictionary<Axial, CardInst>[] PlayersActiveBoards = new Dictionary<Axial, CardInst>[PLAYER_COUNT];
+        private Dictionary<Axial, CardInst> AllActiveBoards => PlayersActiveBoards.Where(board => board != null).SelectMany(board => board).GroupBy(pair => pair.Key)
+        .ToDictionary(group => group.Key, group => group.First().Value);
 
         #endregion
 
@@ -177,15 +180,20 @@ namespace Model
             GD.Print("-------------------------");
 
             _turnCounter = 0;
+            Board = new AxialGrid(BOARD_RADIUS);
+            for (int i = 0; i < PlayersActiveBoards.Length; i++)
+            {
+                ref Dictionary<Axial, CardInst> refActiveBoard = ref PlayersActiveBoards[i];
+                refActiveBoard = new Dictionary<Axial, CardInst>();
+            }
 
             Thread.Sleep(1000);
 
             InitHands();
             InitBases();
 
-            Board = new AxialGrid(BOARD_RADIUS);
-
             while(!IsRoundOver(_turnCounter)){
+                Thread.Sleep(10);
                 StartTurn(ref _turnCounter);
                 _turnCounter++;
             }
@@ -193,28 +201,58 @@ namespace Model
 
         private void InitBases(){
 
-            if(PLAYER_COUNT > base_locations.Length){
-                GD.PrintErr($"Not enough base locations ({base_locations.Length}) for the amount of players({PLAYER_COUNT})");
-            }
+            Thread.Sleep(100);
+
 
             for(int i = 0; i < PLAYER_COUNT; i++){
-                ref Dictionary<Axial, Card> ActiveBoard = ref PlayersActiveBoards[i];
-                Axial BaseLocation = base_locations[i] * BOARD_RADIUS;
+                ref Dictionary<Axial, CardInst> refActiveBoard = ref PlayersActiveBoards[i];
                 Card BaseCard = CardSet[0];
+                Axial BaseLocation = GetBaseLocation(i);
 
                 TryPlaceCard_FromVoid(i, BaseCard, BaseLocation);
+            }
+        }
 
-                GD.Print($"Player {i}'s base will be placed at {BaseLocation}");
+        private Axial GetBaseLocation(int player_index){
+
+            if(PLAYER_COUNT > base_locations.Length){
+                GD.PrintErr($"Not enough base locations ({base_locations.Length}) for the amount of players({PLAYER_COUNT})");
+                return Axial.Empty;
+            }
+
+            return base_locations[player_index] * BOARD_RADIUS;
+        }
+
+        private bool TryGetBaseCard(int player_index, out CardInst playerBase)
+        {
+            Dictionary<Axial, CardInst> ActiveBoard = PlayersActiveBoards[player_index];
+            Axial baseLocation = GetBaseLocation(player_index);
+
+            if (ActiveBoard.ContainsKey(baseLocation))
+            {
+                playerBase = ActiveBoard[GetBaseLocation(player_index)];
+                return true;
+            }
+            else
+            {
+                GD.PrintErr($"Player {player_index} does not have a card at its base location {baseLocation}");
+
+                playerBase = CardInst.EMPTY;
+                return false;
             }
         }
 
         private bool IsRoundOver(int turnCounter){
+
             for(int i = 0; i < PLAYER_COUNT; i++){
-                Dictionary<Axial, Card> ActiveBoard = PlayersActiveBoards[i];
-                
+                if(TryGetBaseCard(i, out CardInst playerBase)){
+                    if(playerBase.hp <= 0){
+                        return true;
+                    }
+                }
             }
             
-            return turnCounter < 10;
+            return turnCounter >= 10;
         }
 
         private void StartTurn(ref int turnCounter)
@@ -232,6 +270,7 @@ namespace Model
             // 3. Move card(s)
             // 4. Attack card(s)
             // 5. End turn
+
             TryDrawCard(iPlayerIndex);
             Thread.Sleep(500);
 
@@ -239,7 +278,7 @@ namespace Model
 
             for (int i = 0; i < rand; i++)
             {
-                if (TryGetEmptyTile(out Axial openTile))
+                if (TryGetOpenTile(out Axial openTile))
                     TryPlaceCard_FromHand(iPlayerIndex, 0, openTile);
                 else
                     GD.Print("Could not place card because all tiles are filled");
@@ -247,20 +286,19 @@ namespace Model
             }
         }
 
-        private bool TryGetEmptyTile(out Axial Axial)
+        private bool TryGetOpenTile(out Axial Axial)
         {
             foreach (Axial ax in Board.Axials)
             {
-                foreach (Dictionary<Axial, Card> ActiveBoard in PlayersActiveBoards)
-                {
-                    if (!ActiveBoard.ContainsKey(ax))
+                    if (!AllActiveBoards.ContainsKey(ax))
                     {
+                        GD.Print($"Found open axial {ax}");
                         Axial = ax;
                         return true;
                     }
-                }
             }
 
+            GD.Print($"Could not find open axial. Returning empty.");
             Axial = Axial.Empty;
             return false;
         }
@@ -292,7 +330,7 @@ namespace Model
                 GD.Print($"----- Initializing hand[{i}] -----");
                 Thread.Sleep(500);
 
-                ref Card[] refHand = ref Hands[i];
+                ref CardInst[] refHand = ref Hands[i];
                 ref Card[] refDeck = ref Decks[i];
 
                 refHand = null;
@@ -305,20 +343,21 @@ namespace Model
                     Thread.Sleep(150);
                 }
 
-                GD.Print($"----- Initialized hand[{i}] -----");
-                GD.Print("-------------------------------");
-
                 DisplayHand(i);
 
+                GD.Print($"----- Initialized hand[{i}] -----");
+                GD.Print("-------------------------------");
             }
         }
 
         private void DisplayHand(int player_index){
 
+            Thread.Sleep(100);
+
                 GD.Print(new string('-', 28));
                 GD.Print($"----- Displaying hand[{player_index}] -----");
 
-                ref Card[] refHand = ref Hands[player_index];
+                ref CardInst[] refHand = ref Hands[player_index];
 
                 for (int i = 0; i < refHand.Length; i++)
                 {
@@ -326,12 +365,11 @@ namespace Model
                 }
 
                 GD.Print(new string('-', 28));
-                GD.Print(new string('-', 28));
         }
 
         private bool TryDrawCard(int player_index){
             Card[] iDeck = Decks[player_index];
-            ref Card[] refHand = ref Hands[player_index];
+            ref CardInst[] refHand = ref Hands[player_index];
             int deckCount = iDeck.Length;
             ref int refDrawnCount = ref CardsDrawn[player_index]; 
 
@@ -342,7 +380,7 @@ namespace Model
 
                 refDrawnCount++;
 
-                GD.Print($"Player {player_index} drew a card ({drawnCard.name}), increasing their hand to {heldCount}. Their drawn count has incremented to {refDrawnCount}");
+                GD.Print($"Player {player_index} drew a card ({drawnCard.NAME}), increasing their hand to {heldCount}. Their drawn count has incremented to {refDrawnCount}");
                 return true;
             }
             else{
@@ -359,33 +397,37 @@ namespace Model
         /// <returns>Amount of cards in hand</returns>
         private int AddCardToHand(int player_index, Card card)
         {
-            ref Card[] refHand = ref Hands[player_index];
+            ref CardInst[] refHand = ref Hands[player_index];
+
+            CardInst newCard = new CardInst(card, (ushort)random.Next(ushort.MinValue, ushort.MaxValue));
 
             if (refHand != null)
             {
-                Card[] newHand = new Card[refHand.Length + 1];
+                CardInst[] newHand = new CardInst[refHand.Length + 1];
                 refHand.CopyTo(newHand, 0);
-                newHand[newHand.Length - 1] = card;
+                newHand[newHand.Length - 1] = newCard;
                 refHand = newHand;
             }
             else
             {
-                refHand = new Card[1] { card };
+                refHand = new CardInst[1] { newCard };
             }
 
             return refHand.Length;
         }
 
-        private Card RemoveCardFromHand(int player_index, int card_index)
+        private CardInst RemoveCardFromHand(int player_index, int card_index)
         {
-            ref Card[] refHand = ref Hands[player_index];
+            ref CardInst[] refHand = ref Hands[player_index];
 
+            //If index is within bounds,
             if (card_index < refHand.Length && card_index >= 0)
             {
-                Card card = refHand[card_index];
+                //Get reference
+                CardInst card = refHand[card_index];
 
-                Card[] newHand = new Card[refHand.Length - 1];
-
+                //Remove from hand
+                CardInst[] newHand = new CardInst[refHand.Length - 1];
                 for (int i = 0, j = 0; i < refHand.Length; i++)
                 {
                     if (i != card_index)
@@ -393,13 +435,16 @@ namespace Model
                         newHand[j++] = refHand[i];
                     }
                 }
-
                 refHand = newHand;
+
+                GD.Print($"Removed {card.name} (hash:{card.id}) from player {player_index}'s hand");
+
+                //Return removed card
                 return card;
             }
             else{
                 GD.PrintErr($"Cannot remove index {card_index} from hand[{player_index}] because it is not within the bounds of the hand.");
-                return Card.EMPTY;
+                return CardInst.EMPTY;
             }
         }
 
@@ -411,97 +456,60 @@ namespace Model
         /// <param name="location">Axial placement</param>
         /// <returns>True if the card is placed, false if not</returns>
         /// <remarks>Purpose of passing indexes rather than arrays/cards is to manage references and minimize parameter data</remarks>
-        private bool TryPlaceCard_FromHand(int player_index, int card_index, Axial location){
+        private bool TryPlaceCard_FromHand(int player_index, int card_index, Axial location)
+        {
+            ref CardInst[] refHand = ref Hands[player_index];
 
-            ref Card[] refHand = ref Hands[player_index];
-            Card card = refHand[card_index];
-            
-            ref Dictionary<Axial, Card> refActiveBoard = ref PlayersActiveBoards[player_index];
-
-            if(refActiveBoard.ContainsKey(location)){
-                GD.Print($"Cannot place card {card.name} because the location {location} is already occupied by {refActiveBoard[location].name}");
-                return false;
-            }
-            else if(Board.IsAxialOnGrid(location))
-            {
-                RemoveCardFromHand(player_index, card_index);
-                refActiveBoard.Add(location, card);
-                GD.Print($"Placed card {card.name} at location {location}");
+            if(IsPlacementLocationValid(location)){
+                CardInst card = RemoveCardFromHand(player_index, card_index);
+                PlaceCard(player_index, card, location);
                 return true;
             }
-            else{
-                GD.Print($"Cannot place card {card.name} because the location {location} does not exist on the board.");
+            else
                 return false;
-            }
         }
 
         private bool TryPlaceCard_FromVoid(int player_index, Card card, Axial location){
-            return false;
+
+            if(IsPlacementLocationValid(location)){
+                CardInst cardInst = new CardInst(card, (ushort)random.Next(ushort.MinValue, ushort.MaxValue));
+                PlaceCard(player_index, cardInst, location);
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private void PlaceCard(int player_index, CardInst card, Axial location)
+        {
+            ref Dictionary<Axial, CardInst> refActiveBoard = ref PlayersActiveBoards[player_index];
+            refActiveBoard.Add(location, card);
+
+            GD.Print($"Player {player_index} placing card {card.name} (hash:{card.id}) at location {location}");
+        }
+
+        private bool IsPlacementLocationValid(Axial location)
+        {
+            // Check if the location exists on the board
+            if (!Board.IsAxialOnGrid(location))
+            {
+                GD.Print($"Cannot place card at {location} because it does not exist on the board.");
+                return false;
+            }
+
+            // Check each player's active board to see if a card has already been placed at this location
+            foreach (Dictionary<Axial, CardInst> ActiveBoard in PlayersActiveBoards)
+            {
+                if (ActiveBoard.ContainsKey(location))
+                {
+                    GD.Print($"Cannot place card at {location} because a card is already placed there.");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         #endregion
-    }
-
-    internal struct Card{
-
-        internal string name;
-
-        public enum CardType {Base, Resource, Offense};
-        internal CardType type;
-
-        internal int hp;
-        internal int move;
-        internal int atk;
-
-        internal static Card EMPTY = new Card("NULL", CardType.Base, -1);
-
-        public Card (string name, CardType type, int hp){
-            this.name = name;
-            this.type = type;
-            this.hp = hp;
-
-            move = 0;
-            atk = 0;
-        }
-
-        public Card (string name, int hp, int move, int atk){
-            this.name = name;
-            type = CardType.Offense;
-
-            this.hp = hp;
-            this.move = move;
-            this.atk = atk;            
-        }
-
-        public override string ToString()
-        {
-            return $"({name}, {type}, HP:{hp}, MOVE:{move}, ATK:{atk})";
-        }
-
-        public static bool operator ==(Card a, Card b){
-            return a.name == b.name;
-        }
-        public static bool operator !=(Card a, Card b){
-            return a.name != b.name;
-        }
-		public override bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object obj)
-		{
-			if (obj is Card obj_card)
-			{
-				return this == obj_card;
-			}
-
-			return false;
-		}
-
-		public override int GetHashCode()
-		{
-			// Use a prime number to combine hash codes in a way that reduces the chance of collisions
-			const int prime = 31;
-			int hash = 17;  // Another prime number
-			hash = hash * prime + name.GetHashCode();
-			return hash;
-		}
-
     }
 }

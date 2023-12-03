@@ -368,10 +368,8 @@ namespace Model
 
                 Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
                 Axial movePosition = card.pos + randDirection;
-
-                GD.Print($"TEST Random movement. Initial position is {initPos}. Current position is {card.pos}, Rand direction is {randDirection}, and movePosition is {movePosition}. The displacement is {Axial.Distance(initPos, movePosition)}");
-
-                if(CardInst_TryMove(card, movePosition)){
+                
+                if(CardInst_TryMove(true, card, movePosition)){
                     newPos = movePosition;
                 }
 
@@ -381,15 +379,15 @@ namespace Model
             return (newPos != initPos);
         }
 
-        private bool CardInst_TryMove(CardInst card, Axial newPos)
+        private bool CardInst_TryMove(bool isWillful, CardInst card, Axial newPos)
         {
-            return CardInst_TryMove(card, newPos, out CardInst dummyOccupant);
+            return CardInst_TryMove(isWillful, card, newPos, out CardInst dummyOccupant);
         }
 
-        private bool CardInst_TryMove(CardInst card, Axial newPos, out CardInst occupant)
+        private bool CardInst_TryMove(bool isWillful, CardInst card, Axial newPos, out CardInst occupant)
         {
                 if(IsPlacementLocationValid(newPos, out occupant)){
-                    card.Move(newPos);
+                    card.Move(isWillful, newPos);
                     return true;
                 }
                 else{
@@ -433,7 +431,7 @@ namespace Model
                         }
                         else if (target.type == Card.CardType.Offense){
                             Axial attackDisplacement = target.pos + randDirection;
-                            if(CardInst_TryMove(target, attackDisplacement, out CardInst occupant))
+                            if(CardInst_TryMove(false, target, attackDisplacement, out CardInst occupant))
                             {
                                 GD.Print($"The attack successfully displaced the target.");
                             }

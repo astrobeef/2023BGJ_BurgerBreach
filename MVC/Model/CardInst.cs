@@ -49,13 +49,16 @@ namespace Model
         /// <summary>
         /// Move the card instance on the board
         /// </summary>
+        /// <param name="isWillful">Did this unit chose to move or was it forced to move?</param>
         /// <param name="newPos">New position to move towards</param>
-        public void Move(Axial newPos)
+        public void Move(bool isWillful, Axial newPos)
         {
             int calculatedDisplacement = Axial.Distance(pos, newPos);
             GD.Print($"Player {ownerIndex} moved card {card.NAME} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
 
-            TurnActions.remainingMovement -= calculatedDisplacement;
+            if(isWillful)
+                TurnActions.remainingMovement -= calculatedDisplacement;
+
             if (TurnActions.remainingMovement < 0)
                 GD.PrintErr($"Card {this} has its turn movement less than 0. This should have been checked before this method.");
 

@@ -49,23 +49,36 @@ namespace Model
         /// <summary>
         /// Move the card instance on the board
         /// </summary>
-        /// <param name="moveDecrement">The amount of movement to take away</param>
         /// <param name="newPos">New position to move towards</param>
-        public void Move(int moveDecrement, Axial newPos)
+        public void Move(Axial newPos)
         {
             int calculatedDisplacement = Axial.Distance(pos, newPos);
-            GD.Print($"Player {ownerIndex} moved card {card.NAME} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement to decrement: {moveDecrement}. Movement remaining: {TurnActions.remainingMovement}");
+            GD.Print($"Player {ownerIndex} moved card {card.NAME} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
 
-            TurnActions.remainingMovement -= moveDecrement;
+            TurnActions.remainingMovement -= calculatedDisplacement;
             if (TurnActions.remainingMovement < 0)
                 GD.PrintErr($"Card {this} has its turn movement less than 0. This should have been checked before this method.");
 
             pos = newPos;
         }
 
-        public bool HasAttacked()
+        public void Attack()
         {
-            return TurnActions.hasAttacked;
+            TurnActions.hasAttacked = true;
+        }
+
+        public bool Damage(int amount)
+        {
+            hp -= amount;
+            
+            GD.Print($"Card {card.NAME} has been damaged for {amount}. Remaining hp: {hp}");
+
+            return (hp > 0);
+        }
+
+        public bool CanAttack()
+        {
+            return !TurnActions.hasAttacked;
         }
 
         public void SetAttacked()

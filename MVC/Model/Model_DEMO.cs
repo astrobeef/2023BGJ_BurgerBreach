@@ -30,6 +30,8 @@ namespace Model
         private static readonly int PLAYER_COUNT = 2;
         private static readonly int BOARD_RADIUS = 2;
 
+        private static readonly int COLLISION_DAMAGE = 1;
+
         // CARD SET
         private static readonly Card[] CardSet = new Card[] {
             new Card("Base Test", Card.CardType.Base, 10),
@@ -265,7 +267,7 @@ namespace Model
                 }
             }
             
-            return turnCounter >= 10;
+            return turnCounter >= 100;
         }
 
         private void StartTurn(ref int turnCounter)
@@ -324,37 +326,137 @@ namespace Model
                 }
             }
 
+            Thread.Sleep(500);
+
+            GD.Print("--- Beginning Combat ---");
+
+            foreach (CardInst occupant in ActiveBoard)
+            {
+                if (occupant.ownerIndex == turnPlayerIndex)
+                {
+                    CardInst iCard = occupant;
+
+                    GD.Print($"Player {turnPlayerIndex} attempting to attack with {iCard.name} at {iCard.pos}.");
+
+                    if (CardInst_TryRandomAttack(iCard))
+                    {
+                        GD.Print($"Player {turnPlayerIndex} made an attack with {iCard.name} (hash:{iCard.id}) from {iCard.pos}.");
+                    }
+                    else{
+                        GD.Print($"Player {turnPlayerIndex} could not move {iCard.name}");
+                    }
+                }
+            }
+
             // 4. Attack card(s)
             // 5. End turn
         }
 
         private bool CardInst_TryRandomMoveCard(CardInst card, out Axial newPos){
 
-            Axial curPos = card.pos;
-            newPos = curPos;
+            Axial initPos = card.pos;
+            newPos = initPos;
 
-            int failsafe = 0, failsafe_max = Axial.CARDINAL_LENGTH;
+            int iDirection = 0;
 
             while(card.CanMove(out int remainingMovement)){
-                int moveAmount = 1;
-
-                failsafe++;
-                if(failsafe >= failsafe_max)
+                if(iDirection >= Axial.CARDINAL_LENGTH)
                 {
                     GD.Print($"Player {card.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
-                    return (newPos != curPos);
+                    return (newPos != initPos);
                 }
 
-                Axial randDirection = Axial.Direction((Axial.Cardinal)failsafe);
-                Axial movePosition = curPos + randDirection;
+                Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
+                Axial movePosition = card.pos + randDirection;
 
-                if(IsPlacementLocationValid(movePosition)){
-                    card.Move(moveAmount, movePosition);
+                GD.Print($"TEST Random movement. Initial position is {initPos}. Current position is {card.pos}, Rand direction is {randDirection}, and movePosition is {movePosition}. The displacement is {Axial.Distance(initPos, movePosition)}");
+
+                if(CardInst_TryMove(card, movePosition)){
                     newPos = movePosition;
                 }
+
+                iDirection++;
             }
 
-            return (newPos != curPos);
+            return (newPos != initPos);
+        }
+
+        private bool CardInst_TryMove(CardInst card, Axial newPos)
+        {
+            return CardInst_TryMove(card, newPos, out CardInst dummyOccupant);
+        }
+
+        private bool CardInst_TryMove(CardInst card, Axial newPos, out CardInst occupant)
+        {
+                if(IsPlacementLocationValid(newPos, out occupant)){
+                    card.Move(newPos);
+                    return true;
+                }
+                else{
+                    return false;
+                }
+        }
+
+        private bool CardInst_TryRandomAttack(CardInst card)
+        {
+            int iDirection = 0;
+
+            while(card.CanAttack())
+            {
+                if(iDirection >= Axial.CARDINAL_LENGTH)
+                {
+                    GD.Print($"Player {card.ownerIndex} can't attack with this unit anymore because there are no valid targets.");
+                    return false;
+                }
+                
+                Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
+                Axial attackPosition = card.pos + randDirection;
+
+                if(ActiveBoard_ContainsAxial(attackPosition, out int targetIndex)){
+                    CardInst target = ActiveBoard[targetIndex];
+
+                    // If this target is not on the same team
+                    if(target.ownerIndex != card.ownerIndex){
+                        GD.Print($"Player {card.ownerIndex} attacked {target.name} @ {target.pos}.");
+
+                        card.Attack();
+
+                        if (!target.Damage(card.atk))
+                        {
+                            if(target.type == Card.CardType.Base){
+                                GD.PrintErr($"Player {target.ownerIndex} has had their base destroyed! Need to fire an event to end the game.");
+                                return true;
+                            }
+                            else{
+                                ActiveBoard_RemoveCard(target);
+                            }
+                        }
+                        else if (target.type == Card.CardType.Offense){
+                            Axial attackDisplacement = target.pos + randDirection;
+                            if(CardInst_TryMove(target, attackDisplacement, out CardInst occupant))
+                            {
+                                GD.Print($"The attack successfully displaced the target.");
+                            }
+                            else if(occupant != CardInst.EMPTY)
+                            {
+                                GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
+                                target.Damage(COLLISION_DAMAGE);
+                                occupant.Damage(COLLISION_DAMAGE);
+                            }
+                            else{
+                                GD.Print($"The target could not be displaced because it would have moved off the map. No consequences.");
+                            }
+                        }
+
+                        return true;
+                    }
+                }
+
+                iDirection++;
+            }
+
+            GD.Print($"Player {card.ownerIndex} can't attack with this unit.");
+            return false;
         }
 
         private bool TryGetOpenTile(out Axial Axial)
@@ -539,8 +641,6 @@ namespace Model
             if(IsPlacementLocationValid(location)){
                 Card card = RemoveCardFromHand(player_index, card_index);
                 CardInst cardInst = new CardInst(player_index, location, card);
-                Thread.Sleep(1);
-                GD.Print($"Created new card instance {cardInst}");
 
                 ActiveBoard_AddCard(cardInst);
 
@@ -554,8 +654,6 @@ namespace Model
 
             if(IsPlacementLocationValid(location)){
                 CardInst cardInst = new CardInst(player_index, location, card);
-                Thread.Sleep(1);
-                GD.Print($"Created new card instance {cardInst}");
 
                 ActiveBoard_AddCard(cardInst);
 
@@ -583,6 +681,26 @@ namespace Model
             GD.Print($"Player {newCard.ownerIndex} placing card {newCard.name} (hash:{newCard.id}) at location {newCard.pos}");
         }
 
+        private void ActiveBoard_RemoveCard(CardInst card){
+
+            int card_index = -1;
+
+            for (int i = 0; i < ActiveBoard.Length; i++)
+            {
+                if(card == ActiveBoard[i]){
+                    card_index = i;
+                    break;
+                }
+            }
+
+            if(card_index >= 0){
+                ActiveBoard_RemoveCard(card_index);
+            }
+            else{
+                GD.PrintErr($"Cannot remove card {card} because it is not on the board.");
+            }
+        }
+
         private void ActiveBoard_RemoveCard(int card_index){
 
                 CardInst[] newActiveBoard = new CardInst[ActiveBoard.Length - 1];
@@ -599,6 +717,13 @@ namespace Model
 
         private bool IsPlacementLocationValid(Axial location)
         {
+            return IsPlacementLocationValid(location, out CardInst dummyCard);
+        }
+
+        private bool IsPlacementLocationValid(Axial location, out CardInst occupant)
+        {
+            occupant = CardInst.EMPTY;
+
             // Check if the location exists on the board
             if (!Board.IsAxialOnGrid(location))
             {
@@ -607,9 +732,10 @@ namespace Model
             }
 
             // Check active board to see if a card has already been placed at this location
-            if (ActiveBoard_ContainsAxial(location, out int dummyIndex))
+            if (ActiveBoard_ContainsAxial(location, out int boardIndex))
             {
                 GD.Print($"Cannot place card at {location} because a card is already placed there.");
+                occupant = ActiveBoard[boardIndex];
                 return false;
             }
 

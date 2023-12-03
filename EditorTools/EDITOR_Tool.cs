@@ -65,7 +65,7 @@ namespace EditorTools
 			}
 
 			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
-			DeckSpaghetti = new EDITOR_DeckSpaghetti(this);
+			DeckSpaghetti = new EDITOR_DeckSpaghetti();
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
@@ -107,7 +107,7 @@ namespace EditorTools
 			}
 			if(DeckSpaghetti == null){
 				GD.PrintErr("Setting deck spaghetti script because it did not get set in 'ready'");
-			DeckSpaghetti = new EDITOR_DeckSpaghetti(this);
+			DeckSpaghetti = new EDITOR_DeckSpaghetti();
 			}
 
 			// Execute in EDITOR only

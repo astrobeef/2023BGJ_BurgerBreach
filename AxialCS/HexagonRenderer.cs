@@ -78,6 +78,4 @@ public partial class HexagonRenderer : Node2D
 			}
 		}
 	}
-
-
 }

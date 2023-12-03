@@ -43,9 +43,7 @@ offset_right = 1280.0
 offset_bottom = 720.0
 theme = SubResource("Theme_rf727")
 script = ExtResource("2_4ar71")
-_disableScript = true
-_disableInput = true
-_disableDraw = true
+gridSize = 3
 
 [node name="SceneTreeObserver" type="Control" parent="EDITOR" node_paths=PackedStringArray("_sceneTree")]
 anchors_preset = 0

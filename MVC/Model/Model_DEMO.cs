@@ -2,13 +2,19 @@ using Godot;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using EditorTools;
 using AxialCS;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Reflection.Metadata;
 
-namespace Deck{
-    public class EDITOR_DeckSpaghetti
+namespace Model
+{
+    /// <summary>
+    /// The Model handles the data of the game without any concern/coupling with the representation of that data.
+    /// </summary>
+    /// <remarks>This script contains unnecessary multithreading, GD.Print, and thread pauses designed to DEMO this script</remarks>
+    public class Model_DEMO
     {
         //---------------------
         //----- VARIABLES -----
@@ -21,6 +27,7 @@ namespace Deck{
         private static readonly int HAND_START_COUNT = 4;
         private static readonly int CARDS_DRAWN_PER_TURN = 1;
         private static readonly int PLAYER_COUNT = 2;
+        private static readonly int BOARD_RADIUS = 2;
 
         // CARD SET
         private static readonly Card[] CardSet = new Card[] {
@@ -37,7 +44,9 @@ namespace Deck{
         // INSTANCE
         Random random = new Random();
 
-        #region  DECK DATA
+        #region  SESSION DATA       // Data scoped to a session instance
+
+        private int _roundCounter = 0;
 
         private Card[][] Decks = new Card[PLAYER_COUNT][];
         private Card[] _userDeck
@@ -63,6 +72,19 @@ namespace Deck{
             }
         }
 
+        #endregion
+
+        #region ROUND DATA          // Data scoped to a round instance
+        
+        private Axial[] base_locations = new Axial[] {
+            Axial.Direction(Axial.Cardinal.SW),
+            Axial.Direction(Axial.Cardinal.NE)
+        };
+
+        private int _turnCounter = 0;
+        private int[] CardsDrawn = new int[PLAYER_COUNT];       // How many cards each player has drawn
+
+        // Hands data
         private Card[][] Hands = new Card[PLAYER_COUNT][];
         private Card[] _userHand
         {
@@ -87,18 +109,15 @@ namespace Deck{
             }
         }
 
-        private int[] CardsDrawn = new int[PLAYER_COUNT];       // How many cards each player has drawn
-
-        #endregion
-
-        #region BOARD DATA
-
+        // Board Data
         private AxialGrid Board;
-        private Dictionary<Axial, Card> BoardOccupants = new Dictionary<Axial, Card>();
+        private Dictionary<Axial, Card>[] PlayersActiveBoards = new Dictionary<Axial, Card>[PLAYER_COUNT];
 
         #endregion
 
-        private int _turnCounter = 0;
+        #region  TURN DATA          // Data scoped to a turn instance
+
+        #endregion
 
         #endregion
 
@@ -109,10 +128,10 @@ namespace Deck{
         #region INITIALIZATION
         
         // CONSTRUCTOR
-        public EDITOR_DeckSpaghetti(){
+        public Model_DEMO(){
             Task.Run(() => {
                 DisplayCardSet();
-                StartRound();
+                StartGame();
             });
         }
 
@@ -142,56 +161,103 @@ namespace Deck{
             Thread.Sleep(1000);
         }
 
-        private void StartRound()
+        private void StartGame(){
+
+            _roundCounter = 0;
+            
+            InitDecks();
+
+            StartRound(ref _roundCounter);
+        }
+
+        private void StartRound(ref int roundCounter)
         {
             GD.Print("-------------------------");
-            GD.Print("----- START ROUND 1 -----");
+            GD.Print($"----- START ROUND {roundCounter} -----");
             GD.Print("-------------------------");
+
+            _turnCounter = 0;
 
             Thread.Sleep(1000);
 
-            InitDecks();
             InitHands();
+            InitBases();
 
-            Board = new AxialGrid(2);
+            Board = new AxialGrid(BOARD_RADIUS);
 
-            for (_turnCounter = 0; _turnCounter < 10; _turnCounter++)
-            {
-
-                GD.Print("------------------------");
-                GD.Print($"----- START TURN {_turnCounter} -----");
-                GD.Print("------------------------");
-
-                Thread.Sleep(500);
-
-                int iPlayerIndex = _turnCounter % PLAYER_COUNT;
-
-                // 1. Draw a card
-                // 2. Place card(s)
-                // 3. Move card(s)
-                // 4. Attack card(s)
-                // 5. End turn
-                TryDrawCard(iPlayerIndex);
-                Thread.Sleep(500);
-
-                int rand = random.Next(1,Hands[iPlayerIndex].Length);
-
-                for(int i = 0; i < rand; i++)
-                {
-                    if (TryGetEmptyTile(out Axial openTile))
-                        TryPlaceCard(iPlayerIndex, 0, openTile);
-                    else
-                        GD.Print("Could not place card because all tiles are filled");
-                    Thread.Sleep(500);
-                }
+            while(!IsRoundOver(_turnCounter)){
+                StartTurn(ref _turnCounter);
+                _turnCounter++;
             }
         }
 
-        private bool TryGetEmptyTile(out Axial Axial){
-            foreach(Axial ax in Board.Axials){
-                if(!BoardOccupants.ContainsKey(ax)){
-                    Axial = ax;
-                    return true;
+        private void InitBases(){
+
+            if(PLAYER_COUNT > base_locations.Length){
+                GD.PrintErr($"Not enough base locations ({base_locations.Length}) for the amount of players({PLAYER_COUNT})");
+            }
+
+            for(int i = 0; i < PLAYER_COUNT; i++){
+                ref Dictionary<Axial, Card> ActiveBoard = ref PlayersActiveBoards[i];
+                Axial BaseLocation = base_locations[i] * BOARD_RADIUS;
+                Card BaseCard = CardSet[0];
+
+                TryPlaceCard_FromVoid(i, BaseCard, BaseLocation);
+
+                GD.Print($"Player {i}'s base will be placed at {BaseLocation}");
+            }
+        }
+
+        private bool IsRoundOver(int turnCounter){
+            for(int i = 0; i < PLAYER_COUNT; i++){
+                Dictionary<Axial, Card> ActiveBoard = PlayersActiveBoards[i];
+                
+            }
+            
+            return turnCounter < 10;
+        }
+
+        private void StartTurn(ref int turnCounter)
+        {
+            GD.Print("------------------------");
+            GD.Print($"----- START TURN {turnCounter} -----");
+            GD.Print("------------------------");
+
+            Thread.Sleep(500);
+
+            int iPlayerIndex = turnCounter % PLAYER_COUNT;
+
+            // 1. Draw a card
+            // 2. Place card(s)
+            // 3. Move card(s)
+            // 4. Attack card(s)
+            // 5. End turn
+            TryDrawCard(iPlayerIndex);
+            Thread.Sleep(500);
+
+            int rand = random.Next(1, Hands[iPlayerIndex].Length);
+
+            for (int i = 0; i < rand; i++)
+            {
+                if (TryGetEmptyTile(out Axial openTile))
+                    TryPlaceCard_FromHand(iPlayerIndex, 0, openTile);
+                else
+                    GD.Print("Could not place card because all tiles are filled");
+                Thread.Sleep(500);
+            }
+        }
+
+        private bool TryGetEmptyTile(out Axial Axial)
+        {
+            foreach (Axial ax in Board.Axials)
+            {
+                foreach (Dictionary<Axial, Card> ActiveBoard in PlayersActiveBoards)
+                {
+                    if (!ActiveBoard.ContainsKey(ax))
+                    {
+                        Axial = ax;
+                        return true;
+                    }
                 }
             }
 
@@ -231,6 +297,8 @@ namespace Deck{
 
                 refHand = null;
 
+                
+
                 for (int j = 0; j < HAND_START_COUNT; j++)
                 {
                     TryDrawCard(i);
@@ -268,21 +336,13 @@ namespace Deck{
             ref int refDrawnCount = ref CardsDrawn[player_index]; 
 
             if(refDrawnCount < deckCount){
-                Card newCard = iDeck[refDrawnCount];
+                Card drawnCard = iDeck[refDrawnCount];
 
-                if(refHand != null){
-                    Card[] newHand = new Card[refHand.Length + 1];
-                    refHand.CopyTo(newHand, 0);
-                    newHand[newHand.Length - 1] = newCard;
-                    refHand = newHand;
-                }
-                else{
-                    refHand = new Card[1] {newCard};
-                }
+                int heldCount = AddCardToHand(player_index, drawnCard);
 
                 refDrawnCount++;
 
-                GD.Print($"Player {player_index} drew a card ({newCard.name}). Their drawn count has incremented to ({refDrawnCount})");
+                GD.Print($"Player {player_index} drew a card ({drawnCard.name}), increasing their hand to {heldCount}. Their drawn count has incremented to {refDrawnCount}");
                 return true;
             }
             else{
@@ -291,7 +351,32 @@ namespace Deck{
             }
         }
 
-        private Card RemoveCard(int player_index, int card_index)
+        /// <summary>
+        /// Add a card to a player's hand
+        /// </summary>
+        /// <param name="player_index">Player's hand</param>
+        /// <param name="card">Card to add</param>
+        /// <returns>Amount of cards in hand</returns>
+        private int AddCardToHand(int player_index, Card card)
+        {
+            ref Card[] refHand = ref Hands[player_index];
+
+            if (refHand != null)
+            {
+                Card[] newHand = new Card[refHand.Length + 1];
+                refHand.CopyTo(newHand, 0);
+                newHand[newHand.Length - 1] = card;
+                refHand = newHand;
+            }
+            else
+            {
+                refHand = new Card[1] { card };
+            }
+
+            return refHand.Length;
+        }
+
+        private Card RemoveCardFromHand(int player_index, int card_index)
         {
             ref Card[] refHand = ref Hands[player_index];
 
@@ -326,19 +411,21 @@ namespace Deck{
         /// <param name="location">Axial placement</param>
         /// <returns>True if the card is placed, false if not</returns>
         /// <remarks>Purpose of passing indexes rather than arrays/cards is to manage references and minimize parameter data</remarks>
-        private bool TryPlaceCard(int player_index, int card_index, Axial location){
+        private bool TryPlaceCard_FromHand(int player_index, int card_index, Axial location){
 
             ref Card[] refHand = ref Hands[player_index];
             Card card = refHand[card_index];
+            
+            ref Dictionary<Axial, Card> refActiveBoard = ref PlayersActiveBoards[player_index];
 
-            if(BoardOccupants.ContainsKey(location)){
-                GD.Print($"Cannot place card {card.name} because the location {location} is already occupied by {BoardOccupants[location].name}");
+            if(refActiveBoard.ContainsKey(location)){
+                GD.Print($"Cannot place card {card.name} because the location {location} is already occupied by {refActiveBoard[location].name}");
                 return false;
             }
             else if(Board.IsAxialOnGrid(location))
             {
-                RemoveCard(player_index, card_index);
-                BoardOccupants.Add(location, card);
+                RemoveCardFromHand(player_index, card_index);
+                refActiveBoard.Add(location, card);
                 GD.Print($"Placed card {card.name} at location {location}");
                 return true;
             }
@@ -346,6 +433,10 @@ namespace Deck{
                 GD.Print($"Cannot place card {card.name} because the location {location} does not exist on the board.");
                 return false;
             }
+        }
+
+        private bool TryPlaceCard_FromVoid(int player_index, Card card, Axial location){
+            return false;
         }
 
         #endregion

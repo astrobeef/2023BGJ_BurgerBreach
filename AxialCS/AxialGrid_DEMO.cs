@@ -14,6 +14,7 @@ namespace AxialCS
     /// <summary>
     /// Currently handles HEXAGON shaped grids only. Generates an axial grid.
     /// </summary>
+    /// <remarks>!!! This script contains unnecessary Editor_Tool interactions, multithreading, thread pausing, and progress reporting designed to DEMO this script</remarks>
     public struct AxialGrid_DEMO
     {
         private readonly int _width;

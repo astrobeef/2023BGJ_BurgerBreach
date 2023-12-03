@@ -3,7 +3,6 @@ using System;
 
 namespace AxialCS
 {
-
 /// <summary>
 /// Data for polygon drawing of a 2D hexagon. Decoupled from its Axial position. Look to <see cref="HexagonRenderer._hexAxialDrawDictionary"/> for coupling axials and hexagons.
 /// </summary>

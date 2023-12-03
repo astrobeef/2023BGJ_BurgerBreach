@@ -26,7 +26,10 @@ namespace EditorTools
 		public EDITOR_DeckSpaghetti DeckSpaghetti;
 
 		[Export]
-		bool _disableScript = false, _disableInput = false, _disableDraw = false;
+		bool _disableScript = true, _disableInput = true, _disableDraw = true;
+
+		[Export]
+		bool _disableBoardgame = true;
 
 		[Export]
 		float sideLength
@@ -65,7 +68,8 @@ namespace EditorTools
 			}
 
 			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
-			DeckSpaghetti = new EDITOR_DeckSpaghetti();
+			if(!_disableBoardgame)
+				DeckSpaghetti = new EDITOR_DeckSpaghetti();
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
@@ -105,7 +109,7 @@ namespace EditorTools
 				GD.PrintErr("Setting detect mouse movement script because it did not get set in 'ready'");
 				MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			}
-			if(DeckSpaghetti == null){
+			if(!_disableBoardgame && DeckSpaghetti == null){
 				GD.PrintErr("Setting deck spaghetti script because it did not get set in 'ready'");
 			DeckSpaghetti = new EDITOR_DeckSpaghetti();
 			}

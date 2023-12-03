@@ -286,18 +286,21 @@ namespace Model
             TryDrawCard(turnPlayerIndex);
 
             Thread.Sleep(500);
-            
+
             // 2. Place card(s)
 
-            int rand = random.Next(1, Hands[turnPlayerIndex].Length);
-
-            for (int i = 0; i < rand; i++)
+            if (Hands.Length > 0)
             {
-                if (TryGetOpenTile(out Axial openTile))
-                    TryPlaceCard_FromHand(turnPlayerIndex, 0, openTile);
-                else
-                    GD.Print("Could not place card because all tiles are filled");
-                Thread.Sleep(500);
+                int rand = random.Next(1, Hands[turnPlayerIndex].Length);
+
+                for (int i = 0; i < rand; i++)
+                {
+                    if (TryGetOpenTile(out Axial openTile))
+                        TryPlaceCard_FromHand(turnPlayerIndex, 0, openTile);
+                    else
+                        GD.Print("Could not place card because all tiles are filled");
+                    Thread.Sleep(500);
+                }
             }
 
             Thread.Sleep(500);

@@ -5,7 +5,7 @@ using Godot;
 
 namespace Model
 {
-    public class CardInst
+    public class Unit
     {
         private static int lastId = 0;
         public int id {get; private set;}
@@ -17,7 +17,7 @@ namespace Model
         public string name => card.NAME + $"({id})";
         public Card.CardType type => card.TYPE;
 
-        public static CardInst EMPTY = new CardInst(-1, Axial.Empty, Card.EMPTY);
+        public static Unit EMPTY = new Unit(-1, Axial.Empty, Card.EMPTY);
 
 
         public int hp;
@@ -27,7 +27,7 @@ namespace Model
 
         private TurnActions TurnActions;
 
-        public CardInst(int ownerIndex, Axial position, Card card)
+        public Unit(int ownerIndex, Axial position, Card card)
         {
             this.ownerIndex = ownerIndex;
             this.pos = position;
@@ -53,20 +53,20 @@ namespace Model
         }
 
         /// <summary>
-        /// Move the card instance on the board
+        /// Move the unit instance on the board
         /// </summary>
         /// <param name="isWillful">Did this unit chose to move or was it forced to move?</param>
         /// <param name="newPos">New position to move towards</param>
         public void Move(bool isWillful, Axial newPos)
         {
             int calculatedDisplacement = Axial.Distance(pos, newPos);
-            GD.Print($"Player {ownerIndex} moved card {card.NAME} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
+            GD.Print($"Player {ownerIndex} moved unit {name} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
 
             if(isWillful)
                 TurnActions.remainingMovement -= calculatedDisplacement;
 
             if (TurnActions.remainingMovement < 0)
-                GD.PrintErr($"Card {this} has its turn movement less than 0. This should have been checked before this method.");
+                GD.PrintErr($"Unit {this} has its turn movement less than 0. This should have been checked before this method.");
 
             pos = newPos;
         }
@@ -78,9 +78,14 @@ namespace Model
 
         public bool Damage(int amount)
         {
+            if(hp < 0)
+            {
+                GD.PrintErr($"Unit {name} should have been removed already. Its being attacked, but its HP ({hp}) is already less than 0.");
+            }
+
             hp -= amount;
             
-            GD.Print($"Card {card.NAME} has been damaged for {amount}. Remaining hp: {hp}");
+            GD.Print($"Unit {name} has been damaged for {amount}. Remaining hp: {hp}");
 
             return (hp > 0);
         }
@@ -101,21 +106,21 @@ namespace Model
         }
         
 
-        public static bool operator ==(CardInst a, CardInst b)
+        public static bool operator ==(Unit a, Unit b)
         {
             return a.id == b.id;
         }
 
-        public static bool operator !=(CardInst a, CardInst b)
+        public static bool operator !=(Unit a, Unit b)
         {
             return a.id != b.id;
         }
 
         public override bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object obj)
         {
-            if (obj is CardInst obj_card)
+            if (obj is Unit obj_unit)
             {
-                return this == obj_card;
+                return this == obj_unit;
             }
 
             return false;

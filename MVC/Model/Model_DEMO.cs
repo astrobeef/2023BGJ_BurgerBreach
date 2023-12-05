@@ -114,7 +114,7 @@ namespace Model
 
         // Board Data
         private AxialGrid Board;
-        private CardInst[] ActiveBoard = new CardInst[0];
+        private Unit[] ActiveBoard = new Unit[0];
 
         #endregion
 
@@ -188,7 +188,7 @@ namespace Model
 
             _turnCounter = 0;
             Board = new AxialGrid(BOARD_RADIUS);
-            ActiveBoard = new CardInst[0];
+            ActiveBoard = new Unit[0];
 
             Thread.Sleep(1000);
 
@@ -224,7 +224,7 @@ namespace Model
             return base_locations[player_index] * BOARD_RADIUS;
         }
 
-        private bool ActiveBoard_TryGetBaseCard(int player_index, out CardInst playerBase)
+        private bool ActiveBoard_TryGetBaseUnit(int player_index, out Unit playerBase)
         {
             Axial baseLocation = CardSet_GetBaseLocation(player_index);
 
@@ -235,9 +235,9 @@ namespace Model
             }
             else
             {
-                GD.PrintErr($"Player {player_index} does not have a card at its base location {baseLocation}");
+                GD.PrintErr($"Player {player_index} does not have a unit at its base location {baseLocation}");
 
-                playerBase = CardInst.EMPTY;
+                playerBase = Unit.EMPTY;
                 return false;
             }
         }
@@ -250,8 +250,8 @@ namespace Model
         {
             for (int i = 0; i < ActiveBoard.Length; i++)
             {
-                CardInst card = ActiveBoard[i];
-                if (card.pos == axial){
+                Unit unit = ActiveBoard[i];
+                if (unit.pos == axial){
                     boardIndex = i;
                     return true;
                 }
@@ -288,13 +288,13 @@ namespace Model
         /// 'out' the first enemy neighbor found
         /// </summary>
         /// <returns>True if enemy found, false if not</returns>
-        /// <remarks>Used in <see cref="CardInst_TryRandomAttack"/></remarks>
-        private bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial originAxial, out CardInst enemyNeighborUnit)
+        /// <remarks>Used in <see cref="Unit_TryRandomAttack"/></remarks>
+        private bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial originAxial, out Unit enemyNeighborUnit)
         {
             int[] neighborBoardIndexes;
             if(ActiveBoard_FindNeighbors(originAxial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
-                    CardInst neighborUnit = ActiveBoard[index];
+                    Unit neighborUnit = ActiveBoard[index];
                     if(neighborUnit.ownerIndex != ownerIndex){
                         enemyNeighborUnit = neighborUnit;
                         return true;
@@ -302,7 +302,7 @@ namespace Model
                 }
             }
 
-            enemyNeighborUnit = CardInst.EMPTY;
+            enemyNeighborUnit = Unit.EMPTY;
             return false;
         }
 
@@ -310,12 +310,12 @@ namespace Model
         /// 'out' the first friendly, non-offense neighbor found
         /// </summary>
         /// <returns>True if friendly, non-offense neighbor found, false if not</returns>
-        private bool ActiveBoard_FindFriendlyNonOffenseNeighbor(int ownerIndex, Axial axial, out CardInst friendlyUnit)
+        private bool ActiveBoard_FindFriendlyNonOffenseNeighbor(int ownerIndex, Axial axial, out Unit friendlyUnit)
         {
             int[] neighborBoardIndexes;
             if(ActiveBoard_FindNeighbors(axial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
-                    CardInst neighbor = ActiveBoard[index];
+                    Unit neighbor = ActiveBoard[index];
                     if(neighbor.ownerIndex == ownerIndex && neighbor.type != Card.CardType.Offense){
                         friendlyUnit = neighbor;
                         return true;
@@ -323,15 +323,15 @@ namespace Model
                 }
             }
 
-            friendlyUnit = CardInst.EMPTY;
+            friendlyUnit = Unit.EMPTY;
             return false;
         }
 
-        private bool ActiveBoard_AllFriendlyUnits(int ownerIndex, out CardInst[] friendlyUnits)
+        private bool ActiveBoard_AllFriendlyUnits(int ownerIndex, out Unit[] friendlyUnits)
         {
-            List<CardInst> friendlyUnits_List = new List<CardInst>(0);
+            List<Unit> friendlyUnits_List = new List<Unit>(0);
 
-            foreach(CardInst unit in ActiveBoard)
+            foreach(Unit unit in ActiveBoard)
             {
                 if(unit.ownerIndex == ownerIndex)
                 {
@@ -349,14 +349,14 @@ namespace Model
         /// <param name="ownerIndex"></param>
         /// <param name="friendlyUnits_nonOf">'out' list of non-offense friendly units</param>
         /// <returns>True if at least one unit found, false if not</returns>
-        /// <remarks>The 'out' list sorts 'base' cards to the end of the array</remarks>
-        private bool ActiveBoard_AllNonOffenseFriendlyUnits(int ownerIndex, out CardInst[] friendlyUnits_nonOf)
+        /// <remarks>The 'out' list sorts 'base' units to the end of the array</remarks>
+        private bool ActiveBoard_AllNonOffenseFriendlyUnits(int ownerIndex, out Unit[] friendlyUnits_nonOf)
         {
-            List<CardInst> friendlyUnits_List = new List<CardInst>(0);
+            List<Unit> friendlyUnits_List = new List<Unit>(0);
 
-            if (ActiveBoard_AllFriendlyUnits(ownerIndex, out CardInst[] friendlyUnits))
+            if (ActiveBoard_AllFriendlyUnits(ownerIndex, out Unit[] friendlyUnits))
             {
-                foreach (CardInst unit in friendlyUnits)
+                foreach (Unit unit in friendlyUnits)
                 {
                     if (unit.type != Card.CardType.Offense)
                     {
@@ -365,7 +365,7 @@ namespace Model
                 }
             }
 
-            // Separate 'base' cards so that they can be appended to the back (for priority as last pick)
+            // Separate 'base' units so that they can be appended to the back (for priority as last pick)
             var baseCards = friendlyUnits_List.Where(unit => unit.type == Card.CardType.Base);
             var nonBaseCards = friendlyUnits_List.Where(unit => unit.type != Card.CardType.Base);
 
@@ -374,11 +374,11 @@ namespace Model
             return (friendlyUnits_nonOf.Length > 0);
         }
 
-        private bool ActiveBoard_FindFriendlyNonOffenseUnit(int ownerIndex, out CardInst friendlyUnit_nonOf)
+        private bool ActiveBoard_FindFriendlyNonOffenseUnit(int ownerIndex, out Unit friendlyUnit_nonOf)
         {
-            if(ActiveBoard_AllFriendlyUnits(ownerIndex, out CardInst[] friendlyUnits))
+            if(ActiveBoard_AllFriendlyUnits(ownerIndex, out Unit[] friendlyUnits))
             {
-                foreach(CardInst unit in friendlyUnits){
+                foreach(Unit unit in friendlyUnits){
                     if(unit.type != Card.CardType.Offense)
                         {
                             friendlyUnit_nonOf = unit;
@@ -387,7 +387,7 @@ namespace Model
                 }
             }
 
-            friendlyUnit_nonOf = CardInst.EMPTY;
+            friendlyUnit_nonOf = Unit.EMPTY;
             return false;
         }
 
@@ -419,7 +419,7 @@ namespace Model
         private bool IsRoundOver(int turnCounter){
 
             for(int i = 0; i < PLAYER_COUNT; i++){
-                if(ActiveBoard_TryGetBaseCard(i, out CardInst playerBase)){
+                if(ActiveBoard_TryGetBaseUnit(i, out Unit playerBase)){
                     if(playerBase.hp <= 0){
                         return true;
                     }
@@ -440,7 +440,7 @@ namespace Model
             Thread.Sleep(500);
 
             turnPlayerIndex = turnCounter % PLAYER_COUNT;
-            InitActiveCards();
+            ResetAllActiveUnitsTurnActions();
 
             // 1. Draw a card
 
@@ -472,9 +472,9 @@ namespace Model
                     {
                             bool canPlaceOffenseUnit = false;
 
-                        if(ActiveBoard_AllNonOffenseFriendlyUnits(turnPlayerIndex, out CardInst[] resourceUnits))
+                        if(ActiveBoard_AllNonOffenseFriendlyUnits(turnPlayerIndex, out Unit[] resourceUnits))
                         {
-                            foreach (CardInst resource in resourceUnits)
+                            foreach (Unit resource in resourceUnits)
                             {
                                 if (ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
                                 {
@@ -514,22 +514,22 @@ namespace Model
             GD.Print("--------------------------");
             GD.Print("--- Beginning Movement ---");
 
-            foreach (CardInst occupant in ActiveBoard)
+            foreach (Unit occupant in ActiveBoard)
             {
                 if (occupant.ownerIndex == turnPlayerIndex)
                 {
-                    CardInst iCard = occupant;
+                    Unit iUnit = occupant;
 
-                    Axial oldPos = iCard.pos;
+                    Axial oldPos = iUnit.pos;
 
-                    GD.Print($"Player {turnPlayerIndex} attempting to move {iCard.name} at {oldPos}.");
+                    GD.Print($"Player {turnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
 
-                    if (CardInst_TryRandomMoveCard(iCard, out Axial newPos))
+                    if (Unit_TryRandomMove(iUnit, out Axial newPos))
                     {
-                        GD.Print($"Player {turnPlayerIndex} moved {iCard.name} from {oldPos} to {newPos}.");
+                        GD.Print($"Player {turnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
                     }
                     else{
-                        GD.Print($"Player {turnPlayerIndex} could not move {iCard.name}");
+                        GD.Print($"Player {turnPlayerIndex} could not move {iUnit.name}");
                     }
                 }
             }
@@ -539,20 +539,20 @@ namespace Model
             GD.Print("-------------------------");
             GD.Print("--- Beginning Combat ---");
 
-            foreach (CardInst occupant in ActiveBoard)
+            foreach (Unit occupant in ActiveBoard)
             {
                 if (occupant.ownerIndex == turnPlayerIndex)
                 {
-                    CardInst iCard = occupant;
+                    Unit iUnit = occupant;
 
-                    GD.Print($"Player {turnPlayerIndex} attempting to attack with {iCard.name} at {iCard.pos}.");
+                    GD.Print($"Player {turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
 
-                    if (CardInst_TryRandomAttack(iCard))
+                    if (Unit_TryRandomAttack(iUnit))
                     {
-                        GD.Print($"Player {turnPlayerIndex} made an attack with {iCard.name} from {iCard.pos}.");
+                        GD.Print($"Player {turnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
                     }
                     else{
-                        GD.Print($"Player {turnPlayerIndex} could not move {iCard.name}");
+                        GD.Print($"Player {turnPlayerIndex} could not move {iUnit.name}");
                     }
                 }
             }
@@ -566,30 +566,30 @@ namespace Model
             GD.Print("--- Displaying active board ---");
             for (int i = 0; i < ActiveBoard.Length; i++)
             {
-                CardInst card = ActiveBoard[i];
-                GD.Print($"[{i}]:{card}");
+                Unit unit = ActiveBoard[i];
+                GD.Print($"[{i}]:{unit}");
             }
             GD.Print("-------------------------------");
         }
 
-        private bool CardInst_TryRandomMoveCard(CardInst card, out Axial newPos){
+        private bool Unit_TryRandomMove(Unit unit, out Axial newPos){
 
-            Axial initPos = card.pos;
+            Axial initPos = unit.pos;
             newPos = initPos;
 
             int iDirection = 0;
 
-            while(card.CanMove(out int remainingMovement)){
+            while(unit.CanMove(out int remainingMovement)){
                 if(iDirection >= Axial.CARDINAL_LENGTH)
                 {
-                    GD.Print($"Player {card.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
+                    GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
                     return (newPos != initPos);
                 }
 
                 Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
-                Axial movePosition = card.pos + randDirection;
+                Axial movePosition = unit.pos + randDirection;
                 
-                if(CardInst_TryMove(true, card, movePosition)){
+                if(Unit_TryMove(true, unit, movePosition)){
                     newPos = movePosition;
                 }
 
@@ -599,15 +599,15 @@ namespace Model
             return (newPos != initPos);
         }
 
-        private bool CardInst_TryMove(bool isWillful, CardInst card, Axial newPos)
+        private bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos)
         {
-            return CardInst_TryMove(isWillful, card, newPos, out CardInst dummyOccupant);
+            return Unit_TryMove(isWillful, unit, newPos, out Unit dummyOccupant);
         }
 
-        private bool CardInst_TryMove(bool isWillful, CardInst card, Axial newPos, out CardInst occupant)
+        private bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
                 if(IsPlacementLocationValid(newPos, out occupant)){
-                    card.Move(isWillful, newPos);
+                    unit.Move(isWillful, newPos);
                     return true;
                 }
                 else{
@@ -615,25 +615,25 @@ namespace Model
                 }
         }
 
-        private bool CardInst_TryRandomAttack(CardInst card)
+        private bool Unit_TryRandomAttack(Unit unit)
         {
-            if(card.CanAttack())
+            if(unit.CanAttack())
             {                
-                if(ActiveBoard_FindEnemyNeighbor(card.ownerIndex, card.pos, out CardInst target)){
-                    Axial attackDirection = target.pos - card.pos;
-                    return HandleAttackAction(true, card, attackDirection, target);
+                if(ActiveBoard_FindEnemyNeighbor(unit.ownerIndex, unit.pos, out Unit target)){
+                    Axial attackDirection = target.pos - unit.pos;
+                    return HandleAttackAction(true, unit, attackDirection, target);
                 }
             }
 
-            GD.Print($"Player {card.ownerIndex} can't attack with this unit.");
+            GD.Print($"Player {unit.ownerIndex} can't attack with this unit.");
             return false;
         }
 
-        private bool HandleAttackAction(bool doDisplace, CardInst attacker, Axial attackDirection, CardInst target)
+        private bool HandleAttackAction(bool doDisplace, Unit attacker, Axial attackDirection, Unit target)
         {
             GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos} in direction {attackDirection}.");
             
-            if(Axial.Distance(Axial.Zero, attackDirection) <= CardInst.ATK_RANGE)
+            if(Axial.Distance(Axial.Zero, attackDirection) <= Unit.ATK_RANGE)
             {
                 attacker.Attack();
 
@@ -645,7 +645,7 @@ namespace Model
             }
         }
 
-        private bool HandleAttackAction(bool doDisplace, int damage, Axial attackDirection, CardInst target)
+        private bool HandleAttackAction(bool doDisplace, int damage, Axial attackDirection, Unit target)
         {
             // If the target dies
             if (!target.Damage(damage))
@@ -657,18 +657,18 @@ namespace Model
                 }
                 else
                 {
-                    ActiveBoard_RemoveCard(target, out CardInst dummyRemovedCard);
+                    ActiveBoard_RemoveUnit(target, out Unit dummyRemovedUnit);
                 }
             }
             // Else the target is alive, and if we should displace and the target is an offense unit, then
             else if (doDisplace && target.type == Card.CardType.Offense)
             {
                 Axial attackDisplacement = target.pos + attackDirection;
-                if (CardInst_TryMove(false, target, attackDisplacement, out CardInst occupant))
+                if (Unit_TryMove(false, target, attackDisplacement, out Unit occupant))
                 {
                     GD.Print($"The attack successfully displaced the target.");
                 }
-                else if (occupant != CardInst.EMPTY)
+                else if (occupant != Unit.EMPTY)
                 {
                     GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
                     
@@ -748,10 +748,10 @@ namespace Model
             }
         }
 
-        private void InitActiveCards()
+        private void ResetAllActiveUnitsTurnActions()
         {
-            foreach(CardInst card in ActiveBoard){
-                card.ResetTurnActions();
+            foreach(Unit unit in ActiveBoard){
+                unit.ResetTurnActions();
             }
         }
 
@@ -866,9 +866,9 @@ namespace Model
             if(IsPlacementLocationValid(location) && OffensePlacementRule(player_index, location, card_index)){
 
                 Card card = RemoveCardFromHand(player_index, card_index);
-                CardInst cardInst = new CardInst(player_index, location, card);
+                Unit Unit = new Unit(player_index, location, card);
 
-                ActiveBoard_AddCard(cardInst);
+                ActiveBoard_AddUnit(Unit);
 
                 return true;
             }
@@ -876,10 +876,10 @@ namespace Model
                 return false;
         }
 
-        private bool OffensePlacementRule(int player_index, Axial placement, Card card)
+        private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card)
         {
             if(card.TYPE == Card.CardType.Offense){
-                if(ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out CardInst friendlyUnit))
+                if(ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out Unit friendlyUnit))
                 {
                     return true;
                 }
@@ -900,15 +900,15 @@ namespace Model
             ref Card[] refHand = ref Hands[player_index];
             Card card = refHand[card_index];
 
-            return OffensePlacementRule(player_index, placement, card);
+            return CheckOffensePlacementRule(player_index, placement, card);
         }
 
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card){
 
-            if(IsPlacementLocationValid(location) && OffensePlacementRule(player_index, location, card)){
-                CardInst cardInst = new CardInst(player_index, location, card);
+            if(IsPlacementLocationValid(location) && CheckOffensePlacementRule(player_index, location, card)){
+                Unit unit = new Unit(player_index, location, card);
 
-                ActiveBoard_AddCard(cardInst);
+                ActiveBoard_AddUnit(unit);
 
                 return true;
             }
@@ -916,58 +916,58 @@ namespace Model
                 return false;
         }
 
-        private void ActiveBoard_AddCard(CardInst newCard)
+        private void ActiveBoard_AddUnit(Unit newUnit)
         {
             if (ActiveBoard != null)
             {
-                CardInst[] newActiveBoard = new CardInst[ActiveBoard.Length + 1];
+                Unit[] newActiveBoard = new Unit[ActiveBoard.Length + 1];
                 ActiveBoard.CopyTo(newActiveBoard, 0);
-                newActiveBoard[newActiveBoard.Length - 1] = newCard;
+                newActiveBoard[newActiveBoard.Length - 1] = newUnit;
 
                 ActiveBoard = newActiveBoard;
             }
             else
             {
-                ActiveBoard = new CardInst[1] { newCard };
+                ActiveBoard = new Unit[1] { newUnit };
             }
 
-            GD.Print($"Player {newCard.ownerIndex} placing card {newCard.name} at location {newCard.pos}");
+            GD.Print($"Player {newUnit.ownerIndex} placing card {newUnit.name} at location {newUnit.pos}");
         }
 
-        private bool ActiveBoard_RemoveCard(CardInst card, out CardInst removedCard){
+        private bool ActiveBoard_RemoveUnit(Unit unit, out Unit removedUnit){
 
-            int card_index = -1;
+            int unit_BoardIndex = -1;
 
             for (int i = 0; i < ActiveBoard.Length; i++)
             {
-                if(card == ActiveBoard[i]){
-                    card_index = i;
+                if(unit == ActiveBoard[i]){
+                    unit_BoardIndex = i;
                     break;
                 }
             }
 
-            if(card_index >= 0){
-                return ActiveBoard_RemoveCard(card_index, out removedCard);
+            if(unit_BoardIndex >= 0){
+                return ActiveBoard_RemoveUnit(unit_BoardIndex, out removedUnit);
             }
             else{
-                GD.PrintErr($"Cannot remove card {card} because it is not on the board.");
-                removedCard = CardInst.EMPTY;
+                GD.PrintErr($"Cannot remove unit {unit} because it is not on the board.");
+                removedUnit = Unit.EMPTY;
                 return false;
             }
         }
 
         private object activeBoardLock = new object();
 
-        private bool ActiveBoard_RemoveCard(int cardToRemove_index, out CardInst removedCard)
+        private bool ActiveBoard_RemoveUnit(int unitToRemove_index, out Unit removedUnit)
         {
-            CardInst cardToRemove = ActiveBoard[cardToRemove_index];
-            CardInst[] newActiveBoard = new CardInst[ActiveBoard.Length - 1];
+            Unit unitToRemove = ActiveBoard[unitToRemove_index];
+            Unit[] newActiveBoard = new Unit[ActiveBoard.Length - 1];
 
             lock (activeBoardLock){
 
                 for (int i = 0, j = 0; i < ActiveBoard.Length; i++)
                 {
-                    if (i != cardToRemove_index)
+                    if (i != unitToRemove_index)
                     {
                         newActiveBoard[j++] = ActiveBoard[i];
                     }
@@ -976,28 +976,28 @@ namespace Model
                 ActiveBoard = newActiveBoard;
             }
 
-            foreach(CardInst card in ActiveBoard)
+            foreach(Unit unit in ActiveBoard)
             {
-                if(card == cardToRemove){
-                    GD.PrintErr($"Failed to remove {cardToRemove} from active board");
-                    removedCard = CardInst.EMPTY;
+                if(unit == unitToRemove){
+                    GD.PrintErr($"Failed to remove {unitToRemove} from active board");
+                    removedUnit = Unit.EMPTY;
                     return false;
                 }
             }
 
-            removedCard = cardToRemove;
-            GD.Print($"Successfully removed {removedCard.name} from the board");
+            removedUnit = unitToRemove;
+            GD.Print($"Successfully removed {removedUnit.name} from the board");
             return true;
         }
 
         private bool IsPlacementLocationValid(Axial location)
         {
-            return IsPlacementLocationValid(location, out CardInst dummyCard);
+            return IsPlacementLocationValid(location, out Unit dummyUnit);
         }
 
-        private bool IsPlacementLocationValid(Axial location, out CardInst occupant)
+        private bool IsPlacementLocationValid(Axial location, out Unit occupant)
         {
-            occupant = CardInst.EMPTY;
+            occupant = Unit.EMPTY;
 
             // Check if the location exists on the board
             if (!Board.IsAxialOnGrid(location))
@@ -1009,7 +1009,7 @@ namespace Model
             // Check active board to see if a card has already been placed at this location
             if (ActiveBoard_IsAxialOccupied(location, out int boardIndex))
             {
-                GD.Print($"Cannot place card at {location} because a card is already placed there.");
+                GD.Print($"Cannot place unit at {location} because a unit is already placed there.");
                 occupant = ActiveBoard[boardIndex];
                 return false;
             }

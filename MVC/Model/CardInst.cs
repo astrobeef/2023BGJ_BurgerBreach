@@ -91,7 +91,7 @@ namespace Model
 
         public override string ToString()
         {
-            return $"(id:{id}, owner:{ownerIndex}, pos:{pos}, hp:{hp}, move:{move}, atk:{atk}, remainingMove:{TurnActions.remainingMovement}, hasAttacked:{TurnActions.hasAttacked} card:{card})";
+            return $"(owner:{ownerIndex}, pos:{pos}, hp:{hp}, || id:{id}, move:{move}, atk:{atk}, remainingMove:{TurnActions.remainingMovement}, hasAttacked:{TurnActions.hasAttacked} card:{card})";
         }
     }
 

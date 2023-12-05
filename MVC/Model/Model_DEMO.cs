@@ -289,10 +289,10 @@ namespace Model
         /// </summary>
         /// <returns>True if enemy found, false if not</returns>
         /// <remarks>Used in <see cref="CardInst_TryRandomAttack"/></remarks>
-        private bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial axial, out CardInst enemyNeighborUnit)
+        private bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial originAxial, out CardInst enemyNeighborUnit)
         {
             int[] neighborBoardIndexes;
-            if(ActiveBoard_FindNeighbors(axial, out neighborBoardIndexes)){
+            if(ActiveBoard_FindNeighbors(originAxial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
                     CardInst neighborUnit = ActiveBoard[index];
                     if(neighborUnit.ownerIndex != ownerIndex){
@@ -526,7 +526,7 @@ namespace Model
 
                     if (CardInst_TryRandomMoveCard(iCard, out Axial newPos))
                     {
-                        GD.Print($"Player {turnPlayerIndex} moved {iCard.name} (hash:{iCard.id}) from {oldPos} to {newPos}.");
+                        GD.Print($"Player {turnPlayerIndex} moved {iCard.name} from {oldPos} to {newPos}.");
                     }
                     else{
                         GD.Print($"Player {turnPlayerIndex} could not move {iCard.name}");
@@ -549,7 +549,7 @@ namespace Model
 
                     if (CardInst_TryRandomAttack(iCard))
                     {
-                        GD.Print($"Player {turnPlayerIndex} made an attack with {iCard.name} (hash:{iCard.id}) from {iCard.pos}.");
+                        GD.Print($"Player {turnPlayerIndex} made an attack with {iCard.name} from {iCard.pos}.");
                     }
                     else{
                         GD.Print($"Player {turnPlayerIndex} could not move {iCard.name}");
@@ -617,25 +617,12 @@ namespace Model
 
         private bool CardInst_TryRandomAttack(CardInst card)
         {
-            int i = 0;
-
-            while(card.CanAttack())
-            {
-                if(i >= Axial.CARDINAL_LENGTH)
-                {
-                    GD.Print($"Player {card.ownerIndex} can't attack with this unit anymore because there are no valid targets.");
-                    return false;
+            if(card.CanAttack())
+            {                
+                if(ActiveBoard_FindEnemyNeighbor(card.ownerIndex, card.pos, out CardInst target)){
+                    Axial attackDirection = target.pos - card.pos;
+                    return HandleAttackAction(true, card, attackDirection, target);
                 }
-                
-                Axial iDirection = Axial.Direction((Axial.Cardinal)i);
-                Axial attackPosition = card.pos + iDirection;
-
-                if(ActiveBoard_FindEnemyNeighbor(card.ownerIndex, attackPosition, out CardInst target)){
-
-                    return HandleAttackAction(true, card, iDirection, target);
-                }
-
-                i++;
             }
 
             GD.Print($"Player {card.ownerIndex} can't attack with this unit.");
@@ -644,11 +631,18 @@ namespace Model
 
         private bool HandleAttackAction(bool doDisplace, CardInst attacker, Axial attackDirection, CardInst target)
         {
-            GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos}.");
-
-            attacker.Attack();
+            GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos} in direction {attackDirection}.");
             
-            return HandleAttackAction(doDisplace, attacker.atk, attackDirection, target);
+            if(Axial.Distance(Axial.Zero, attackDirection) <= CardInst.ATK_RANGE)
+            {
+                attacker.Attack();
+
+                return HandleAttackAction(doDisplace, attacker.atk, attackDirection, target);
+            }
+            else{
+                GD.PrintErr($"Could not attack because attack distance ({Axial.Distance(Axial.Zero, attackDirection)}) is greater than 1.");
+                return false;
+            }
         }
 
         private bool HandleAttackAction(bool doDisplace, int damage, Axial attackDirection, CardInst target)
@@ -663,7 +657,7 @@ namespace Model
                 }
                 else
                 {
-                    ActiveBoard_RemoveCard(target);
+                    ActiveBoard_RemoveCard(target, out CardInst dummyRemovedCard);
                 }
             }
             // Else the target is alive, and if we should displace and the target is an offense unit, then
@@ -677,16 +671,7 @@ namespace Model
                 else if (occupant != CardInst.EMPTY)
                 {
                     GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
-                    GD.PrintErr($"This does not catch cases where CardInst is empty. Example in comments");
-                    /*
-                    * Player 1 attempting to attack with Offense Test at (1, 1, -2).
-                    * Player 1 attacked Offense Test @ (1, 2, -3).
-                    * Card Offense Test has been damaged for 1. Remaining hp: 1
-                    * Cannot place card at (2, 2, -4) because it does not exist on the board.
-                    * The target could not be displaced because it collided with
-                    * (owner:-1, pos:(0, 0, 100), hp:-1, || id:28459597, move:0, atk:0, remainingMove:0, hasAttacked:True card:(NULL, Base, HP:-1, MOVE:0, ATK:0)). Damaging both units.
-                    */
-                    GD.PrintErr($"Also note that the displacement does not line up to be along the direction of the attack. Maybe the direction used is being incremented?");
+                    
                     target.Damage(COLLISION_DAMAGE);
                     occupant.Damage(COLLISION_DAMAGE);
                 }
@@ -946,10 +931,10 @@ namespace Model
                 ActiveBoard = new CardInst[1] { newCard };
             }
 
-            GD.Print($"Player {newCard.ownerIndex} placing card {newCard.name} (hash:{newCard.id}) at location {newCard.pos}");
+            GD.Print($"Player {newCard.ownerIndex} placing card {newCard.name} at location {newCard.pos}");
         }
 
-        private void ActiveBoard_RemoveCard(CardInst card){
+        private bool ActiveBoard_RemoveCard(CardInst card, out CardInst removedCard){
 
             int card_index = -1;
 
@@ -962,25 +947,47 @@ namespace Model
             }
 
             if(card_index >= 0){
-                ActiveBoard_RemoveCard(card_index);
+                return ActiveBoard_RemoveCard(card_index, out removedCard);
             }
             else{
                 GD.PrintErr($"Cannot remove card {card} because it is not on the board.");
+                removedCard = CardInst.EMPTY;
+                return false;
             }
         }
 
-        private void ActiveBoard_RemoveCard(int card_index){
+        private object activeBoardLock = new object();
 
-                CardInst[] newActiveBoard = new CardInst[ActiveBoard.Length - 1];
+        private bool ActiveBoard_RemoveCard(int cardToRemove_index, out CardInst removedCard)
+        {
+            CardInst cardToRemove = ActiveBoard[cardToRemove_index];
+            CardInst[] newActiveBoard = new CardInst[ActiveBoard.Length - 1];
+
+            lock (activeBoardLock){
+
                 for (int i = 0, j = 0; i < ActiveBoard.Length; i++)
                 {
-                    if (i != card_index)
+                    if (i != cardToRemove_index)
                     {
                         newActiveBoard[j++] = ActiveBoard[i];
                     }
                 }
 
                 ActiveBoard = newActiveBoard;
+            }
+
+            foreach(CardInst card in ActiveBoard)
+            {
+                if(card == cardToRemove){
+                    GD.PrintErr($"Failed to remove {cardToRemove} from active board");
+                    removedCard = CardInst.EMPTY;
+                    return false;
+                }
+            }
+
+            removedCard = cardToRemove;
+            GD.Print($"Successfully removed {removedCard.name} from the board");
+            return true;
         }
 
         private bool IsPlacementLocationValid(Axial location)

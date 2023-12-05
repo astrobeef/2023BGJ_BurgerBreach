@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using AxialCS;
 using Godot;
@@ -6,20 +7,23 @@ namespace Model
 {
     public class CardInst
     {
-        public int id => GetHashCode();
+        private static int lastId = 0;
+        public int id {get; private set;}
 
         public AxialCS.Axial pos;
         public int ownerIndex;
 
         public Card card;
-        public string name => card.NAME;
+        public string name => card.NAME + $"({id})";
         public Card.CardType type => card.TYPE;
 
-        public static CardInst EMPTY => new CardInst(-1, Axial.Empty, Card.EMPTY);
+        public static CardInst EMPTY = new CardInst(-1, Axial.Empty, Card.EMPTY);
+
 
         public int hp;
         public int move;
         public int atk;
+        public static readonly int ATK_RANGE = 1;
 
         private TurnActions TurnActions;
 
@@ -34,6 +38,8 @@ namespace Model
             atk = card.ATK;
 
             ResetTurnActions();
+            
+            id = System.Threading.Interlocked.Increment(ref lastId);
         }
 
         public void ResetTurnActions(){
@@ -92,6 +98,36 @@ namespace Model
         public override string ToString()
         {
             return $"(owner:{ownerIndex}, pos:{pos}, hp:{hp}, || id:{id}, move:{move}, atk:{atk}, remainingMove:{TurnActions.remainingMovement}, hasAttacked:{TurnActions.hasAttacked} card:{card})";
+        }
+        
+
+        public static bool operator ==(CardInst a, CardInst b)
+        {
+            return a.id == b.id;
+        }
+
+        public static bool operator !=(CardInst a, CardInst b)
+        {
+            return a.id != b.id;
+        }
+
+        public override bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object obj)
+        {
+            if (obj is CardInst obj_card)
+            {
+                return this == obj_card;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            // Use a prime number to combine hash codes in a way that reduces the chance of collisions
+            const int prime = 31;
+            int hash = 17;  // Another prime number
+            hash = hash * prime + id;
+            return hash;
         }
     }
 

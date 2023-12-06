@@ -32,7 +32,7 @@ namespace Model
 
         private static readonly int COLLISION_DAMAGE = 1;
 
-        private static readonly int waitTime = 250;
+        private static readonly int waitTime = 150;
 
         // CARD SET
         private static readonly Card[] CardSet = new Card[] {
@@ -48,7 +48,7 @@ namespace Model
 
         // INSTANCE
         Random random = new Random();
-        View.View view;
+        View.View_DEMO view;
 
         #region  SESSION DATA       // Data scoped to a session instance
 
@@ -156,61 +156,79 @@ namespace Model
         public Action<int, int, int> OnCardDrawn_fail;
         public Action<int, Card[]> OnCardRemoved;
 
+        // Await Input Actions
+        public Action OnAwaitStartGame;
+        public Action<int, int> OnAwaitDrawCard;
+
         SynchronizationContext context = SynchronizationContext.Current;
-        
+
         public void PostAction(Action action)
         {
-            context.Post(_ => action(), null);
+            if (action != null)
+                context.Post(_ => action(), null);
         }
         public void PostAction<T1>(Action<T1> action, T1 param1)
         {
-            T1 param1_post = param1;
-            context.Post(_ => action(param1_post), null);
+            if (action != null)
+                context.Post(_ => action(param1), null);
         }
         public void PostAction<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2)
         {
-            context.Post(_ => action(param1, param2), null);
+            if (action != null)
+                context.Post(_ => action(param1, param2), null);
         }
         public void PostAction<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
         {
-            context.Post(_ => action(param1, param2, param3), null);
+            if (action != null)
+                context.Post(_ => action(param1, param2, param3), null);
         }
         public void PostAction<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4)
         {
-            context.Post(_ => action(param1, param2, param3, param4), null);
+            if (action != null)
+                context.Post(_ => action(param1, param2, param3, param4), null);
         }
 
         #region INITIALIZATION
 
-        bool isGameStarted = false;
+        bool _isGameStarted = false;
+        public bool triggerStartGame = false;
 
         // CONSTRUCTOR
-        public Model_DEMO(View.View view)
+        public Model_DEMO(View.View_DEMO view)
         {
             this.view = view;
-            view.TryStartGame += StartGame;
-            GD.Print("Subscribed to TryStartGame");
+            // view.TryStartGame += StartGame;
+            Task.Run(() => {
+                while(!view.isInit)
+                {
+                    GD.PrintErr($"Awaiting view to be ready. Is ready ? {view.isInit}");
+                    Thread.Sleep(100);
+                }
+
+                PostAction(OnAwaitStartGame);
+                AwaitAction(ref triggerStartGame, StartGame);
+            });
         }
 
-        private void StartGame()
+        private bool StartGame()
         {
-            if (!isGameStarted)
+            if (!_isGameStarted)
             {
-                isGameStarted = true;
+                _isGameStarted = true;
 
-                Task.Run(() =>
-                {
-                    Thread.Sleep(1000);
+                context.Post(_ => OnGameStart(CardSet, CardSet_NoBases), null);
 
-                    context.Post(_ => OnGameStart(CardSet, CardSet_NoBases), null);
+                _roundCounter = 0;
 
-                    _roundCounter = 0;
+                InitDecks();
 
-                    InitDecks();
+                StartRound(ref _roundCounter);
 
-                    StartRound(ref _roundCounter);
-                });
-
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -292,6 +310,171 @@ namespace Model
 
                 TryPlaceCard_FromVoid(i, BaseLocation, BaseCard);
             }
+        }
+
+        public bool TriggerDrawCard;
+
+        private bool AwaitAction(ref bool trigger, Func<bool> action)
+        {
+            while (!trigger)
+            {
+                Thread.Sleep(1);
+            }
+            trigger = false;
+            return action();
+        }
+
+        private bool AwaitAction<T1>(ref bool trigger, Func<T1, bool> action, T1 param1)
+        {
+            while (!trigger)
+            {
+                Thread.Sleep(1);
+            }
+            trigger = false;
+            return action(param1);
+        }
+
+        private void StartTurn(ref int turnCounter)
+        {
+            turnPlayerIndex = turnCounter % PLAYER_COUNT;
+            PostAction(OnTurnStart, turnCounter, turnPlayerIndex);
+
+            // DisplayCurrentActiveBoard();     //GD.Print method
+
+            Thread.Sleep(500);
+
+            ResetAllActiveUnitsTurnActions();
+
+            // 1. Draw a card
+
+            for (int iDraw = 0; iDraw < CARDS_DRAWN_PER_TURN; iDraw++)
+            {
+                // The intention I have is to post an action to begin awaiting some external script to trigger drawing a card
+                // My logic is that this way other scripts do not need to constantly be checking for this condition when its not even possible to trigger it
+                // It also removes the need to manage state, which I prefer not to deal with because I think it is overly complex and unintuitive
+                PostAction(OnAwaitDrawCard, turnPlayerIndex, iDraw);
+                if (AwaitAction(ref TriggerDrawCard, TryDrawCard, turnPlayerIndex))
+                    GD.PrintErr("Successfully drew card after awaiting trigger.");
+                else
+                    GD.PrintErr("Failed to draw card after awaiting trigger");
+            }
+
+            Thread.Sleep(500);
+
+            GD.Print("---------------------------");
+            GD.Print("--- Beginning Placement ---");
+
+            // 2. Place card(s)
+
+            if (Hands.Length > 0)
+            {
+                // Get a random number of cards to place
+                int rand = random.Next(1, Hands[turnPlayerIndex].Length);
+
+                // Iterate through each card to place
+                for (int i = 0; i < rand; i++)
+                {
+                    Thread.Sleep(waitTime);
+                    
+                    int cardIndex = 0;
+                    Card iCard = Hands[turnPlayerIndex][cardIndex];
+
+                    // Follow offense placement rules
+                    if (iCard.TYPE == Card.CardType.Offense)
+                    {
+                            bool canPlaceOffenseUnit = false;
+
+                        if(ActiveBoard_AllNonOffenseFriendlyUnits(turnPlayerIndex, out Unit[] resourceUnits))
+                        {
+                            foreach (Unit resource in resourceUnits)
+                            {
+                                if (ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
+                                {
+                                    if(TryPlaceCard_FromHand(turnPlayerIndex, cardIndex, openNeighbor))
+                                    {
+                                        GD.Print($"Player {turnPlayerIndex} placing card {iCard.NAME} next to resource {resource}");
+                                        HandleAttackAction(false, iCard.HP, Axial.Empty, resource);
+                                        canPlaceOffenseUnit = true;
+                                    }
+                                    break;
+                                }
+                            }
+
+                            if(!canPlaceOffenseUnit)
+                                GD.Print($"Player {turnPlayerIndex} could not place offense unit because existing friendly units had no vacant neighbors OR there was a failure to place the card.");
+                        }
+                        else
+                        {
+                            GD.Print($"Could not place offense unit because there are no friendly non-offense units on the board.");
+                        }
+                    }
+                    // Else, get a random open tile to place the unit
+                    else if (TryGetOpenTile(out Axial openTile))
+                    {
+                        TryPlaceCard_FromHand(turnPlayerIndex, cardIndex, openTile);
+                    }
+                    else
+                        GD.Print("Could not place card because all tiles are filled");
+                    Thread.Sleep(500);
+                }
+            }
+
+            Thread.Sleep(500);
+
+            // 3. Move card(s)
+
+            GD.Print("--------------------------");
+            GD.Print("--- Beginning Movement ---");
+
+            foreach (Unit occupant in ActiveBoard)
+            {
+                if (occupant.ownerIndex == turnPlayerIndex)
+                {
+                    Thread.Sleep(waitTime);
+
+                    Unit iUnit = occupant;
+
+                    Axial oldPos = iUnit.pos;
+
+                    GD.Print($"Player {turnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
+
+                    if (Unit_TryRandomMove(iUnit, out Axial newPos))
+                    {
+                        GD.Print($"Player {turnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
+                    }
+                    else{
+                        GD.Print($"Player {turnPlayerIndex} could not move {iUnit.name}");
+                    }
+                }
+            }
+
+            Thread.Sleep(500);
+
+            GD.Print("-------------------------");
+            GD.Print("--- Beginning Combat ---");
+
+            foreach (Unit occupant in ActiveBoard)
+            {
+                if (occupant.ownerIndex == turnPlayerIndex)
+                {
+                    Thread.Sleep(waitTime);
+
+                    Unit iUnit = occupant;
+
+                    GD.Print($"Player {turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
+
+                    if (Unit_TryRandomAttack(iUnit))
+                    {
+                        GD.Print($"Player {turnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
+                    }
+                    else{
+                        GD.Print($"Player {turnPlayerIndex} could not move {iUnit.name}");
+                    }
+                }
+            }
+
+            // 4. Attack card(s)
+            // 5. End turn
         }
 
         private Axial CardSet_GetBaseLocation(int player_index){
@@ -509,143 +692,6 @@ namespace Model
             return turnCounter >= 100;
         }
 
-        private void StartTurn(ref int turnCounter)
-        {
-            turnPlayerIndex = turnCounter % PLAYER_COUNT;
-            PostAction(OnTurnStart, turnCounter, turnPlayerIndex);
-
-            DisplayCurrentActiveBoard();
-
-            Thread.Sleep(500);
-
-            ResetAllActiveUnitsTurnActions();
-
-            // 1. Draw a card
-
-            for (int i = 0; i < CARDS_DRAWN_PER_TURN; i++)
-            {
-                    Thread.Sleep(waitTime);
-                TryDrawCard(turnPlayerIndex);
-            }
-
-            Thread.Sleep(500);
-
-            GD.Print("---------------------------");
-            GD.Print("--- Beginning Placement ---");
-
-            // 2. Place card(s)
-
-            if (Hands.Length > 0)
-            {
-                // Get a random number of cards to place
-                int rand = random.Next(1, Hands[turnPlayerIndex].Length);
-
-                // Iterate through each card to place
-                for (int i = 0; i < rand; i++)
-                {
-                    Thread.Sleep(waitTime);
-                    
-                    int cardIndex = 0;
-                    Card iCard = Hands[turnPlayerIndex][cardIndex];
-
-                    // Follow offense placement rules
-                    if (iCard.TYPE == Card.CardType.Offense)
-                    {
-                            bool canPlaceOffenseUnit = false;
-
-                        if(ActiveBoard_AllNonOffenseFriendlyUnits(turnPlayerIndex, out Unit[] resourceUnits))
-                        {
-                            foreach (Unit resource in resourceUnits)
-                            {
-                                if (ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
-                                {
-                                    if(TryPlaceCard_FromHand(turnPlayerIndex, cardIndex, openNeighbor))
-                                    {
-                                        GD.Print($"Player {turnPlayerIndex} placing card {iCard.NAME} next to resource {resource}");
-                                        HandleAttackAction(false, iCard.HP, Axial.Empty, resource);
-                                        canPlaceOffenseUnit = true;
-                                    }
-                                    break;
-                                }
-                            }
-
-                            if(!canPlaceOffenseUnit)
-                                GD.Print($"Player {turnPlayerIndex} could not place offense unit because existing friendly units had no vacant neighbors OR there was a failure to place the card.");
-                        }
-                        else
-                        {
-                            GD.Print($"Could not place offense unit because there are no friendly non-offense units on the board.");
-                        }
-                    }
-                    // Else, get a random open tile to place the unit
-                    else if (TryGetOpenTile(out Axial openTile))
-                    {
-                        TryPlaceCard_FromHand(turnPlayerIndex, cardIndex, openTile);
-                    }
-                    else
-                        GD.Print("Could not place card because all tiles are filled");
-                    Thread.Sleep(500);
-                }
-            }
-
-            Thread.Sleep(500);
-
-            // 3. Move card(s)
-
-            GD.Print("--------------------------");
-            GD.Print("--- Beginning Movement ---");
-
-            foreach (Unit occupant in ActiveBoard)
-            {
-                if (occupant.ownerIndex == turnPlayerIndex)
-                {
-                    Thread.Sleep(waitTime);
-
-                    Unit iUnit = occupant;
-
-                    Axial oldPos = iUnit.pos;
-
-                    GD.Print($"Player {turnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
-
-                    if (Unit_TryRandomMove(iUnit, out Axial newPos))
-                    {
-                        GD.Print($"Player {turnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
-                    }
-                    else{
-                        GD.Print($"Player {turnPlayerIndex} could not move {iUnit.name}");
-                    }
-                }
-            }
-
-            Thread.Sleep(500);
-
-            GD.Print("-------------------------");
-            GD.Print("--- Beginning Combat ---");
-
-            foreach (Unit occupant in ActiveBoard)
-            {
-                if (occupant.ownerIndex == turnPlayerIndex)
-                {
-                    Thread.Sleep(waitTime);
-
-                    Unit iUnit = occupant;
-
-                    GD.Print($"Player {turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
-
-                    if (Unit_TryRandomAttack(iUnit))
-                    {
-                        GD.Print($"Player {turnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
-                    }
-                    else{
-                        GD.Print($"Player {turnPlayerIndex} could not move {iUnit.name}");
-                    }
-                }
-            }
-
-            // 4. Attack card(s)
-            // 5. End turn
-        }
-
         private void DisplayCurrentActiveBoard()
         {
             GD.Print("--- Displaying active board ---");
@@ -755,7 +801,7 @@ namespace Model
             // Else the target is alive, and if we should displace and the target is an offense unit, then
             else if (doDisplace && target.type == Card.CardType.Offense)
             {
-                Thread.Sleep(250);
+                Thread.Sleep(waitTime);
 
                 Axial attackDisplacement = target.pos + attackDirection;
                 if (Unit_TryMove(false, target, attackDisplacement, out Unit occupant))

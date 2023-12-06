@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://EditorTools/EDITOR_Tool.cs" id="2_4ar71"]
 [ext_resource type="Script" path="res://EditorTools/SceneTreeObserver.cs" id="2_aa7hq"]
 [ext_resource type="PackedScene" uid="uid://tvemq1c0u0s0" path="res://hex_30.tscn" id="3_00rjq"]
-[ext_resource type="Script" path="res://MVC/View/View.cs" id="4_honl3"]
+[ext_resource type="Script" path="res://MVC/View/View_DEMO.cs" id="4_qq1rp"]
 [ext_resource type="Theme" uid="uid://bhhfafxn84bgd" path="res://Theme.tres" id="5_nb3in"]
 
 [sub_resource type="Theme" id="Theme_rf727"]
@@ -63,7 +63,7 @@ offset_left = -640.0
 offset_right = 640.0
 offset_bottom = 720.0
 grow_horizontal = 2
-script = ExtResource("4_honl3")
+script = ExtResource("4_qq1rp")
 
 [node name="LogPanel" type="PanelContainer" parent="EDITOR/View"]
 layout_mode = 0
@@ -90,123 +90,148 @@ layout_mode = 2
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][11] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_1" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][12] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_2" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][13] : (Resource Test, Resource, HP:3, MOVE:0, ATK:0)"
 
 [node name="Log_3" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][14] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_4" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][15] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_5" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][16] : (Resource Test, Resource, HP:3, MOVE:0, ATK:0)"
 
 [node name="Log_6" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][17] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_7" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][18] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_8" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Deck [1][19] : (Offense Test, Offense, HP:2, MOVE:3, ATK:1)"
 
 [node name="Log_9" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "----- Initialized deck[1] -----"
 
 [node name="Log_10" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "-------------------------------"
 
 [node name="Log_11" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "-------------------------"
 
 [node name="Log_12" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "----- START ROUND 0 -----"
 
 [node name="Log_13" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "-------------------------"
 
 [node name="Log_14" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 0 drew a card (Offense Test), increasing their hand to 1. Their drawn count has incremented to 1"
 
 [node name="Log_15" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 0 drew a card (Resource Test), increasing their hand to 2. Their drawn count has incremented to 2"
 
 [node name="Log_16" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 0 drew a card (Offense Test), increasing their hand to 3. Their drawn count has incremented to 3"
 
 [node name="Log_17" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 0 drew a card (Resource Test), increasing their hand to 4. Their drawn count has incremented to 4"
 
 [node name="Log_18" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 1 drew a card (Resource Test), increasing their hand to 1. Their drawn count has incremented to 1"
 
 [node name="Log_19" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 1 drew a card (Resource Test), increasing their hand to 2. Their drawn count has incremented to 2"
 
 [node name="Log_20" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 1 drew a card (Resource Test), increasing their hand to 3. Their drawn count has incremented to 3"
 
 [node name="Log_21" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 1 drew a card (Offense Test), increasing their hand to 4. Their drawn count has incremented to 4"
 
 [node name="Log_22" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 0 placing card Base Test(2) at location (-2, 2, 0)"
 
 [node name="Log_23" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Player 1 placing card Base Test(3) at location (2, -2, 0)"
 
 [node name="CardPanel" type="PanelContainer" parent="EDITOR/View"]
+layout_mode = 0
 offset_left = 504.0
 offset_top = 395.0
 offset_right = 821.0
@@ -231,21 +256,25 @@ layout_mode = 2
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Offense Test"
 
 [node name="Card_1" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Resource Test"
 
 [node name="Card_2" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Offense Test"
 
 [node name="Card_3" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+text = "Resource Test"
 
 [node name="Card_4" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
 layout_mode = 2
@@ -281,3 +310,11 @@ theme_override_font_sizes/font_size = 12
 layout_mode = 2
 theme_type_variation = &"HeaderSmall"
 theme_override_font_sizes/font_size = 12
+
+[node name="InputButton" type="Button" parent="EDITOR/View"]
+layout_mode = 0
+offset_left = 647.866
+offset_top = 181.525
+offset_right = 655.866
+offset_bottom = 189.525
+text = "Draw Card"

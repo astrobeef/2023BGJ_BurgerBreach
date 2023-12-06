@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://cxhllvolv8otr"]
+[gd_scene load_steps=7 format=3 uid="uid://cxhllvolv8otr"]
 
 [ext_resource type="Script" path="res://EditorTools/EDITOR_Tool.cs" id="2_4ar71"]
 [ext_resource type="Script" path="res://EditorTools/SceneTreeObserver.cs" id="2_aa7hq"]
 [ext_resource type="PackedScene" uid="uid://tvemq1c0u0s0" path="res://hex_30.tscn" id="3_00rjq"]
+[ext_resource type="Script" path="res://MVC/View/View.cs" id="4_honl3"]
+[ext_resource type="Theme" uid="uid://bhhfafxn84bgd" path="res://Theme.tres" id="5_nb3in"]
 
 [sub_resource type="Theme" id="Theme_rf727"]
 
@@ -43,9 +45,6 @@ offset_right = 1280.0
 offset_bottom = 720.0
 theme = SubResource("Theme_rf727")
 script = ExtResource("2_4ar71")
-_disableScript = false
-_disableInput = false
-_disableDraw = false
 _disableBoardgame = false
 
 [node name="SceneTreeObserver" type="Control" parent="EDITOR" node_paths=PackedStringArray("_sceneTree")]
@@ -54,3 +53,231 @@ offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("2_aa7hq")
 _sceneTree = [NodePath("../../Hex"), NodePath("../../Hex2"), NodePath("../../Hex3"), NodePath("../../Hex4"), NodePath("../../Hex5"), NodePath("../../Hex6"), NodePath("../../Hex7"), NodePath("..")]
+
+[node name="View" type="Control" parent="EDITOR"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -640.0
+offset_right = 640.0
+offset_bottom = 720.0
+grow_horizontal = 2
+script = ExtResource("4_honl3")
+
+[node name="LogPanel" type="PanelContainer" parent="EDITOR/View"]
+layout_mode = 0
+offset_left = 867.0
+offset_right = 1283.0
+offset_bottom = 720.0
+theme = ExtResource("5_nb3in")
+
+[node name="LogContainer" type="VBoxContainer" parent="EDITOR/View/LogPanel"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="LogTitle" type="Label" parent="EDITOR/View/LogPanel/LogContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "LOGS"
+horizontal_alignment = 1
+
+[node name="LogMessages" type="VBoxContainer" parent="EDITOR/View/LogPanel/LogContainer"]
+layout_mode = 2
+
+[node name="Log_0" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_1" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_2" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_3" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_4" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_5" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_6" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_7" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_8" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_9" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_10" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_11" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_12" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_13" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_14" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_15" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_16" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_17" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_18" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_19" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_20" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_21" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_22" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Log_23" type="Label" parent="EDITOR/View/LogPanel/LogContainer/LogMessages"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="CardPanel" type="PanelContainer" parent="EDITOR/View"]
+offset_left = 504.0
+offset_top = 395.0
+offset_right = 821.0
+offset_bottom = 720.0
+theme = ExtResource("5_nb3in")
+
+[node name="CardContainer" type="VBoxContainer" parent="EDITOR/View/CardPanel"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
+[node name="Cards" type="Label" parent="EDITOR/View/CardPanel/CardContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "CARDS"
+horizontal_alignment = 1
+
+[node name="CardHolder" type="VBoxContainer" parent="EDITOR/View/CardPanel/CardContainer"]
+layout_mode = 2
+
+[node name="Card_0" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_1" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_2" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_3" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_4" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_5" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_6" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_7" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_8" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_9" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12
+
+[node name="Card_10" type="Button" parent="EDITOR/View/CardPanel/CardContainer/CardHolder"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 12

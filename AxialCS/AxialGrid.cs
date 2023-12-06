@@ -17,7 +17,7 @@ namespace AxialCS
     public struct AxialGrid
     {
         private readonly int _width;
-        public Axial[] Axials => _axials.ToArray();
+        public Axial[] Axials => _axials?.ToArray();
         private readonly List<Axial> _axials;
         private readonly GridType _type = GridType.Hexagon;
 

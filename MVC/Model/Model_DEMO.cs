@@ -32,6 +32,8 @@ namespace Model
 
         private static readonly int COLLISION_DAMAGE = 1;
 
+        private static readonly int waitTime = 250;
+
         // CARD SET
         private static readonly Card[] CardSet = new Card[] {
             new Card("Base Test", Card.CardType.Base, 10),
@@ -46,6 +48,7 @@ namespace Model
 
         // INSTANCE
         Random random = new Random();
+        View.View view;
 
         #region  SESSION DATA       // Data scoped to a session instance
 
@@ -113,7 +116,7 @@ namespace Model
         }
 
         // Board Data
-        private AxialGrid Board;
+        public AxialGrid Board;
         private Unit[] ActiveBoard = new Unit[0];
 
         #endregion
@@ -125,8 +128,6 @@ namespace Model
         /// </summary>
         private int turnPlayerIndex = 0;
 
-
-
         #endregion
 
         #endregion
@@ -135,56 +136,110 @@ namespace Model
         //----- INITIALIZATION -----
         //--------------------------
 
-        #region INITIALIZATION
+        public Action<Card[], Card[]> OnGameStart;
+        public Action<int> OnRoundStart;
+        public Action<int, int> OnTurnStart;
+
+        public Action<int> OnDeckBuildStart;
+        public Action<int, int, Card> OnDeckBuildAddedCard;
+        public Action<int> OnDeckBuildFinished;
+
+        public Action<Unit> OnUnitAddedToBoard;
+        public Action<Axial, Unit> OnUnitMove;
+        public Action<Unit, Unit> OnUnitAttack;
+        public Action<Unit> OnBaseDestroyed;
+        public Action<Unit> OnDamaged;
+        public Action<Unit> OnDeath;
+        public Action<Unit, Unit> OnCollision;
+
+        public Action<int, string, Card[], int> OnCardDrawn;
+        public Action<int, int, int> OnCardDrawn_fail;
+        public Action<int, Card[]> OnCardRemoved;
+
+        SynchronizationContext context = SynchronizationContext.Current;
         
+        public void PostAction(Action action)
+        {
+            context.Post(_ => action(), null);
+        }
+        public void PostAction<T1>(Action<T1> action, T1 param1)
+        {
+            T1 param1_post = param1;
+            context.Post(_ => action(param1_post), null);
+        }
+        public void PostAction<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2)
+        {
+            context.Post(_ => action(param1, param2), null);
+        }
+        public void PostAction<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
+        {
+            context.Post(_ => action(param1, param2, param3), null);
+        }
+        public void PostAction<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4)
+        {
+            context.Post(_ => action(param1, param2, param3, param4), null);
+        }
+
+        #region INITIALIZATION
+
+        bool isGameStarted = false;
+
         // CONSTRUCTOR
-        public Model_DEMO(){
-            Task.Run(() => {
-                DisplayCardSet();
-                StartGame();
-            });
+        public Model_DEMO(View.View view)
+        {
+            this.view = view;
+            view.TryStartGame += StartGame;
+            GD.Print("Subscribed to TryStartGame");
         }
 
-        private void DisplayCardSet(){
-            GD.Print("----- CARD SET W/ BASES -----");
-
-            for (int i = 0; i < CardSet.Length; i++)
+        private void StartGame()
+        {
+            if (!isGameStarted)
             {
-                Card card = CardSet[i];
-                GD.Print($"[{i}] = {card}");
+                isGameStarted = true;
+
+                Task.Run(() =>
+                {
+                    Thread.Sleep(1000);
+
+                    context.Post(_ => OnGameStart(CardSet, CardSet_NoBases), null);
+
+                    _roundCounter = 0;
+
+                    InitDecks();
+
+                    StartRound(ref _roundCounter);
+                });
+
             }
-
-            GD.Print("-----------------------------");
-
-            Thread.Sleep(1000);
-            
-            GD.Print("----- CARD SET W/O BASES -----");
-
-            for (int i = 0; i < CardSet_NoBases.Length; i++)
-            {
-                Card card = CardSet_NoBases[i];
-                GD.Print($"[{i}] = {card}");
-            }
-            
-            GD.Print("-----------------------------");
-
-            Thread.Sleep(1000);
         }
 
-        private void StartGame(){
+        private void InitDecks()
+        {
+            for (int i = 0; i < PLAYER_COUNT; i++)
+            {
+                PostAction(OnDeckBuildStart, i);
 
-            _roundCounter = 0;
-            
-            InitDecks();
+                ref Card[] refDeck = ref Decks[i];
+                refDeck = new Card[DECK_COUNT];
 
-            StartRound(ref _roundCounter);
+                for (int j = 0; j < refDeck.Length; j++)
+                {
+                    int rand = random.Next(0, CardSet_NoBases.Length);
+                    refDeck[j] = CardSet_NoBases[rand];
+
+                    PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
+                }
+
+                PostAction(OnDeckBuildFinished, i);
+
+                Thread.Sleep(1000);
+            }
         }
 
         private void StartRound(ref int roundCounter)
         {
-            GD.Print("-------------------------");
-            GD.Print($"----- START ROUND {roundCounter} -----");
-            GD.Print("-------------------------");
+            PostAction(OnRoundStart, roundCounter);
 
             _turnCounter = 0;
             Board = new AxialGrid(BOARD_RADIUS);
@@ -199,6 +254,31 @@ namespace Model
                 Thread.Sleep(100);
                 StartTurn(ref _turnCounter);
                 _turnCounter++;
+            }
+        }
+        
+        private void InitHands()
+        {
+            for (int i = 0; i < PLAYER_COUNT; i++)
+            {
+                GD.Print($"----- Initializing hand[{i}] -----");
+                Thread.Sleep(500);
+
+                ref Card[] refHand = ref Hands[i];
+                ref Card[] refDeck = ref Decks[i];
+
+                refHand = null;
+
+                for (int j = 0; j < HAND_START_COUNT; j++)
+                {
+                    TryDrawCard(i);
+                    Thread.Sleep(waitTime);
+                }
+
+                DisplayHand(i);
+
+                GD.Print($"----- Initialized hand[{i}] -----");
+                GD.Print("-------------------------------");
             }
         }
 
@@ -431,21 +511,20 @@ namespace Model
 
         private void StartTurn(ref int turnCounter)
         {
-            GD.Print("------------------------");
-            GD.Print($"----- START TURN {turnCounter} -----");
-            GD.Print("------------------------");
+            turnPlayerIndex = turnCounter % PLAYER_COUNT;
+            PostAction(OnTurnStart, turnCounter, turnPlayerIndex);
 
             DisplayCurrentActiveBoard();
 
             Thread.Sleep(500);
 
-            turnPlayerIndex = turnCounter % PLAYER_COUNT;
             ResetAllActiveUnitsTurnActions();
 
             // 1. Draw a card
 
             for (int i = 0; i < CARDS_DRAWN_PER_TURN; i++)
             {
+                    Thread.Sleep(waitTime);
                 TryDrawCard(turnPlayerIndex);
             }
 
@@ -464,6 +543,8 @@ namespace Model
                 // Iterate through each card to place
                 for (int i = 0; i < rand; i++)
                 {
+                    Thread.Sleep(waitTime);
+                    
                     int cardIndex = 0;
                     Card iCard = Hands[turnPlayerIndex][cardIndex];
 
@@ -518,6 +599,8 @@ namespace Model
             {
                 if (occupant.ownerIndex == turnPlayerIndex)
                 {
+                    Thread.Sleep(waitTime);
+
                     Unit iUnit = occupant;
 
                     Axial oldPos = iUnit.pos;
@@ -543,6 +626,8 @@ namespace Model
             {
                 if (occupant.ownerIndex == turnPlayerIndex)
                 {
+                    Thread.Sleep(waitTime);
+
                     Unit iUnit = occupant;
 
                     GD.Print($"Player {turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
@@ -580,6 +665,8 @@ namespace Model
             int iDirection = 0;
 
             while(unit.CanMove(out int remainingMovement)){
+                Thread.Sleep(waitTime);
+
                 if(iDirection >= Axial.CARDINAL_LENGTH)
                 {
                     GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
@@ -607,7 +694,9 @@ namespace Model
         private bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
                 if(IsPlacementLocationValid(newPos, out occupant)){
+                    Axial oldPos = unit.pos;
                     unit.Move(isWillful, newPos);
+                    PostAction(OnUnitMove, oldPos, unit);
                     return true;
                 }
                 else{
@@ -636,6 +725,7 @@ namespace Model
             if(Axial.Distance(Axial.Zero, attackDirection) <= Unit.ATK_RANGE)
             {
                 attacker.Attack();
+                PostAction(OnUnitAttack, attacker, target);
 
                 return HandleAttackAction(doDisplace, attacker.atk, attackDirection, target);
             }
@@ -647,12 +737,14 @@ namespace Model
 
         private bool HandleAttackAction(bool doDisplace, int damage, Axial attackDirection, Unit target)
         {
+            PostAction(OnDamaged, target);
             // If the target dies
             if (!target.Damage(damage))
             {
                 if (target.type == Card.CardType.Base)
                 {
                     GD.PrintErr($"Player {target.ownerIndex} has had their base destroyed! Need to fire an event to end the game.");
+                    PostAction(OnBaseDestroyed, target);
                     return true;
                 }
                 else
@@ -663,6 +755,8 @@ namespace Model
             // Else the target is alive, and if we should displace and the target is an offense unit, then
             else if (doDisplace && target.type == Card.CardType.Offense)
             {
+                Thread.Sleep(250);
+
                 Axial attackDisplacement = target.pos + attackDirection;
                 if (Unit_TryMove(false, target, attackDisplacement, out Unit occupant))
                 {
@@ -670,10 +764,13 @@ namespace Model
                 }
                 else if (occupant != Unit.EMPTY)
                 {
+                    Thread.Sleep(250);
+
                     GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
                     
                     target.Damage(COLLISION_DAMAGE);
                     occupant.Damage(COLLISION_DAMAGE);
+                    PostAction(OnCollision, target, occupant);
                 }
                 else
                 {
@@ -699,53 +796,6 @@ namespace Model
             GD.Print($"Could not find open axial. Returning empty.");
             Axial = Axial.Empty;
             return false;
-        }
-
-        private void InitDecks(){
-            for (int i = 0; i < PLAYER_COUNT; i++)
-            {
-                GD.Print($"----- Initializing deck[{i}] -----");
-                Thread.Sleep(500);
-
-                ref Card[] refDeck = ref Decks[i];
-                refDeck = new Card[DECK_COUNT];
-
-                for(int j = 0; j < refDeck.Length; j++){
-                    int rand = random.Next(0,CardSet_NoBases.Length);
-                    refDeck[j] = CardSet_NoBases[rand];
-                    GD.Print($"Deck [{i}][{j}] : {refDeck[j]}");
-                }
-                
-                GD.Print($"----- Initialized deck[{i}] -----");
-                GD.Print("-------------------------------");
-            }
-        }
-
-        private void InitHands()
-        {
-            for (int i = 0; i < PLAYER_COUNT; i++)
-            {
-                GD.Print($"----- Initializing hand[{i}] -----");
-                Thread.Sleep(500);
-
-                ref Card[] refHand = ref Hands[i];
-                ref Card[] refDeck = ref Decks[i];
-
-                refHand = null;
-
-                
-
-                for (int j = 0; j < HAND_START_COUNT; j++)
-                {
-                    TryDrawCard(i);
-                    Thread.Sleep(150);
-                }
-
-                DisplayHand(i);
-
-                GD.Print($"----- Initialized hand[{i}] -----");
-                GD.Print("-------------------------------");
-            }
         }
 
         private void ResetAllActiveUnitsTurnActions()
@@ -785,11 +835,13 @@ namespace Model
 
                 refDrawnCount++;
 
-                GD.Print($"Player {player_index} drew a card ({drawnCard.NAME}), increasing their hand to {heldCount}. Their drawn count has incremented to {refDrawnCount}");
+                PostAction(OnCardDrawn, player_index, drawnCard.NAME, Hands[player_index], refDrawnCount);
+
                 return true;
             }
             else{
-                GD.Print($"Player {player_index} cannot draw any more cards because their drawn count ({refDrawnCount}) is equal to their deck count ({deckCount})");
+                PostAction(OnCardDrawn_fail, player_index, refDrawnCount, deckCount);
+
                 return false;
             }
         }
@@ -841,6 +893,8 @@ namespace Model
                 refHand = newHand;
 
                 GD.Print($"Removed {card.NAME} from player {player_index}'s hand");
+
+                PostAction(OnCardRemoved, player_index, newHand);
 
                 //Return removed card
                 return card;
@@ -925,13 +979,12 @@ namespace Model
                 newActiveBoard[newActiveBoard.Length - 1] = newUnit;
 
                 ActiveBoard = newActiveBoard;
+                PostAction(OnUnitAddedToBoard, newUnit);
             }
             else
             {
                 ActiveBoard = new Unit[1] { newUnit };
             }
-
-            GD.Print($"Player {newUnit.ownerIndex} placing card {newUnit.name} at location {newUnit.pos}");
         }
 
         private bool ActiveBoard_RemoveUnit(Unit unit, out Unit removedUnit){
@@ -987,6 +1040,7 @@ namespace Model
 
             removedUnit = unitToRemove;
             GD.Print($"Successfully removed {removedUnit.name} from the board");
+            PostAction(OnDeath, removedUnit);
             return true;
         }
 

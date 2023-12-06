@@ -7,6 +7,7 @@ public partial class HexagonRenderer : Node2D
 {
 	//---VARIABLES---
 	private Dictionary<Axial, HexagonDraw> _hexAxialDrawDictionary = new Dictionary<Axial, HexagonDraw>();
+	public Dictionary<Axial, HexagonDraw> HexAxialDrawDictionary => _hexAxialDrawDictionary;
 	private bool _triggerRedraw = false;
 
 	//---LIFECYCLE METHODS---
@@ -74,6 +75,22 @@ public partial class HexagonRenderer : Node2D
 			catch
 			{
 				GD.PrintErr($"Failed to remove hex at axial {ax}. It is likely that no hex exists at this key value in the dictionary. It's possible that another thread executed this method just a moment ago.");
+				return false;
+			}
+		}
+	}
+
+	public bool IsHexRendered(Axial ax)
+	{
+		lock (_hexAxialLock)
+		{
+			try
+			{
+				return _hexAxialDrawDictionary.ContainsKey(ax);
+			}
+			catch
+			{
+				GD.PrintErr($"Failed to check if {ax} exists in the dictionary");
 				return false;
 			}
 		}

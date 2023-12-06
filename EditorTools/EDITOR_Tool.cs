@@ -11,6 +11,7 @@ using GodotPlugins.Game;
 using AxialCS;
 using Deck;
 using Model;
+using System.Data;
 
 namespace EditorTools
 {
@@ -24,7 +25,8 @@ namespace EditorTools
 		public event ProcessEvent OnProcess;
 
 		public MouseMoveObserver MouseMoveObserver;
-		public Model_DEMO DeckSpaghetti;
+		public Model_DEMO Model;
+		public View.View View;
 
 		[Export]
 		bool _disableScript = true, _disableInput = true, _disableDraw = true;
@@ -70,7 +72,18 @@ namespace EditorTools
 
 			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			if(!_disableBoardgame)
-				DeckSpaghetti = new Model_DEMO();
+			{
+				Node ViewNode = this.GetChild(1);
+				if(!(ViewNode is View.View View))
+				{
+					GD.PrintErr("Could not pull View script off ViewNode");
+				}
+				else
+				{
+					View._Ready();
+					Model = new Model_DEMO(View);
+				}
+			}
 		}
 
 		public void TestAxialGridProgress(Axial[] GridProgress){
@@ -104,15 +117,22 @@ namespace EditorTools
 		// Called every frame. 'delta' is the elapsed time since the previous frame.
 		public override void _Process(double delta)
 		{
-
 			if (MouseMoveObserver == null)
 			{
 				GD.PrintErr("Setting detect mouse movement script because it did not get set in 'ready'");
 				MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			}
-			if(!_disableBoardgame && DeckSpaghetti == null){
-				GD.PrintErr("Setting deck spaghetti script because it did not get set in 'ready'");
-			DeckSpaghetti = new Model_DEMO();
+			if(!_disableBoardgame && Model == null){
+				Node ViewNode = this.GetChild(1);
+				if(!(ViewNode is View.View View))
+				{
+					GD.PrintErr("Could not pull View script off ViewNode");
+				}
+				else
+				{
+					View._Ready();
+					Model = new Model_DEMO(View);
+				}
 			}
 
 			// Execute in EDITOR only

@@ -1,0 +1,20 @@
+[gd_scene load_steps=6 format=3 uid="uid://cr1s4o3uma1lq"]
+
+[ext_resource type="PackedScene" uid="uid://bdjs6gfw26i52" path="res://MVC/View/3D Assets/Prototype/Shaker/shaker.fbx" id="1_ex0ei"]
+[ext_resource type="Texture2D" uid="uid://bobn072iuwfbu" path="res://MVC/View/3D Assets/Prototype/Shaker/salt_shakerMat_BaseColor.png" id="2_jrcgq"]
+[ext_resource type="Texture2D" uid="uid://b7wikyeerjt0k" path="res://MVC/View/3D Assets/Prototype/Shaker/salt_shakerGutsMat_BaseColor.png" id="3_bbb60"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e1txf"]
+transparency = 1
+albedo_texture = ExtResource("2_jrcgq")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5j4g3"]
+albedo_texture = ExtResource("3_bbb60")
+
+[node name="shaker" instance=ExtResource("1_ex0ei")]
+
+[node name="shaker" parent="RootNode" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_e1txf")
+
+[node name="shakerGuts" parent="RootNode/shaker" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_5j4g3")

@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://pig1lwcl6ch8"]
+
+[ext_resource type="PackedScene" uid="uid://dhfhwx13amxsa" path="res://MVC/View/board_tile.tscn" id="1_7smv3"]
+[ext_resource type="Script" path="res://MVC/Controller/board.cs" id="3_28e2d"]
+
+[node name="Board" type="Node3D"]
+script = ExtResource("3_28e2d")
+
+[node name="BoardTile" parent="." instance=ExtResource("1_7smv3")]

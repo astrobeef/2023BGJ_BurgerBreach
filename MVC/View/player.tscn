@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://dau362jqmslqg"]
+
+[ext_resource type="Script" path="res://MVC/Controller/player.cs" id="1_m8wbs"]
+
+[node name="Player" type="Node3D" node_paths=PackedStringArray("camera")]
+transform = Transform3D(1, -3.48787e-16, 3.48787e-16, 3.48787e-16, 1, -3.48787e-16, -3.48787e-16, 3.48787e-16, 1, 0, 0, 0)
+script = ExtResource("1_m8wbs")
+CameraColliderLayers = 1
+camera = NodePath("Camera3D")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, -3.48787e-16, 3.48787e-16, 3.48787e-16, 1, -3.48787e-16, -3.48787e-16, 3.48787e-16, 1, 0, 0, 0)
+fov = 43.2866

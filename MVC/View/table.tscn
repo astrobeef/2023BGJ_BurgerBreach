@@ -1,0 +1,36 @@
+[gd_scene load_steps=13 format=3 uid="uid://wbe1hvc8f4lw"]
+
+[ext_resource type="PackedScene" path="res://MVC/View/3D Assets/Prototype/Table/table.fbx" id="1_wfeww"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_BaseColor.png" id="2_7q0v0"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Metallic.png" id="3_nr8pv"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Normal.png" id="4_io3v4"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Roughness.png" id="5_1rbos"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_BaseColor.png" id="6_q4w5c"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Height.png" id="7_ddlbn"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Metallic.png" id="8_r61l7"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Normal.png" id="9_ufxy4"]
+[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Roughness.png" id="10_jgtjj"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_12ci5"]
+albedo_texture = ExtResource("2_7q0v0")
+metallic = 1.0
+metallic_texture = ExtResource("3_nr8pv")
+roughness_texture = ExtResource("5_1rbos")
+normal_enabled = true
+normal_texture = ExtResource("4_io3v4")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_51vvf"]
+albedo_texture = ExtResource("6_q4w5c")
+metallic = 1.0
+metallic_texture = ExtResource("8_r61l7")
+roughness_texture = ExtResource("10_jgtjj")
+normal_enabled = true
+normal_texture = ExtResource("9_ufxy4")
+heightmap_enabled = true
+heightmap_texture = ExtResource("7_ddlbn")
+
+[node name="table" instance=ExtResource("1_wfeww")]
+
+[node name="pCube1" parent="RootNode" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_12ci5")
+surface_material_override/1 = SubResource("StandardMaterial3D_51vvf")

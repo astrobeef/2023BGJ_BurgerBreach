@@ -1,0 +1,51 @@
+[gd_scene load_steps=9 format=3 uid="uid://dkdscj0cwt3g3"]
+
+[ext_resource type="PackedScene" uid="uid://wbe1hvc8f4lw" path="res://MVC/View/table.tscn" id="3_58uyu"]
+[ext_resource type="PackedScene" uid="uid://cr1s4o3uma1lq" path="res://MVC/View/salt_shaker.tscn" id="3_p17y6"]
+[ext_resource type="PackedScene" uid="uid://c305v0qr06n73" path="res://MVC/View/board2.tscn" id="3_qmwdm"]
+[ext_resource type="PackedScene" uid="uid://dbqjtghup7fhg" path="res://MVC/View/pepper_shaker.tscn" id="4_pw7er"]
+[ext_resource type="PackedScene" uid="uid://btn6bjoogftaf" path="res://MVC/View/cup.tscn" id="5_ajrav"]
+[ext_resource type="PackedScene" uid="uid://cin7axo50v1l2" path="res://MVC/View/glass.tscn" id="6_h06q7"]
+[ext_resource type="PackedScene" uid="uid://dih65wa8mt7d4" path="res://MVC/View/ketchup.tscn" id="7_xara2"]
+[ext_resource type="PackedScene" uid="uid://p4nrole5g5lk" path="res://MVC/View/napkin.tscn" id="8_40lig"]
+
+[node name="Room" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.959813, -0.26896, 0.0801274, 0.203516, -0.470472, 0.858625, -0.193238, 0.840427, 0.506302, 0.211736, 1.40691, 0.558839)
+shadow_enabled = true
+shadow_normal_bias = 10.0
+shadow_opacity = 0.77
+
+[node name="Player" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.917825, 0.799348)
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 0.930654, 0.3659, 0, -0.3659, 0.930654, 0, 0, 0)
+fov = 36.8817
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="table" parent="World" instance=ExtResource("3_58uyu")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0, -0.161086, 0)
+
+[node name="Board" parent="World" instance=ExtResource("3_qmwdm")]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0.477311, 0)
+
+[node name="shaker" parent="World" instance=ExtResource("3_p17y6")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -0.334636, 0.498215, -0.123097)
+
+[node name="shaker2" parent="World" instance=ExtResource("4_pw7er")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -0.312883, 0.498076, -0.165418)
+
+[node name="cup" parent="World" instance=ExtResource("5_ajrav")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -0.288475, 0.498331, 0.184681)
+
+[node name="glass" parent="World" instance=ExtResource("6_h06q7")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0.348248, 0.497349, 0.0232899)
+
+[node name="ketchup" parent="World" instance=ExtResource("7_xara2")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0.293574, 0.498196, -0.304754)
+
+[node name="napkin" parent="World" instance=ExtResource("8_40lig")]
+transform = Transform3D(1.19548, 0, -0.906002, 0, 1.5, 0, 0.906002, 0, 1.19548, 0.369478, 0.499462, -0.209207)

@@ -6,7 +6,7 @@ using Godot;
 
 namespace EditorTools
 {
-    public class MouseMoveObserver
+    public class EDITOR_MouseMoveObserver
     {
         public EDITOR_Tool editor;
 
@@ -21,7 +21,7 @@ namespace EditorTools
 
         private bool _isDisplaced => IsDisplaced(_pos_cur, _pos_last, _MOVE_CHECK_THRESH);
 
-        public MouseMoveObserver(EDITOR_Tool editor, MouseMovementEvent action){
+        public EDITOR_MouseMoveObserver(EDITOR_Tool editor, MouseMovementEvent action){
             this.editor = editor;
             editor.OnProcess += DetectMovement;
             OnMouseMovement += action;

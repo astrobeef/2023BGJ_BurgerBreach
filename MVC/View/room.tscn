@@ -23,7 +23,6 @@ transform = Transform3D(1, -4.68079e-16, 3.27752e-16, 3.27752e-16, 0.939692, 0.3
 script = ExtResource("1_d5ki3")
 
 [node name="Camera3D" type="Camera3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 fov = 36.8817
 
 [node name="World" type="Node3D" parent="."]

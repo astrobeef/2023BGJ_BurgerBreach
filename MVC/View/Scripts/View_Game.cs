@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using AxialCS;
 using EditorTools;
@@ -10,21 +11,21 @@ using Model;
 
 namespace View
 {
-    public partial class View_DEMO : Control
+    public partial class View_Game : Control
     {
         public bool isInit = false;
         public bool isInitializing = false;
         public object initLock = new object();
 
         EDITOR_Tool editor;
-        Model_DEMO model;
+        Model_Game model;
 
         Node _LogMessagesContainer;
         Label[] _Logs;
         int iterateLog = 0, _logCount = 0;
 
         Node _CardHolder;
-        List<Button> _Cards;
+        List<Button> _CardBtns;
         int _cardCount = 0;
 
         #region  INITIALIZATION
@@ -41,7 +42,8 @@ namespace View
                 if (!InitHeldCards()) GD.PrintErr("Could not initialize held cards");
                 else Print("Success! Held cards initialized!");
 
-                InitPlayerInput();
+                if (!InitPlayerInput()) GD.PrintErr("Could not initialize player button");
+                else Print("Success! Player button initialized!");
 
                 editor = FindEditor();
                 AwaitInitialization();
@@ -82,16 +84,16 @@ namespace View
                 return false;
             }
 
-            _Cards = new List<Button>();
-            _Cards.AddRange(CardHolder.GetChildren().OfType<Button>().ToArray());
+            _CardBtns = new List<Button>();
+            _CardBtns.AddRange(CardHolder.GetChildren().OfType<Button>().ToArray());
 
-            if (_Cards == null || _Cards.Count == 0)
+            if (_CardBtns == null || _CardBtns.Count == 0)
             {
                 GD.PrintErr("Could not find cards");
                 return false;
             }
 
-            _cardCount = _Cards.Count;
+            _cardCount = _CardBtns.Count;
             return _cardCount > 0;
         }
 
@@ -149,7 +151,7 @@ namespace View
         private async Task<bool> AssignModel(int failsafe)
         {
             failsafe++;
-            if (editor?.Model == null)
+            if (main.Instance?.gameModel == null)
             {
                 if (failsafe < 1000)
                 {
@@ -164,7 +166,7 @@ namespace View
             }
             else
             {
-                model = editor?.Model;
+                model = main.Instance.gameModel;
                 return true;
             }
         }
@@ -179,10 +181,12 @@ namespace View
 
         private void InitEvents()
         {
-            GD.Print("Init events");
+            GD.Print("Init View events");
+
             model.OnGameStart += OnGameStart;
             model.OnRoundStart += OnRoundStart;
             model.OnTurnStart += OnTurnStart;
+            model.OnTurnEnd += OnTurnEnd;
 
             model.OnDeckBuildStart += OnDeckBuildStart;
             model.OnDeckBuildAddedCard += OnDeckBuildAddedCard;
@@ -203,6 +207,8 @@ namespace View
             // INPUT
             model.OnAwaitStartGame += OnAwaitStartGame;
             model.OnAwaitDrawCard += OnAwaitDrawCard;
+
+            model.OnAwaitTurnActions += OnAwaitTurnActions;
         }
 
         private void OnGameStart(Card[] CardSet, Card[] CardSet_NoBases)
@@ -224,6 +230,12 @@ namespace View
             GD.Print($"----- START TURN {turnCounter + 1} -----");
             GD.Print($"It is player [{turnPlayerIndex}]'s turn");
             GD.Print("------------------------");
+        }
+
+        private void OnTurnEnd(int turnCounter, int playerIndex)
+        {
+            if(model.OnCardRemoved != null)
+                model.OnCardRemoved -= SubscribeAllCards;
         }
 
         private void DisplayCardSet(Card[] CardSet, Card[] CardSet_NoBases)
@@ -265,7 +277,7 @@ namespace View
         {
             Print($"Player {newUnit.ownerIndex} placing card {newUnit.name} at location {newUnit.pos}");
 
-            Vector2 pxPos = Axial.AxToPx(_initPos, _sideLength, newUnit.pos);
+            Vector2 pxPos = Axial.AxToPx(_boardOffset, _sideLength, newUnit.pos);
             HexagonDraw hexagonDraw = new HexagonDraw(pxPos, _sideLength, GetColor(newUnit));
 
             // Remove currently rendered hex if needed
@@ -280,7 +292,7 @@ namespace View
         {
             Print($"Player {unit.ownerIndex} moved unit {unit.name} from {oldPos} to {unit.pos}. Calculated displacement: {unit.pos - oldPos}.");
 
-            Vector2 pxPos = Axial.AxToPx(_initPos, _sideLength, unit.pos);
+            Vector2 pxPos = Axial.AxToPx(_boardOffset, _sideLength, unit.pos);
             HexagonDraw hexagonDraw = new HexagonDraw(pxPos, _sideLength, GetColor(unit));
 
             // Remove old rendered hex if needed
@@ -358,14 +370,14 @@ namespace View
             if (ownerIndex == 0)
             {
                 // Increment cards until it reaches the same length as held cards
-                if (_Cards.Count < heldCards.Length)
+                if (_CardBtns.Count < heldCards.Length)
                 {
-                    while (_Cards.Count < heldCards.Length)
+                    while (_CardBtns.Count < heldCards.Length)
                     {
                         GD.PrintErr("This is not working");
-                        Button dup = _Cards[0].Duplicate() as Button;
+                        Button dup = _CardBtns[0].Duplicate() as Button;
                         _CardHolder.AddChild(dup);
-                        _Cards.Add(dup);
+                        _CardBtns.Add(dup);
                     }
                 }
 
@@ -373,7 +385,7 @@ namespace View
                 {
                     Card card = heldCards[i];
 
-                    _Cards[i].Text = card.NAME;
+                    _CardBtns[i].Text = card.NAME;
                 }
             }
         }
@@ -383,18 +395,18 @@ namespace View
             if (ownerIndex == 0)
             {
                 // Increment cards until it reaches the same length as held cards
-                if (_Cards.Count < heldCards.Length)
+                if (_CardBtns.Count < heldCards.Length)
                 {
-                    while (_Cards.Count < heldCards.Length)
+                    while (_CardBtns.Count < heldCards.Length)
                     {
                         GD.PrintErr("This is not working");
-                        Button dup = _Cards[0].Duplicate() as Button;
+                        Button dup = _CardBtns[0].Duplicate() as Button;
                         _CardHolder.AddChild(dup);
-                        _Cards.Add(dup);
+                        _CardBtns.Add(dup);
                     }
                 }
 
-                foreach (Button card in _Cards)
+                foreach (Button card in _CardBtns)
                 {
                     card.Text = "";
                 }
@@ -403,7 +415,7 @@ namespace View
                 {
                     Card card = heldCards[i];
 
-                    _Cards[i].Text = card.NAME;
+                    _CardBtns[i].Text = card.NAME;
                 }
             }
         }
@@ -478,6 +490,110 @@ namespace View
             playerInput_1.Pressed -= HandleInput_DrawCard;
         }
 
+        private void OnAwaitTurnActions(int playerIndex, int turnIndex)
+        {
+            if (playerIndex == 0)
+            {
+                AllowPlayHandCards(turnIndex);
+                AllowMoveUnits(turnIndex);
+            }
+        }
+
+        private void AllowPlayHandCards(int turnIndex)
+        {
+            SubscribeAllCards(0, null);
+
+            //When a card is removed from the hand, resubscribe to update for shifted indexes
+            model.OnCardRemoved += SubscribeAllCards;
+        }
+
+        private void AllowMoveUnits(int turnIndex)
+        {
+            main.Instance.OnProcess += OnMouseInput_MoveUnitRequest;
+        }
+
+        private bool _leftMouseClicked = false;
+        private Axial _unitToMove = Axial.Empty;
+
+        private void OnMouseInput_MoveUnitRequest()
+        {
+            Utility.MouseMoveObserver MouseMoveObserver = main.Instance.MouseMoveObserver;
+
+            if (_leftMouseClicked)
+                _leftMouseClicked = Input.IsMouseButtonPressed(MouseButton.Left);
+
+            if (Input.IsMouseButtonPressed(MouseButton.Left))
+            {
+                if (!_leftMouseClicked)
+                {
+                    _leftMouseClicked = true;
+                    MouseMoveObserver._pos_cur = GetViewport().GetMousePosition();
+
+                    Axial axMouse = Axial.PxToAx(_boardOffset, _sideLength, MouseMoveObserver._pos_cur);
+
+                    GD.Print($"Registered mouse input. Mouse position: (px:{MouseMoveObserver._pos_cur}, ax:{axMouse}");
+
+
+                    // If the user has selected a unit to move
+                    if (_unitToMove == Axial.Empty)
+                    {
+                        if (model.Board.IsAxialOnGrid(axMouse))
+                        {
+                            if (model.ActiveBoard_IsAxialOccupied(axMouse, out int boardIndex))
+                            {
+                                GD.Print($"User has clicked on a unit on the board");
+
+                                _unitToMove = axMouse;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (model.Board.IsAxialOnGrid(axMouse))
+                        {
+                            if (model.IsPlacementLocationValid(axMouse))
+                            {
+                                GD.Print($"User can move the unit to this open tile");
+                                if (model.Unit_TryMove(true, 0, _unitToMove, axMouse))
+                                    _unitToMove = Axial.Empty;
+                            }
+                            else
+                                _unitToMove = Axial.Empty;
+                        }
+                        else
+                            _unitToMove = Axial.Empty;
+                    }
+                }
+            }
+        }
+
+        private void SubscribeAllCards(int dummyInt, Card[] dummyHand)
+        {
+            for (int i = 0; i < _CardBtns.Count; i++)
+            {
+                Button cardBtn = _CardBtns[i];
+                SubscribeCardPressed(cardBtn, i);
+            }
+        }
+
+        private void SubscribeCardPressed(Button card, int index)
+        {
+            card.Pressed -= OnCardPressed;
+
+            card.Pressed += OnCardPressed;
+
+            void OnCardPressed()
+            {
+                HandleInput_PlaceCard(index);
+                card.Pressed -= OnCardPressed;
+            }
+        }
+
+        private void HandleInput_PlaceCard(int cardIndex)
+        {
+            model.TryPlaceCardRandomly(0, cardIndex);
+        }
+
         #endregion
 
         bool tryReadyAgain = false;
@@ -531,7 +647,7 @@ namespace View
         }
 
 
-        Vector2 _initPos = new Vector2(300, 500);
+        Vector2 _boardOffset = new Vector2(300, 500);
         float _sideLength = 20.0f;
 
         private void DrawGrid()
@@ -561,7 +677,7 @@ namespace View
                 {
                     colorIndex++;
                     System.Threading.Thread.Sleep(1);
-                    Vector2 pos = Axial.AxToPx(_initPos, _sideLength, ax);
+                    Vector2 pos = Axial.AxToPx(_boardOffset, _sideLength, ax);
                     HexagonDraw hexagonDraw = new HexagonDraw(pos, _sideLength, gridColors[colorIndex % gridColors.Length]);
                     GD.Print($"Adding {ax} @ {pos}");
                     progress.Report((ax, hexagonDraw));

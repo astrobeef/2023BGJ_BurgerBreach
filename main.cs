@@ -1,5 +1,6 @@
 using AxialCS;
 using Godot;
+using Model;
 using System;
 using System.Linq;
 using System.Threading;
@@ -12,15 +13,37 @@ public partial class main : Node
 	new Color(0.5f, 0.5f, 0.5f),
 	new Color(0.9f, 0.9f, 0.9f)};
 
-	public main Instance;
+	private static main _instance;
+	public static main Instance => _instance;
+
+	public Utility.MouseMoveObserver MouseMoveObserver => _mouseMoveObserver;
+	private Utility.MouseMoveObserver _mouseMoveObserver;
+
+	public Model_Game gameModel;
+
+	public Action OnProcess;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		Instance = this;
+		_instance = this;
+		_mouseMoveObserver = new Utility.MouseMoveObserver(_instance);
+
+		GD.Print($"Main ready. Is instance set ? {_instance != null}");
+		gameModel = new Model_Game();
 	}
 
-	public static Node GetActiveScene(Node anyNode, string GM_Name){
+	public override void _ExitTree()
+	{
+		_instance = null;
+	}
+
+    public override void _Process(double delta)
+    {
+		OnProcess?.Invoke();
+    }
+
+    public static Node GetActiveScene(Node anyNode, string GM_Name){
 		Node[] sceneTreeNodes = anyNode.GetTree().Root.GetChildren(false).ToArray<Node>();
 
 		if(sceneTreeNodes.Length > 2){

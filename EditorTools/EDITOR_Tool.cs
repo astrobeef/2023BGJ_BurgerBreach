@@ -23,7 +23,7 @@ namespace EditorTools
 		public event ProcessEvent OnProcess_PlayOnly;
 		public event ProcessEvent OnProcess;
 
-		public MouseMoveObserver MouseMoveObserver;
+		public EDITOR_MouseMoveObserver MouseMoveObserver;
 		public Model_DEMO Model;
 		public View.View_DEMO View;
 
@@ -73,7 +73,7 @@ namespace EditorTools
 				GD.Print("Executing _Ready in play");
 			}
 
-			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
+			MouseMoveObserver = new EDITOR_MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			if(!_disableBoardgame)
 			{
 				EnableMVC();
@@ -134,7 +134,7 @@ namespace EditorTools
 			if (MouseMoveObserver == null)
 			{
 				GD.PrintErr("Setting detect mouse movement script because it did not get set in 'ready'");
-				MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
+				MouseMoveObserver = new EDITOR_MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			}
 
 			EnableMVC();

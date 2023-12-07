@@ -1,15 +1,15 @@
-[gd_scene load_steps=13 format=3 uid="uid://wbe1hvc8f4lw"]
+[gd_scene load_steps=14 format=3 uid="uid://wbe1hvc8f4lw"]
 
-[ext_resource type="PackedScene" path="res://MVC/View/3D Assets/Prototype/Table/table.fbx" id="1_wfeww"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_BaseColor.png" id="2_7q0v0"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Metallic.png" id="3_nr8pv"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Normal.png" id="4_io3v4"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Roughness.png" id="5_1rbos"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_BaseColor.png" id="6_q4w5c"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Height.png" id="7_ddlbn"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Metallic.png" id="8_r61l7"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Normal.png" id="9_ufxy4"]
-[ext_resource type="Texture2D" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Roughness.png" id="10_jgtjj"]
+[ext_resource type="PackedScene" uid="uid://cr8edjt5xwh2g" path="res://MVC/View/3D Assets/Prototype/Table/table.fbx" id="1_wfeww"]
+[ext_resource type="Texture2D" uid="uid://bbym7jfnoju72" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_BaseColor.png" id="2_7q0v0"]
+[ext_resource type="Texture2D" uid="uid://banyxegojg3dn" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Metallic.png" id="3_nr8pv"]
+[ext_resource type="Texture2D" uid="uid://b1srdrsqmgq0j" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Normal.png" id="4_io3v4"]
+[ext_resource type="Texture2D" uid="uid://bt3157njrue2e" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_chrome_Roughness.png" id="5_1rbos"]
+[ext_resource type="Texture2D" uid="uid://bur4hxfouf7j2" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_BaseColor.png" id="6_q4w5c"]
+[ext_resource type="Texture2D" uid="uid://wigqxpreac0y" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Height.png" id="7_ddlbn"]
+[ext_resource type="Texture2D" uid="uid://dxe6qo6xgkc3p" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Metallic.png" id="8_r61l7"]
+[ext_resource type="Texture2D" uid="uid://bnygbvng3xyka" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Normal.png" id="9_ufxy4"]
+[ext_resource type="Texture2D" uid="uid://cfm3ep8h72j4s" path="res://MVC/View/3D Assets/Prototype/Table/table_texture_Flat/table_table_vinylTop_Roughness.png" id="10_jgtjj"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_12ci5"]
 albedo_texture = ExtResource("2_7q0v0")
@@ -29,8 +29,18 @@ normal_texture = ExtResource("9_ufxy4")
 heightmap_enabled = true
 heightmap_texture = ExtResource("7_ddlbn")
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_cak5p"]
+size = Vector3(1, 0.445218, 1)
+
 [node name="table" instance=ExtResource("1_wfeww")]
 
 [node name="pCube1" parent="RootNode" index="0"]
 surface_material_override/0 = SubResource("StandardMaterial3D_12ci5")
 surface_material_override/1 = SubResource("StandardMaterial3D_51vvf")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="RootNode" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.000693932, 0.000627019, 0.000372965)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RootNode/StaticBody3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.269611, 0)
+shape = SubResource("BoxShape3D_cak5p")

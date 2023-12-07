@@ -242,7 +242,6 @@ namespace Model
                 // Repost action until it has a subscriber
                 while(!PostAction(OnAwaitStartGame))
                 {
-                    GD.Print("Awaiting subscriber to be able to start the game");
                     Thread.Sleep(_waitTime * 100);
                 }
 

@@ -15,7 +15,6 @@ using System.Data;
 
 namespace EditorTools
 {
-	[Tool]
 	public partial class EDITOR_Tool : Control
 	{
 
@@ -26,7 +25,7 @@ namespace EditorTools
 
 		public MouseMoveObserver MouseMoveObserver;
 		public Model_DEMO Model;
-		public View.View View;
+		public View.View_DEMO View;
 
 		[Export]
 		bool _disableScript = true, _disableInput = true, _disableDraw = true;
@@ -67,22 +66,17 @@ namespace EditorTools
 			// Execute in EDITOR only
 			if (Engine.IsEditorHint() && !_disableScript)
 			{
-				GD.Print("Executing _Ready");
+				GD.Print("Executing _Ready in editor");
+			}
+			else{
+				
+				GD.Print("Executing _Ready in play");
 			}
 
 			MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			if(!_disableBoardgame)
 			{
-				Node ViewNode = this.GetChild(1);
-				if(!(ViewNode is View.View View))
-				{
-					GD.PrintErr("Could not pull View script off ViewNode");
-				}
-				else
-				{
-					View._Ready();
-					Model = new Model_DEMO(View);
-				}
+				EnableMVC();
 			}
 		}
 
@@ -114,6 +108,26 @@ namespace EditorTools
 			// GD.Print($"TOTAL HEXES: {HexAxialGrid.Count}");
 		}
 
+		private void EnableMVC()
+		{
+			if (!_disableBoardgame && Model == null)
+			{
+				Node ViewNode = this.GetChild(1);
+				if (!(ViewNode is View.View_DEMO View))
+				{
+					GD.PrintErr("Could not pull View script off ViewNode");
+				}
+				else
+				{
+					if(!View.isInit && !View.isInitializing)
+						View._Ready();
+						
+					Model = new Model_DEMO(View);
+					new Controller.AI.Controller_AI(Model, View);
+				}
+			}
+		}
+
 		// Called every frame. 'delta' is the elapsed time since the previous frame.
 		public override void _Process(double delta)
 		{
@@ -122,18 +136,8 @@ namespace EditorTools
 				GD.PrintErr("Setting detect mouse movement script because it did not get set in 'ready'");
 				MouseMoveObserver = new MouseMoveObserver(this, OnMouseMovement_UpdateSelectedAxial);
 			}
-			if(!_disableBoardgame && Model == null){
-				Node ViewNode = this.GetChild(1);
-				if(!(ViewNode is View.View View))
-				{
-					GD.PrintErr("Could not pull View script off ViewNode");
-				}
-				else
-				{
-					View._Ready();
-					Model = new Model_DEMO(View);
-				}
-			}
+
+			EnableMVC();
 
 			// Execute in EDITOR only
 			if (Engine.IsEditorHint() && !_disableScript)

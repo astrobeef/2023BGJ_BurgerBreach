@@ -10,10 +10,11 @@ using Model;
 
 namespace View
 {
-    [Tool]
-    public partial class View : Control
+    public partial class View_DEMO : Control
     {
         public bool isInit = false;
+        public bool isInitializing = false;
+        public object initLock = new object();
 
         EDITOR_Tool editor;
         Model_DEMO model;
@@ -26,26 +27,26 @@ namespace View
         List<Button> _Cards;
         int _cardCount = 0;
 
-        public Action TryStartGame;
-
         #region  INITIALIZATION
 
         public override void _Ready()
         {
             if (!isInit)
             {
+                isInitializing = true;
+
                 if (!InitLogs()) GD.PrintErr("Could not initialize logs");
                 else Print("Success! Logs initialized!");
-                
+
                 if (!InitHeldCards()) GD.PrintErr("Could not initialize held cards");
                 else Print("Success! Held cards initialized!");
 
+                InitPlayerInput();
+
                 editor = FindEditor();
-                HandleModelAssignment();
+                AwaitInitialization();
 
                 DrawGrid();
-                Print("View is ready!");
-                isInit = true;
             }
         }
 
@@ -75,7 +76,7 @@ namespace View
         {
             Node CardHolder = FindChild("CardHolder");
 
-            if(CardHolder == null)
+            if (CardHolder == null)
             {
                 GD.PrintErr("Could not find CardHolder");
                 return false;
@@ -94,6 +95,21 @@ namespace View
             return _cardCount > 0;
         }
 
+        private bool InitPlayerInput()
+        {
+            playerInput_1 = FindChild("InputButton") as Button;
+
+            if (playerInput_1 == null)
+            {
+                GD.PrintErr("Could not find InputButton");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         private EDITOR_Tool FindEditor()
         {
             EDITOR_Tool editor = GetParent() as EDITOR_Tool;
@@ -110,16 +126,26 @@ namespace View
             return editor;
         }
 
-        private async void HandleModelAssignment()
+        private async void AwaitInitialization()
+        {
+            isInit = await HandleModelAssignment();
+            isInitializing = false;
+
+            Print("View is ready!");
+        }
+
+        private async Task<bool> HandleModelAssignment()
         {
             bool isModelInit = await AssignModel(0);
 
             if (isModelInit)
             {
                 InitEvents();
-                TryStartGame?.Invoke();
             }
+
+            return isModelInit;
         }
+
         private async Task<bool> AssignModel(int failsafe)
         {
             failsafe++;
@@ -173,6 +199,10 @@ namespace View
             model.OnCardDrawn += OnCardDrawn;
             model.OnCardDrawn_fail += OnCardDrawn_fail;
             model.OnCardRemoved += OnCardRemoved;
+
+            // INPUT
+            model.OnAwaitStartGame += OnAwaitStartGame;
+            model.OnAwaitDrawCard += OnAwaitDrawCard;
         }
 
         private void OnGameStart(Card[] CardSet, Card[] CardSet_NoBases)
@@ -239,7 +269,7 @@ namespace View
             HexagonDraw hexagonDraw = new HexagonDraw(pxPos, _sideLength, GetColor(newUnit));
 
             // Remove currently rendered hex if needed
-            if(hexRenderer.IsHexRendered(newUnit.pos))
+            if (hexRenderer.IsHexRendered(newUnit.pos))
                 hexRenderer.RemoveHex(newUnit.pos);
 
             // Render hex
@@ -254,7 +284,7 @@ namespace View
             HexagonDraw hexagonDraw = new HexagonDraw(pxPos, _sideLength, GetColor(unit));
 
             // Remove old rendered hex if needed
-            if(hexRenderer.IsHexRendered(oldPos))
+            if (hexRenderer.IsHexRendered(oldPos))
             {
                 HexagonDraw draw = hexRenderer.HexAxialDrawDictionary[oldPos];
                 HexagonDraw redrawGrid = new HexagonDraw(draw.origin, draw.side_length, gridColors[0]);
@@ -263,7 +293,7 @@ namespace View
             }
 
             // Remove currently rendered hex if needed
-            if(hexRenderer.IsHexRendered(unit.pos))
+            if (hexRenderer.IsHexRendered(unit.pos))
                 hexRenderer.RemoveHex(unit.pos);
 
             // Render hex
@@ -287,7 +317,7 @@ namespace View
                 HexagonDraw hex = tuple.Item2;
                 hexRenderer.AddHex(ax, hex);
             });
-            
+
             IProgress<Axial> progress_remove = new Progress<Axial>(axial =>
             {
                 hexRenderer.RemoveHex(axial);
@@ -312,7 +342,7 @@ namespace View
         {
             Print($"Unit ${unit.name} destroyed!");
             // Remove currently rendered hex if needed
-            if(hexRenderer.IsHexRendered(unit.pos))
+            if (hexRenderer.IsHexRendered(unit.pos))
             {
                 HexagonDraw draw = hexRenderer.HexAxialDrawDictionary[unit.pos];
                 HexagonDraw redrawGrid = new HexagonDraw(draw.origin, draw.side_length, gridColors[4]);
@@ -364,7 +394,7 @@ namespace View
                     }
                 }
 
-                foreach(Button card in _Cards)
+                foreach (Button card in _Cards)
                 {
                     card.Text = "";
                 }
@@ -380,34 +410,8 @@ namespace View
 
         private void OnCardDrawn_fail(int ownerIndex, int cardsDrawn, int deckCount)
         {
-                Print($"Player {ownerIndex} cannot draw any more cards because their drawn count ({cardsDrawn}) is equal to their deck count ({deckCount})");
+            Print($"Player {ownerIndex} cannot draw any more cards because their drawn count ({cardsDrawn}) is equal to their deck count ({deckCount})");
         }
-
-        private Color GetColor(Unit unit)
-        {
-            if(unit.ownerIndex > BaseColors.Length)
-            {
-                    GD.PrintErr($"Not enough colors for the number of players : {unit.ownerIndex}");
-                    return gridColors[0];
-            }
-
-            switch (unit.type)
-            {
-                case Card.CardType.Base:
-                    return BaseColors[unit.ownerIndex];
-                case Card.CardType.Resource:
-                    return ResourceColors[unit.ownerIndex];
-                case Card.CardType.Offense:
-                    return OffenseColors[unit.ownerIndex];
-                default:
-                    GD.PrintErr($"Failed to catch case {unit.type}");
-                    return gridColors[0];
-            }
-        }
-
-        #endregion
-
-        bool tryReadyAgain = false;
 
         private void Print(string message)
         {
@@ -439,6 +443,47 @@ namespace View
             GD.Print(message);
         }
 
+        #endregion
+
+        #region View Driven Actions
+
+        public Button playerInput_1;
+
+        private void OnAwaitStartGame()
+        {
+            GD.Print("OnAwaitStartGame");
+
+            playerInput_1.Text = "Start Game";
+            playerInput_1.Pressed += HandleInput_StartGame;
+        }
+
+        private void HandleInput_StartGame()
+        {
+            playerInput_1.Text = "No input Registered";
+            model.triggerStartGame = true;
+            playerInput_1.Pressed -= HandleInput_StartGame;
+        }
+
+        private void OnAwaitDrawCard(int playerIndex, int drawIndex)
+        {
+            if(playerIndex != 0)
+                return;
+
+            playerInput_1.Text = "Draw Card";
+            playerInput_1.Pressed += HandleInput_DrawCard;
+        }
+
+        private void HandleInput_DrawCard()
+        {
+            playerInput_1.Text = "No Input Registered";
+            model.TriggerDrawCard = true;
+            playerInput_1.Pressed -= HandleInput_DrawCard;
+        }
+
+        #endregion
+
+        bool tryReadyAgain = false;
+
         #region RENDERER
         HexagonRenderer hexRenderer;
 
@@ -464,6 +509,28 @@ namespace View
     new Godot.Color(0.8f, 0.7f, 0.5f), // Desaturated Light Orange
     new Godot.Color(0.8f, 0.6f, 0.4f) // Desaturated Dark Orange
     };
+
+        private Color GetColor(Unit unit)
+        {
+            if (unit.ownerIndex > BaseColors.Length)
+            {
+                GD.PrintErr($"Not enough colors for the number of players : {unit.ownerIndex}");
+                return gridColors[0];
+            }
+
+            switch (unit.type)
+            {
+                case Card.CardType.Base:
+                    return BaseColors[unit.ownerIndex];
+                case Card.CardType.Resource:
+                    return ResourceColors[unit.ownerIndex];
+                case Card.CardType.Offense:
+                    return OffenseColors[unit.ownerIndex];
+                default:
+                    GD.PrintErr($"Failed to catch case {unit.type}");
+                    return gridColors[0];
+            }
+        }
 
 
         Vector2 _initPos = new Vector2(300, 500);
@@ -504,7 +571,7 @@ namespace View
             });
         }
 
-    #endregion
+        #endregion
 
-}
+    }
 }

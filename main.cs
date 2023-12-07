@@ -16,10 +16,13 @@ public partial class main : Node
 	private static main _instance;
 	public static main Instance => _instance;
 
+	private Node _currentScene;
+
 	public Utility.MouseMoveObserver MouseMoveObserver => _mouseMoveObserver;
 	private Utility.MouseMoveObserver _mouseMoveObserver;
 
 	public Model_Game gameModel;
+	public player Player;
 
 	public Action OnProcess;
 
@@ -29,8 +32,14 @@ public partial class main : Node
 		_instance = this;
 		_mouseMoveObserver = new Utility.MouseMoveObserver(_instance);
 
-		GD.Print($"Main ready. Is instance set ? {_instance != null}");
 		gameModel = new Model_Game();
+		Player = _currentScene.FindChild("Player", true, false) as player;
+		if(Player == null) GD.PrintErr($"Could not find player. Node exists? {_currentScene.FindChild("Player", true, false) != null}");
+	}
+
+	public override void _EnterTree()
+	{
+		_currentScene = GetCurrentScene(this);
 	}
 
 	public override void _ExitTree()
@@ -43,14 +52,21 @@ public partial class main : Node
 		OnProcess?.Invoke();
     }
 
+	public static Node GetCurrentScene(Node anyNode)
+	{
+        Viewport root = anyNode.GetTree().Root;
+        Node CurrentScene = root.GetChild(root.GetChildCount() - 1);
+		return CurrentScene;
+	}
+
     public static Node GetActiveScene(Node anyNode, string GM_Name){
-		Node[] sceneTreeNodes = anyNode.GetTree().Root.GetChildren(false).ToArray<Node>();
+		Node[] sceneTreeNodes = anyNode.GetTree().Root.GetChildren(true).ToArray<Node>();
 
 		if(sceneTreeNodes.Length > 2){
 			GD.PrintErr("Scene tree node length exceeds 2. Currently, this method assumes there are two nodes: one the active scene and one the Game Manager." +
 			" It may not function properly if there are more than two nodes.");
 		}
-		
+
 		foreach (Node node in sceneTreeNodes)
 		{
 			GD.Print($"Iterating over node: {node.Name}");

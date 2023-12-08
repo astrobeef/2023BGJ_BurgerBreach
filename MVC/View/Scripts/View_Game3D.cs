@@ -305,6 +305,8 @@ namespace View
             if (playerIndex == 0)
             {
                 playerInput_1.Text = "End Turn";
+            playerInput_1.Pressed += HandleInput_EndTurn;
+                
             }
         }
 

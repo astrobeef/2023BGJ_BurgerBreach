@@ -130,7 +130,7 @@ namespace Model
         /// <summary>
         /// The index of the player whose turn it is
         /// </summary>
-        private int _turnPlayerIndex = 0;
+        private int _endTurnPlayerIndex = 0;
 
         #endregion
 
@@ -379,8 +379,8 @@ namespace Model
 
         private void StartTurn(ref int turnCounter)
         {
-            _turnPlayerIndex = turnCounter % _PLAYER_COUNT;
-            PostAction(OnTurnStart, turnCounter, _turnPlayerIndex);
+            _endTurnPlayerIndex = turnCounter % _PLAYER_COUNT;
+            PostAction(OnTurnStart, turnCounter, _endTurnPlayerIndex);
 
             ResetAllActiveUnitsTurnActions();
 
@@ -390,8 +390,8 @@ namespace Model
                 // The intention I have is to post an action to begin awaiting some external script to trigger drawing a card
                 // My logic is that this way other scripts do not need to constantly be checking for this condition when its not even possible to trigger it
                 // It also removes the need to manage state, which I prefer not to deal with because I think it is overly complex and unintuitive
-                PostAction(OnAwaitDrawCard, _turnPlayerIndex, iDraw);
-                if (AwaitAction(ref TriggerDrawCard, TryDrawCard, _turnPlayerIndex))
+                PostAction(OnAwaitDrawCard, _endTurnPlayerIndex, iDraw);
+                if (AwaitAction(ref TriggerDrawCard, TryDrawCard, _endTurnPlayerIndex))
                     GD.PrintErr("Successfully drew card after awaiting trigger.");
                 else
                     GD.PrintErr("Failed to draw card after awaiting trigger");
@@ -399,7 +399,7 @@ namespace Model
 
             // Input should allow for placement OR movement OR attack all at the same time
 
-            PostAction(OnAwaitTurnActions, _turnPlayerIndex, turnCounter);
+            PostAction(OnAwaitTurnActions, _endTurnPlayerIndex, turnCounter);
             if (AwaitAction(ref TriggerEndTurn, TryEndTurn))
                 GD.PrintErr("Successfully ended the turn");
             else
@@ -413,7 +413,7 @@ namespace Model
 
             foreach (Unit occupant in _ActiveBoard)
             {
-                if (occupant.ownerIndex == _turnPlayerIndex)
+                if (occupant.ownerIndex == _endTurnPlayerIndex)
                 {
                     Thread.Sleep(_waitTime);
 
@@ -421,34 +421,34 @@ namespace Model
 
                     Axial oldPos = iUnit.pos;
 
-                    GD.Print($"Player {_turnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
+                    GD.Print($"Player {_endTurnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
 
                     if (Unit_TryRandomMove(iUnit, out Axial newPos))
                     {
-                        GD.Print($"Player {_turnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
+                        GD.Print($"Player {_endTurnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
                     }
                     else{
-                        GD.Print($"Player {_turnPlayerIndex} could not move {iUnit.name}");
+                        GD.Print($"Player {_endTurnPlayerIndex} could not move {iUnit.name}");
                     }
                 }
             }
 
             foreach (Unit occupant in _ActiveBoard)
             {
-                if (occupant.ownerIndex == _turnPlayerIndex)
+                if (occupant.ownerIndex == _endTurnPlayerIndex)
                 {
                     Thread.Sleep(_waitTime);
 
                     Unit iUnit = occupant;
 
-                    GD.Print($"Player {_turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
+                    GD.Print($"Player {_endTurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
 
                     if (Unit_TryRandomAttack(iUnit))
                     {
-                        GD.Print($"Player {_turnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
+                        GD.Print($"Player {_endTurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
                     }
                     else{
-                        GD.Print($"Player {_turnPlayerIndex} could not move {iUnit.name}");
+                        GD.Print($"Player {_endTurnPlayerIndex} could not move {iUnit.name}");
                     }
                 }
             }
@@ -463,7 +463,7 @@ namespace Model
             {
                 int cardIndex = _random.Next(0,_Hands.Length);
 
-                return TryPlaceCardRandomly(_turnPlayerIndex, cardIndex);
+                return TryPlaceCardRandomly(_endTurnPlayerIndex, cardIndex);
             }
 
             return false;
@@ -476,7 +476,7 @@ namespace Model
             // Place based on offense rules
             if (card.TYPE == Card.CardType.Offense)
             {
-                if (ActiveBoard_AllNonOffenseFriendlyUnits(_turnPlayerIndex, out Unit[] resourceUnits))
+                if (ActiveBoard_AllNonOffenseFriendlyUnits(_endTurnPlayerIndex, out Unit[] resourceUnits))
                 {
                     foreach (Unit resource in resourceUnits)
                     {
@@ -495,7 +495,7 @@ namespace Model
             // Else, get a random open tile to place the unit
             else if (TryGetOpenTile(out Axial openTile))
             {
-                TryPlaceCard_FromHand(_turnPlayerIndex, cardIndex, openTile);
+                TryPlaceCard_FromHand(_endTurnPlayerIndex, cardIndex, openTile);
             }
             else
                 GD.Print("Could not place card because all tiles are filled");
@@ -505,7 +505,7 @@ namespace Model
 
         private bool TryEndTurn()
         {
-            PostAction(OnTurnEnd, _turnCounter, _turnPlayerIndex);
+            PostAction(OnTurnEnd, _turnCounter, _endTurnPlayerIndex);
             // No need to increment turn counter or start next turn, turns run in a while loop until the round is over.
             return true;
         }
@@ -767,7 +767,7 @@ namespace Model
 
         public bool Unit_TryMove(bool isWillful, int playerIndex, Axial unitPos, Axial destination)
         {
-            if(playerIndex == _turnPlayerIndex)
+            if(playerIndex == _endTurnPlayerIndex)
             {
                 if(ActiveBoard_IsAxialOccupied(unitPos, out int boardIndex))
                 {

@@ -42,11 +42,33 @@ public partial class player : Node3D
 	{
 		camera = GetChild(0) as Camera3D;
 
+		main.Instance.gameModel.OnTurnEnd += OnTurnEnd;
+		main.Instance.gameModel.OnTurnStart += OnTurnStart;
+	}
+
+	private void OnTurnStart(int turnCounter, int endTurnPlayerIndex)
+	{
+		if(endTurnPlayerIndex == 0)
+		{
 		OnCardSelected += FireOnCardSelected;
 		OnCardDeselected += FireOnCardDeselected;
 
 		OnUnitSelected += FireOnUnitSelected;
 		OnUnitDeselected += FireOnUnitDeselected;
+		}
+	}
+
+	private void OnTurnEnd(int turnCounter, int endTurnPlayerIndex)
+	{
+		if(endTurnPlayerIndex == 0)
+		{
+
+		OnCardSelected -= FireOnCardSelected;
+		OnCardDeselected -= FireOnCardDeselected;
+
+		OnUnitSelected -= FireOnUnitSelected;
+		OnUnitDeselected -= FireOnUnitDeselected;
+		}
 	}
 
 	private void FireOnCardSelected(Card3D card3D)

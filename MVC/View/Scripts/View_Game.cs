@@ -197,7 +197,7 @@ namespace View
             model.OnUnitAttack += OnUnitAttack;
             model.OnBaseDestroyed += OnBaseDestroyed;
             model.OnDamaged += OnDamaged;
-            model.OnDeath += OnDeath;
+            model.OnUnitDeath += OnDeath;
             model.OnCollision += OnCollision;
 
             model.OnCardDrawn += OnCardDrawn;
@@ -363,9 +363,9 @@ namespace View
             }
         }
 
-        private void OnCardDrawn(int ownerIndex, string cardName, Card[] heldCards, int cardsDrawn)
+        private void OnCardDrawn(int ownerIndex, Card card, Card[] heldCards, int cardsDrawn)
         {
-            Print($"Player {ownerIndex} drew a card ({cardName}), increasing their hand to {heldCards.Length}. Their drawn count has incremented to {cardsDrawn}");
+            Print($"Player {ownerIndex} drew a card ({card.NAME}), increasing their hand to {heldCards.Length}. Their drawn count has incremented to {cardsDrawn}");
 
             if (ownerIndex == 0)
             {
@@ -383,14 +383,14 @@ namespace View
 
                 for (int i = 0; i < heldCards.Length; i++)
                 {
-                    Card card = heldCards[i];
+                    Card iCard = heldCards[i];
 
-                    _CardBtns[i].Text = card.NAME;
+                    _CardBtns[i].Text = iCard.NAME;
                 }
             }
         }
 
-        private void OnCardRemoved(int ownerIndex, Card[] heldCards)
+        private void OnCardRemoved(int ownerIndex, Card cardRemoved, Card[] heldCards)
         {
             if (ownerIndex == 0)
             {
@@ -501,7 +501,7 @@ namespace View
 
         private void AllowPlayHandCards(int turnIndex)
         {
-            SubscribeAllCards(0, null);
+            SubscribeAllCards(0, Card.EMPTY, null);
 
             //When a card is removed from the hand, resubscribe to update for shifted indexes
             model.OnCardRemoved += SubscribeAllCards;
@@ -567,7 +567,7 @@ namespace View
             }
         }
 
-        private void SubscribeAllCards(int dummyInt, Card[] dummyHand)
+        private void SubscribeAllCards(int dummyInt, Card cardRemoved, Card[] dummyHand)
         {
             for (int i = 0; i < _CardBtns.Count; i++)
             {

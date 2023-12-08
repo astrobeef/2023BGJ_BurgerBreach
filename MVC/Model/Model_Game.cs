@@ -28,6 +28,7 @@ namespace Model
         private static readonly int _DECK_COUNT = 20;
         private static readonly int _HAND_START_COUNT = 4;
         private static readonly int _CARDS_DRAWN_PER_TURN = 1;
+        private static readonly int _CARDS_DRAWN_LIMIT = 6;
         private static readonly int _PLAYER_COUNT = 2;
         private static readonly int _BOARD_RADIUS = 2;
 
@@ -37,9 +38,9 @@ namespace Model
 
         // CARD SET
         private static readonly Card[] _CardSet = new Card[] {
-            new Card("Base Test", Card.CardType.Base, 10),
-            new Card("Resource Test", Card.CardType.Resource, 3),
-            new Card("Offense Test", 2, 3, 1)
+            new Card(false, "Base Test", Card.CardType.Base, 10),
+            new Card(false, "Resource Test", Card.CardType.Resource, 3),
+            new Card(false, "Offense Test", 2, 3, 1)
         };
 
         private static readonly Card[] _CardSet_NoBases = _CardSet
@@ -153,12 +154,12 @@ namespace Model
         public Action<Unit, Unit> OnUnitAttack;
         public Action<Unit> OnBaseDestroyed;
         public Action<Unit> OnDamaged;
-        public Action<Unit> OnDeath;
+        public Action<Unit> OnUnitDeath;
         public Action<Unit, Unit> OnCollision;
 
-        public Action<int, string, Card[], int> OnCardDrawn;
+        public Action<int, Card, Card[], int> OnCardDrawn;
         public Action<int, int, int> OnCardDrawn_fail;
-        public Action<int, Card[]> OnCardRemoved;
+        public Action<int, Card, Card[]> OnCardRemoved;
 
         // Await Input Actions
         public Action OnAwaitStartGame;
@@ -279,11 +280,11 @@ namespace Model
 
                 ref Card[] refDeck = ref _Decks[i];
                 refDeck = new Card[_DECK_COUNT];
-
                 for (int j = 0; j < refDeck.Length; j++)
                 {
                     int rand = _random.Next(0, _CardSet_NoBases.Length);
-                    refDeck[j] = _CardSet_NoBases[rand];
+                    Card cardFromSet = _CardSet_NoBases[rand];
+                    refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
                 }
@@ -315,7 +316,7 @@ namespace Model
                 ref Card[] refHand = ref _Hands[i];
                 ref Card[] refDeck = ref _Decks[i];
 
-                refHand = null;
+                refHand = new Card[0];
 
                 for (int j = 0; j < _HAND_START_COUNT; j++)
                 {
@@ -328,10 +329,14 @@ namespace Model
 
         private void InitBases(){
             for(int i = 0; i < _PLAYER_COUNT; i++){
-                Card BaseCard = _CardSet[0];
+                Card BaseFromSet = _CardSet[0];
+                Card BaseCard = new Card(true, BaseFromSet);
                 Axial BaseLocation = CardSet_GetBaseLocation(i);
 
-                TryPlaceCard_FromVoid(i, BaseLocation, BaseCard);
+                if(TryPlaceCard_FromVoid(i, BaseLocation, BaseCard))
+                    GD.Print($"Successfully placed base card from void @ {BaseLocation}");
+                    else
+                    GD.PrintErr($"Failed to place base card from void @ {BaseLocation}");
             }
         }
 
@@ -957,14 +962,14 @@ namespace Model
             int deckCount = iDeck.Length;
             ref int refDrawnCount = ref _CardsDrawn[player_index]; 
 
-            if(refDrawnCount < deckCount){
+            if(refDrawnCount < deckCount && refHand.Length < _CARDS_DRAWN_LIMIT){
                 Card drawnCard = iDeck[refDrawnCount];
 
                 int heldCount = AddCardToHand(player_index, drawnCard);
 
                 refDrawnCount++;
 
-                PostAction(OnCardDrawn, player_index, drawnCard.NAME, _Hands[player_index], refDrawnCount);
+                PostAction(OnCardDrawn, player_index, drawnCard, _Hands[player_index], refDrawnCount);
 
                 return true;
             }
@@ -985,7 +990,7 @@ namespace Model
         {
             ref Card[] refHand = ref _Hands[player_index];
 
-            if (refHand != null)
+            if (refHand != null && refHand.Length > 0)
             {
                 Card[] newHand = new Card[refHand.Length + 1];
                 refHand.CopyTo(newHand, 0);
@@ -1008,7 +1013,7 @@ namespace Model
             if (card_index < refHand.Length && card_index >= 0)
             {
                 //Get reference
-                Card card = refHand[card_index];
+                Card removedCard = refHand[card_index];
 
                 //Remove from hand
                 Card[] newHand = new Card[refHand.Length - 1];
@@ -1021,12 +1026,12 @@ namespace Model
                 }
                 refHand = newHand;
 
-                GD.Print($"Removed {card.NAME} from player {player_index}'s hand");
+                GD.Print($"Removed {removedCard.NAME} from player {player_index}'s hand");
 
-                PostAction(OnCardRemoved, player_index, newHand);
+                PostAction(OnCardRemoved, player_index, removedCard, newHand);
 
                 //Return removed card
-                return card;
+                return removedCard;
             }
             else{
                 GD.PrintErr($"Cannot remove index {card_index} from hand[{player_index}] because it is not within the bounds of the hand.");
@@ -1169,7 +1174,7 @@ namespace Model
 
             removedUnit = unitToRemove;
             GD.Print($"Successfully removed {removedUnit.name} from the board");
-            PostAction(OnDeath, removedUnit);
+            PostAction(OnUnitDeath, removedUnit);
             return true;
         }
 

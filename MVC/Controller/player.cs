@@ -7,31 +7,102 @@ public partial class player : Node3D
 	[Export(PropertyHint.Layers3DPhysics)] public uint CameraHitLayers;
 	[Export] private Camera3D camera;
 
-	[Export] private Vector3 top_down_position = new Vector3(0, 1.8f, 0);
+	[Export] private Vector3 top_down_position = new Vector3(0, 1.3f, 0.00f);
 	[Export] private Vector3 top_down_rotation = new Vector3(-90, 0, 0);
-	[Export] private Vector3 perspective_position = new Vector3(0f, 0.9f, 0.8f);
-	[Export] private Vector3 perspective_rotation = new Vector3(-20, 0, 0);
-	[Export] private float transition_time = 0.8f;
+	[Export] private Vector3 perspective_position = new Vector3(0f, 0.9f, 0.7f);
+	[Export] private Vector3 perspective_rotation = new Vector3(-35, 0, 0);
+	[Export] private float transition_time = 0.4f;
 
 	private bool top_down = false;
 
 	private Hit3D _camHoverHit;
 	public Hit3D CamHoverHit => _camHoverHit;
 
+	private Hit3D _camClickHit;
+	public Hit3D CamClickHit => _camClickHit;
+
 	public Action<Hit3D> OnCamHoverNewHit;
 	public Action<Hit3D> OnCamHoverOff;
 	public Action<Hit3D> OnCamHoverUpdate;
 
+	public Action<Hit3D> OnCamClickNewHit;
+	public Action<Hit3D> OnCamClickOff;
+	public Action<Hit3D> OnCamClickUpdate;
+
+	public Action<Card3D> OnCardSelected;
+	public Action OnCardDeselected;
+	public Card3D selectedCard3D;
+
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		SwitchToTopDown();
 		camera = GetChild(0) as Camera3D;
+		OnCardSelected += FireOnCardSelected;
+		OnCardDeselected += FireOnCardDeselected;
 	}
+
+	private void FireOnCardSelected(Card3D card3D)
+	{
+		SwitchToTopDown();
+		selectedCard3D = card3D;
+	}
+
+	private void FireOnCardDeselected()
+	{
+		SwitchToPerspective();
+		selectedCard3D = null;
+	}
+
+
+	bool _leftMouseClicked = false;
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+		if (_leftMouseClicked)
+			_leftMouseClicked = Input.IsMouseButtonPressed(MouseButton.Left);
+
+		if (Input.IsMouseButtonPressed(MouseButton.Left))
+		{
+			if (!_leftMouseClicked)
+			{
+				_leftMouseClicked = true;
+
+				if (Raycasting.RayCast(camera, CameraHitLayers, out Hit3D hit))
+				{
+						// If it is a new hit
+						if (_camClickHit != hit)
+						{
+							Hit3D previousHit = _camClickHit;
+							_camClickHit = hit;
+
+							// If the colliders are NOT the same (meaning this hit has hit a new object)
+							if (_camClickHit.collider != previousHit.collider)
+							{
+								OnCamClickOff?.Invoke(previousHit);
+
+								OnCamClickNewHit?.Invoke(_camClickHit);
+								OnCamClickUpdate?.Invoke(_camClickHit);
+							}
+							// Else the hit is at a different position, but on the same object
+							else
+							{
+								OnCamClickUpdate?.Invoke(_camClickHit);
+							}
+						}
+				}
+					else
+					{
+						if (_camClickHit != Hit3D.EMPTY)
+						{
+							Hit3D previousHit = _camClickHit;
+							_camClickHit = Hit3D.EMPTY;
+
+							OnCamClickOff?.Invoke(previousHit);
+						}
+					}
+			}
+		}
 	}
 
 	int wait = 0, waitThresh = 5;
@@ -57,9 +128,10 @@ public partial class player : Node3D
 							// If the colliders are NOT the same (meaning this hit has hit a new object)
 							if (_camHoverHit.collider != previousHit.collider)
 							{
+								OnCamHoverOff?.Invoke(previousHit);
+
 								OnCamHoverNewHit?.Invoke(_camHoverHit);
 								OnCamHoverUpdate?.Invoke(_camHoverHit);
-								OnCamHoverOff?.Invoke(_camHoverHit);
 							}
 							// Else the hit is at a different position, but on the same object
 							else
@@ -70,7 +142,6 @@ public partial class player : Node3D
 					}
 					else
 					{
-
 						if (_camHoverHit != Hit3D.EMPTY)
 						{
 							Hit3D previousHit = _camHoverHit;

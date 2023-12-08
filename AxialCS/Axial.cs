@@ -383,6 +383,14 @@ namespace AxialCS
 			return Justify(q_dub, r_dub, s_dub);
 		}
 
+		public static Vector3 AxToV3(Vector3 offset, float side_length, Axial ax)
+		{
+			Vector2 offset_2D = new Vector2(offset.X, offset.Z);
+            Vector2 AxToVetor2 = AxToPx(offset_2D, side_length, ax);
+			Vector3 axPosToV3 = new Vector3(AxToVetor2.X, 0, AxToVetor2.Y);
+			return offset + axPosToV3;
+		}
+
 		public static Axial Justify(double q_dub, double r_dub, double s_dub)
 		{
 

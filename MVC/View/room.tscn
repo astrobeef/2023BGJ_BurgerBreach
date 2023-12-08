@@ -1,14 +1,15 @@
-[gd_scene load_steps=10 format=3 uid="uid://dkdscj0cwt3g3"]
+[gd_scene load_steps=11 format=3 uid="uid://dkdscj0cwt3g3"]
 
 [ext_resource type="Script" path="res://MVC/Controller/player.cs" id="1_d5ki3"]
 [ext_resource type="PackedScene" uid="uid://wbe1hvc8f4lw" path="res://MVC/View/table.tscn" id="3_58uyu"]
 [ext_resource type="PackedScene" uid="uid://cr1s4o3uma1lq" path="res://MVC/View/salt_shaker.tscn" id="3_p17y6"]
-[ext_resource type="PackedScene" uid="uid://c305v0qr06n73" path="res://MVC/View/board2.tscn" id="3_qmwdm"]
+[ext_resource type="PackedScene" path="res://MVC/View/board2.tscn" id="3_qmwdm"]
 [ext_resource type="PackedScene" uid="uid://dbqjtghup7fhg" path="res://MVC/View/pepper_shaker.tscn" id="4_pw7er"]
 [ext_resource type="PackedScene" uid="uid://btn6bjoogftaf" path="res://MVC/View/cup.tscn" id="5_ajrav"]
 [ext_resource type="PackedScene" uid="uid://cin7axo50v1l2" path="res://MVC/View/glass.tscn" id="6_h06q7"]
 [ext_resource type="PackedScene" uid="uid://dih65wa8mt7d4" path="res://MVC/View/ketchup.tscn" id="7_xara2"]
 [ext_resource type="PackedScene" uid="uid://p4nrole5g5lk" path="res://MVC/View/napkin.tscn" id="8_40lig"]
+[ext_resource type="Script" path="res://MVC/View/Scripts/CardHolder3D.cs" id="10_qvydx"]
 
 [node name="Room" type="Node3D"]
 
@@ -50,3 +51,28 @@ transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0.293574, 0.498196, -0.
 
 [node name="napkin" parent="World" instance=ExtResource("8_40lig")]
 transform = Transform3D(1.19548, 0, -0.906002, 0, 1.5, 0, 0.906002, 0, 1.19548, 0.369478, 0.499462, -0.209207)
+
+[node name="CardHolder" type="Node3D" parent="."]
+transform = Transform3D(0.1, -1.65436e-23, 9.92617e-24, 2.31611e-23, 0.0702041, 0.0712137, 1.98523e-23, -0.0712137, 0.0702041, 0.0077132, 0.721136, 0.557637)
+script = ExtResource("10_qvydx")
+
+[node name="cardSlot1" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.256, 0, 0)
+
+[node name="cardSlot2" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.879147, 0.0484397, -0.0477533)
+
+[node name="cardSlot3" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.442671, 0.0842886, -0.0830946)
+
+[node name="cardSlot4" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0234748, 0.108257, -0.106724)
+
+[node name="cardSlot5" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.400328, 0.156698, -0.154478)
+
+[node name="cardSlot6" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.836804, 0.192545, -0.189819)
+
+[node name="cardSlot7" type="Node3D" parent="CardHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27017, 0.212481, -0.209483)

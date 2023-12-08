@@ -27,10 +27,28 @@ namespace View
             if (!isInit)
             {
                 isInitializing = true;
+                
+                if (!InitPlayerInput()) GD.PrintErr("Could not initialize player button");
+                else Print("Success! Player button initialized!");
 
                 AwaitInitialization();
 
-                DrawGrid();
+                // DrawGrid();
+            }
+        }
+
+        private bool InitPlayerInput()
+        {
+            playerInput_1 = FindChild("InputButton") as Button;
+
+            if (playerInput_1 == null)
+            {
+                GD.PrintErr("Could not find InputButton");
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -103,7 +121,7 @@ namespace View
             model.OnUnitAttack += OnUnitAttack;
             model.OnBaseDestroyed += OnBaseDestroyed;
             model.OnDamaged += OnDamaged;
-            model.OnDeath += OnDeath;
+            model.OnUnitDeath += OnDeath;
             model.OnCollision += OnCollision;
 
             model.OnCardDrawn += OnCardDrawn;
@@ -187,68 +205,21 @@ namespace View
         private void OnUnitAddedToBoard(Unit newUnit)
         {
             Print($"Player {newUnit.ownerIndex} placing card {newUnit.name} at location {newUnit.pos}");
-
-            Vector2 pxPos = Axial.AxToPx(_boardOffset, _sideLength, newUnit.pos);
-            HexagonDraw hexagonDraw = new HexagonDraw(pxPos, _sideLength, GetColor(newUnit));
-
-            // Remove currently rendered hex if needed
-            if (hexRenderer.IsHexRendered(newUnit.pos))
-                hexRenderer.RemoveHex(newUnit.pos);
-
-            // Render hex
-            hexRenderer.AddHex(newUnit.pos, hexagonDraw);
         }
 
         private void OnUnitMove(Axial oldPos, Unit unit)
         {
             Print($"Player {unit.ownerIndex} moved unit {unit.name} from {oldPos} to {unit.pos}. Calculated displacement: {unit.pos - oldPos}.");
-
-            Vector2 pxPos = Axial.AxToPx(_boardOffset, _sideLength, unit.pos);
-            HexagonDraw hexagonDraw = new HexagonDraw(pxPos, _sideLength, GetColor(unit));
-
-            // Remove old rendered hex if needed
-            if (hexRenderer.IsHexRendered(oldPos))
-            {
-                HexagonDraw draw = hexRenderer.HexAxialDrawDictionary[oldPos];
-                HexagonDraw redrawGrid = new HexagonDraw(draw.origin, draw.side_length, gridColors[0]);
-                hexRenderer.RemoveHex(oldPos);
-                hexRenderer.AddHex(oldPos, redrawGrid);
-            }
-
-            // Remove currently rendered hex if needed
-            if (hexRenderer.IsHexRendered(unit.pos))
-                hexRenderer.RemoveHex(unit.pos);
-
-            // Render hex
-            hexRenderer.AddHex(unit.pos, hexagonDraw);
         }
 
         private void OnUnitAttack(Unit attacker, Unit target)
         {
             Print($"Unit ${attacker.name} attacked {target.name}!");
-
-            Color attackerColor = GetColor(attacker);
         }
 
         private void OnDamaged(Unit unit)
         {
             Print($"Unit ${unit.name} was damaged!");
-
-            IProgress<(Axial, HexagonDraw)> progress_add = new Progress<(Axial, HexagonDraw)>(tuple =>
-            {
-                Axial ax = tuple.Item1;
-                HexagonDraw hex = tuple.Item2;
-                hexRenderer.AddHex(ax, hex);
-            });
-
-            IProgress<Axial> progress_remove = new Progress<Axial>(axial =>
-            {
-                hexRenderer.RemoveHex(axial);
-            });
-
-            Task.Run(() =>
-            {
-            });
         }
 
         private void OnBaseDestroyed(Unit Base)
@@ -264,22 +235,14 @@ namespace View
         private void OnDeath(Unit unit)
         {
             Print($"Unit ${unit.name} destroyed!");
-            // Remove currently rendered hex if needed
-            if (hexRenderer.IsHexRendered(unit.pos))
-            {
-                HexagonDraw draw = hexRenderer.HexAxialDrawDictionary[unit.pos];
-                HexagonDraw redrawGrid = new HexagonDraw(draw.origin, draw.side_length, gridColors[4]);
-                hexRenderer.RemoveHex(unit.pos);
-                hexRenderer.AddHex(unit.pos, redrawGrid);
-            }
         }
 
-        private void OnCardDrawn(int ownerIndex, string cardName, Card[] heldCards, int cardsDrawn)
+        private void OnCardDrawn(int ownerIndex, Card card, Card[] heldCards, int cardsDrawn)
         {
-            Print($"Player {ownerIndex} drew a card ({cardName}), increasing their hand to {heldCards.Length}. Their drawn count has incremented to {cardsDrawn}");
+            Print($"Player {ownerIndex} drew a card ({card.NAME}), increasing their hand to {heldCards.Length}. Their drawn count has incremented to {cardsDrawn}");
         }
 
-        private void OnCardRemoved(int ownerIndex, Card[] heldCards)
+        private void OnCardRemoved(int ownerIndex, Card cardRemoved, Card[] heldCards)
         {
         }
 
@@ -348,7 +311,7 @@ namespace View
 
         private void AllowPlayHandCards(int turnIndex)
         {
-            SubscribeAllCards(0, null);
+            SubscribeAllCards(0, Card.EMPTY, null);
 
             //When a card is removed from the hand, resubscribe to update for shifted indexes
             model.OnCardRemoved += SubscribeAllCards;
@@ -375,46 +338,11 @@ namespace View
                 {
                     _leftMouseClicked = true;
                     MouseMoveObserver._pos_cur = GetViewport().GetMousePosition();
-
-                    Axial axMouse = Axial.PxToAx(_boardOffset, _sideLength, MouseMoveObserver._pos_cur);
-
-                    GD.Print($"Registered mouse input. Mouse position: (px:{MouseMoveObserver._pos_cur}, ax:{axMouse}");
-
-
-                    // If the user has selected a unit to move
-                    if (_unitToMove == Axial.Empty)
-                    {
-                        if (model.Board.IsAxialOnGrid(axMouse))
-                        {
-                            if (model.ActiveBoard_IsAxialOccupied(axMouse, out int boardIndex))
-                            {
-                                GD.Print($"User has clicked on a unit on the board");
-
-                                _unitToMove = axMouse;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (model.Board.IsAxialOnGrid(axMouse))
-                        {
-                            if (model.IsPlacementLocationValid(axMouse))
-                            {
-                                GD.Print($"User can move the unit to this open tile");
-                                if (model.Unit_TryMove(true, 0, _unitToMove, axMouse))
-                                    _unitToMove = Axial.Empty;
-                            }
-                            else
-                                _unitToMove = Axial.Empty;
-                        }
-                        else
-                            _unitToMove = Axial.Empty;
-                    }
                 }
             }
         }
 
-        private void SubscribeAllCards(int dummyInt, Card[] dummyHand)
+        private void SubscribeAllCards(int dummyInt, Card cardRemoved, Card[] dummyHand)
         {
         }
 
@@ -448,101 +376,12 @@ namespace View
 
         private void OnCamHoverUpdate(Hit3D hit)
         {
-            Print($"Hit position has changed to: {hit.position}");
+            // Print($"Hit position has changed to: {hit.position}");
         }
 
         #endregion
 
         bool tryReadyAgain = false;
-
-        #region RENDERER
-        HexagonRenderer hexRenderer;
-
-        private Godot.Color[] gridColors = new Color[] {
-    new Color(0.40f, 0.40f, 0.40f),
-    new Color(0.42f, 0.42f, 0.42f),
-    new Color(0.44f, 0.44f, 0.44f),
-    new Color(0.46f, 0.46f, 0.46f),
-    new Color(0.48f, 0.48f, 0.48f),
-    new Color(0.50f, 0.50f, 0.5f)};
-
-        private Color[] BaseColors = new Color[] {
-    new Color(0.5f, 0.8f, 0.5f), // Desaturated Green
-    new Godot.Color(0.8f, 0.5f, 0.5f) // Desaturated Red
-    };
-
-        private Color[] ResourceColors = new Color[] {
-    new Godot.Color(0.7f, 0.6f, 0.8f), // Desaturated Light Purple
-    new Godot.Color(0.6f, 0.5f, 0.7f)  // Desaturated Dark Purple
-    };
-
-        private Color[] OffenseColors = new Color[] {
-    new Godot.Color(0.8f, 0.7f, 0.5f), // Desaturated Light Orange
-    new Godot.Color(0.8f, 0.6f, 0.4f) // Desaturated Dark Orange
-    };
-
-        private Color GetColor(Unit unit)
-        {
-            if (unit.ownerIndex > BaseColors.Length)
-            {
-                GD.PrintErr($"Not enough colors for the number of players : {unit.ownerIndex}");
-                return gridColors[0];
-            }
-
-            switch (unit.type)
-            {
-                case Card.CardType.Base:
-                    return BaseColors[unit.ownerIndex];
-                case Card.CardType.Resource:
-                    return ResourceColors[unit.ownerIndex];
-                case Card.CardType.Offense:
-                    return OffenseColors[unit.ownerIndex];
-                default:
-                    GD.PrintErr($"Failed to catch case {unit.type}");
-                    return gridColors[0];
-            }
-        }
-
-
-        Vector2 _boardOffset = new Vector2(300, 500);
-        float _sideLength = 20.0f;
-
-        private void DrawGrid()
-        {
-            hexRenderer = new HexagonRenderer();
-            main.GetActiveScene(this, this.Name).AddChild(hexRenderer);
-
-            Axial ax_origin = new Axial(0, 0);
-            GD.Print($"These axials do not have a screen space position. The first axial is located in Axial position: {ax_origin}");
-
-            IProgress<(Axial, HexagonDraw)> progress = new Progress<(Axial, HexagonDraw)>(tuple =>
-            {
-                Axial ax = tuple.Item1;
-                HexagonDraw hex = tuple.Item2;
-                hexRenderer.AddHex(ax, hex);
-            });
-
-            Task.Run(() =>
-            {
-                while (model == null || model.Board.Axials == null || model.Board.Axials.Length == 0)
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-
-                int colorIndex = 0;
-                foreach (Axial ax in model.Board.Axials)
-                {
-                    colorIndex++;
-                    System.Threading.Thread.Sleep(1);
-                    Vector2 pos = Axial.AxToPx(_boardOffset, _sideLength, ax);
-                    HexagonDraw hexagonDraw = new HexagonDraw(pos, _sideLength, gridColors[colorIndex % gridColors.Length]);
-                    GD.Print($"Adding {ax} @ {pos}");
-                    progress.Report((ax, hexagonDraw));
-                }
-            });
-        }
-
-        #endregion
 
     }
 }

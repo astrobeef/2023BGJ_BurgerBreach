@@ -31,22 +31,26 @@ namespace Utility
         /// </summary>
         private void DetectMovement()
         {
-            _movement_check = (_movement_check > 100)
-            ? 0
-            : _movement_check++;
-
-            if (_isDisplaced)
+            // Only execute if there's at least one subscriber
+            if (OnMouseMovement != null)
             {
-                UpdatePositions();
+                _movement_check = (_movement_check > 100)
+                ? 0
+                : _movement_check++;
 
-                OnMovement(_isDisplaced);
-            }
-            else
-            {
-                if (_movement_check % _MOVEMENT_CHECK_MOD == 0)
+                if (_isDisplaced)
                 {
                     UpdatePositions();
+
                     OnMovement(_isDisplaced);
+                }
+                else
+                {
+                    if (_movement_check % _MOVEMENT_CHECK_MOD == 0)
+                    {
+                        UpdatePositions();
+                        OnMovement(_isDisplaced);
+                    }
                 }
             }
         }

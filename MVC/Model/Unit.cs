@@ -5,7 +5,7 @@ using Godot;
 
 namespace Model
 {
-    public class Unit
+    public partial class Unit : Resource
     {
         private static int lastId = 0;
         public int id {get; private set;}
@@ -19,9 +19,11 @@ namespace Model
 
         public static Unit EMPTY = new Unit(-1, Axial.Empty, Card.EMPTY);
 
-
+        [Export]
         public int hp;
+        [Export]
         public int move;
+        [Export]
         public int atk;
         public static readonly int ATK_RANGE = 1;
 

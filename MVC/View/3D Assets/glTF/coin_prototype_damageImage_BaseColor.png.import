@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://byjanarpl3p8f"
-path.s3tc="res://.godot/imported/coin_prototype_coinBackground_BaseColor.png-03d33f68c0f28e97ce31644adcb4ab00.s3tc.ctex"
+uid="uid://bejonpd1chks4"
+path.s3tc="res://.godot/imported/coin_prototype_damageImage_BaseColor.png-0618b58ba737e339ace70aa6633fe40a.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://MVC/View/3D Assets/Prototype/Coin/coin_texture/coin_prototype_coinBackground_BaseColor.png"
-dest_files=["res://.godot/imported/coin_prototype_coinBackground_BaseColor.png-03d33f68c0f28e97ce31644adcb4ab00.s3tc.ctex"]
+source_file="res://MVC/View/3D Assets/glTF/coin_prototype_damageImage_BaseColor.png"
+dest_files=["res://.godot/imported/coin_prototype_damageImage_BaseColor.png-0618b58ba737e339ace70aa6633fe40a.s3tc.ctex"]
 
 [params]
 

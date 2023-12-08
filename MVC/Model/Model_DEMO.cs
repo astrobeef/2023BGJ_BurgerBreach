@@ -36,9 +36,9 @@ namespace Model
 
         // CARD SET
         private static readonly Card[] CardSet = new Card[] {
-            new Card("Base Test", Card.CardType.Base, 10),
-            new Card("Resource Test", Card.CardType.Resource, 3),
-            new Card("Offense Test", 2, 3, 1)
+            new Card(false, "Base Test", Card.CardType.Base, 10),
+            new Card(false, "Resource Test", Card.CardType.Resource, 3),
+            new Card(false, "Offense Test", 2, 3, 1)
         };
 
         private static readonly Card[] CardSet_NoBases = CardSet
@@ -244,7 +244,8 @@ namespace Model
                 for (int j = 0; j < refDeck.Length; j++)
                 {
                     int rand = random.Next(0, CardSet_NoBases.Length);
-                    refDeck[j] = CardSet_NoBases[rand];
+                    Card cardFromSet = CardSet_NoBases[rand];
+                    refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
                 }

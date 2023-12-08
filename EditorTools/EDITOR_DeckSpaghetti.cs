@@ -24,9 +24,9 @@ namespace Deck{
 
         // CARD SET
         private static readonly Card[] CardSet = new Card[] {
-            new Card("Base Test", Card.CardType.Base, 10),
-            new Card("Resource Test", Card.CardType.Resource, 3),
-            new Card("Offense Test", 2, 3, 1)
+            new Card(false, "Base Test", Card.CardType.Base, 10),
+            new Card(false, "Resource Test", Card.CardType.Resource, 3),
+            new Card(false, "Offense Test", 2, 3, 1)
         };
 
         private static readonly Card[] CardSet_NoBases = CardSet
@@ -351,7 +351,10 @@ namespace Deck{
         #endregion
     }
 
-    internal struct Card{
+    public struct Card{
+
+        private static int lastId = 0;
+        public int id { get; private set; }
 
         internal string name;
 
@@ -362,9 +365,11 @@ namespace Deck{
         internal int move;
         internal int atk;
 
-        internal static Card EMPTY = new Card("NULL", CardType.Base, -1);
+        internal static Card EMPTY = new Card(false, "NULL", CardType.Base, -1);
 
-        public Card (string name, CardType type, int hp){
+        public Card (bool giveID, string name, CardType type, int hp){
+            id = (giveID) ? System.Threading.Interlocked.Increment(ref lastId) : -1;
+
             this.name = name;
             this.type = type;
             this.hp = hp;
@@ -373,7 +378,9 @@ namespace Deck{
             atk = 0;
         }
 
-        public Card (string name, int hp, int move, int atk){
+        public Card (bool giveID, string name, int hp, int move, int atk){
+            id = (giveID) ? System.Threading.Interlocked.Increment(ref lastId) : -1;
+
             this.name = name;
             type = CardType.Offense;
 

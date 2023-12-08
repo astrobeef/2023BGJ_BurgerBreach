@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://byjanarpl3p8f"
-path.s3tc="res://.godot/imported/coin_prototype_coinBackground_BaseColor.png-03d33f68c0f28e97ce31644adcb4ab00.s3tc.ctex"
+uid="uid://bk3gs42rmrj53"
+path.s3tc="res://.godot/imported/card_moe.png-0b9c6cc3f97ba27887a81e8f5dfa2508.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://MVC/View/3D Assets/Prototype/Coin/coin_texture/coin_prototype_coinBackground_BaseColor.png"
-dest_files=["res://.godot/imported/coin_prototype_coinBackground_BaseColor.png-03d33f68c0f28e97ce31644adcb4ab00.s3tc.ctex"]
+source_file="res://MVC/View/3D Assets/Prototype/Card/card_moe.png"
+dest_files=["res://.godot/imported/card_moe.png-0b9c6cc3f97ba27887a81e8f5dfa2508.s3tc.ctex"]
 
 [params]
 

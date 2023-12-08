@@ -338,7 +338,7 @@ namespace Model
         private void StartTurn(ref int turnCounter)
         {
             turnPlayerIndex = turnCounter % PLAYER_COUNT;
-            PostAction(OnTurnStart, turnCounter, turnPlayerIndex);
+            PostAction(OnTurnStart, turnPlayerIndex, turnCounter);
 
             // DisplayCurrentActiveBoard();     //GD.Print method
 

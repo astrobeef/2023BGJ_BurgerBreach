@@ -18,8 +18,8 @@ script = ExtResource("3_u0o2o")
 
 [node name="InputButton" type="Button" parent="View"]
 layout_mode = 0
-offset_left = 501.038
-offset_top = 146.397
-offset_right = 628.038
-offset_bottom = 177.397
+offset_left = 59.0
+offset_top = 42.0
+offset_right = 186.0
+offset_bottom = 73.0
 text = "This is a button"

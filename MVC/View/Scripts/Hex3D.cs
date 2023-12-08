@@ -148,7 +148,7 @@ public partial class Hex3D : Node3D
 				main.Instance.gameModel.Unit_TryAttack(true, attackerUnit, attackDirection, activeUnit3D.unit);
 			}
 			
-			main.Instance.Player.OnUnitSelected(activeUnit3D);
+			main.Instance.Player?.OnUnitSelected(activeUnit3D);
 		}
 	}
 

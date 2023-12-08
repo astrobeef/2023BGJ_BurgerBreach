@@ -26,7 +26,7 @@ namespace Model
 
         // STATIC
         private static readonly int _DECK_COUNT = 20;
-        private static readonly int _HAND_START_COUNT = 4;
+        private static readonly int _HAND_START_COUNT = 2;
         private static readonly int _CARDS_DRAWN_PER_TURN = 1;
         private static readonly int _CARDS_DRAWN_LIMIT = 6;
         private static readonly int _PLAYER_COUNT = 2;
@@ -309,7 +309,6 @@ namespace Model
             while(!IsRoundOver(_turnCounter)){
                 StartTurn(ref _turnCounter);
                 _turnCounter++;
-                Thread.Sleep(2);
             }
         }
         
@@ -384,12 +383,9 @@ namespace Model
         private void StartTurn(ref int turnCounter)
         {
             _turnPlayerIndex = turnCounter % _PLAYER_COUNT;
-            GD.PrintErr($"Starting turn. _turnPlayerIndex({_turnPlayerIndex}) = turnCounter({turnCounter}) % _PLAYER_COUNT({_PLAYER_COUNT})");
-            PostAction(OnTurnStart, turnCounter, _turnPlayerIndex);
+            PostAction(OnTurnStart, _turnPlayerIndex, turnCounter);
 
             ResetAllActiveUnitsTurnActions();
-
-            Thread.Sleep(2);
 
             // 1. Draw a card
             for (int iDraw = 0; iDraw < _CARDS_DRAWN_PER_TURN; iDraw++)
@@ -399,7 +395,7 @@ namespace Model
                 // It also removes the need to manage state, which I prefer not to deal with because I think it is overly complex and unintuitive
                 PostAction(OnAwaitDrawCard, _turnPlayerIndex, iDraw);
                 if (AwaitAction(ref TriggerDrawCard, TryDrawCard, _turnPlayerIndex))
-                    GD.PrintErr("Successfully drew card after awaiting trigger.");
+                    GD.Print("Successfully drew card after awaiting trigger.");
                 else
                     GD.PrintErr("Failed to draw card after awaiting trigger");
             }
@@ -408,7 +404,7 @@ namespace Model
 
             PostAction(OnAwaitTurnActions, _turnPlayerIndex, turnCounter);
             if (AwaitAction(ref TriggerEndTurn, TryEndTurn))
-                GD.PrintErr("Successfully ended the turn");
+                GD.Print("Successfully ended the turn");
             else
                 GD.PrintErr("Failed to end the turn");
 
@@ -512,7 +508,7 @@ namespace Model
 
         private bool TryEndTurn()
         {
-            PostAction(OnTurnEnd, _turnCounter, _turnPlayerIndex);
+            PostAction(OnTurnEnd, _turnPlayerIndex, _turnCounter);
             // No need to increment turn counter or start next turn, turns run in a while loop until the round is over.
             return true;
         }
@@ -751,8 +747,6 @@ namespace Model
             int iDirection = 0;
 
             while(unit.CanMove(out int remainingMovement)){
-                Thread.Sleep(_waitTime);
-
                 if(iDirection >= Axial.CARDINAL_LENGTH)
                 {
                     GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
@@ -893,8 +887,6 @@ namespace Model
             // Else the target is alive, and if we should displace and the target is an offense unit, then
             else if (doDisplace && target.type == Card.CardType.Offense)
             {
-                Thread.Sleep(_waitTime);
-
                 Axial attackDisplacement = target.pos + attackDirection;
                 if (Unit_TryMove(false, target, attackDisplacement, out Unit occupant))
                 {
@@ -902,8 +894,6 @@ namespace Model
                 }
                 else if (occupant != Unit.EMPTY)
                 {
-                    Thread.Sleep(250);
-
                     GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
                     
                     target.Damage(_COLLISION_DAMAGE);
@@ -944,8 +934,6 @@ namespace Model
         }
 
         private void DisplayHand(int player_index){
-
-            Thread.Sleep(100);
 
                 GD.Print(new string('-', 28));
                 GD.Print($"----- Displaying hand[{player_index}] -----");
@@ -1223,9 +1211,6 @@ namespace Model
 
         private bool ActiveBoard_RemoveUnit(int unitToRemove_index, out Unit removedUnit)
         {
-            // Delay before removing unit from board in case its needed for calculations
-            Thread.Sleep(10);
-
             Unit unitToRemove = _activeBoard[unitToRemove_index];
             Unit[] newActiveBoard = new Unit[_activeBoard.Length - 1];
 

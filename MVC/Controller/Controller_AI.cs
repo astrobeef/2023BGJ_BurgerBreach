@@ -21,7 +21,7 @@ namespace Controller.AI
         {
             if (playerIndex != 0)
             {
-                GD.PrintErr("AI drawing card");
+                GD.Print("AI drawing card");
                 var async = async () =>
                 {
                     await System.Threading.Tasks.Task.Delay(500);
@@ -33,13 +33,11 @@ namespace Controller.AI
 
         Random random = new Random();
 
-        private void OnAwaitTurnActions(int turnCounter, int playerIndex)
+        private void OnAwaitTurnActions(int playerIndex, int turnCounter)
         {
             if (playerIndex != 0)
             {
-                GD.PrintErr($"AI turn beginning because it is player {playerIndex}'s turn");
-                GD.PrintErr($"Turn counter is {turnCounter}");
-
+                GD.Print("AI beginning turn");
                 var async = async () =>
                 {
                     await System.Threading.Tasks.Task.Delay(50);

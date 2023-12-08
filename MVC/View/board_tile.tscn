@@ -32,9 +32,9 @@ transform = Transform3D(1.36434, 0, 0, 0, 1.36434, 0, 0, 0, 1.36434, 0, 0.063941
 shape = SubResource("CylinderShape3D_w8qht")
 
 [node name="AtkText3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(3.67977, 0, 0, 0, 1.93219, 3.13166, 0, -3.13166, 1.93219, 0.443875, 0.210062, 0.407066)
+transform = Transform3D(3.67977, 0, 0, 0, 1.93219, 3.13166, 0, -3.13166, 1.93219, -0.407738, 0.210062, 0.407066)
 mesh = SubResource("TextMesh_5s8tm")
 
 [node name="HpText3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(3.29504, 0, 0, 0, 1.73018, 2.80424, 0, -2.80424, 1.73018, -0.412229, 0.210062, 0.407066)
+transform = Transform3D(3.29504, 0, 0, 0, 1.73018, 2.80424, 0, -2.80424, 1.73018, 0.415191, 0.210062, 0.407066)
 mesh = SubResource("TextMesh_fbp2q")

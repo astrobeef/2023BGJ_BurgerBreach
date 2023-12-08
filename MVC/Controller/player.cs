@@ -45,12 +45,12 @@ public partial class player : Node3D
 		camera = GetChild(0) as Camera3D;
 
 		main.Instance.gameModel.OnTurnEnd += OnTurnEnd;
-		main.Instance.gameModel.OnTurnStart += OnTurnStart;
+		main.Instance.gameModel.OnAwaitTurnActions += OnAwaitTurnActions;
 	}
 
-	private void OnTurnStart(int turnCounter, int endTurnPlayerIndex)
+	private void OnAwaitTurnActions(int turnPlayerIndex, int turnCounter)
 	{
-		if (endTurnPlayerIndex == 0)
+		if (turnPlayerIndex == 0)
 		{
 			OnCardSelected += FireOnCardSelected;
 			OnCardDeselected += FireOnCardDeselected;
@@ -60,7 +60,7 @@ public partial class player : Node3D
 		}
 	}
 
-	private void OnTurnEnd(int turnCounter, int endTurnPlayerIndex)
+	private void OnTurnEnd(int endTurnPlayerIndex, int turnCounter)
 	{
 		if (endTurnPlayerIndex == 0)
 		{

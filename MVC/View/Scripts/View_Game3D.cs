@@ -120,7 +120,7 @@ namespace View
             model.OnUnitMove += OnUnitMove;
             model.OnUnitAttack += OnUnitAttack;
             model.OnBaseDestroyed += OnBaseDestroyed;
-            model.OnDamaged += OnDamaged;
+            model.OnUnitDamaged += OnUnitDamaged;
             model.OnUnitDeath += OnDeath;
             model.OnCollision += OnCollision;
 
@@ -217,7 +217,7 @@ namespace View
             Print($"Unit ${attacker.name} attacked {target.name}!");
         }
 
-        private void OnDamaged(Unit unit)
+        private void OnUnitDamaged(Unit unit)
         {
             Print($"Unit ${unit.name} was damaged!");
         }

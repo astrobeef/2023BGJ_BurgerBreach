@@ -55,10 +55,10 @@ public partial class CardHolder3D : Node3D
 
 			switch (cardDrawn.NAME)
 			{
-				case ("Resource Test"):
+				case (Card.RESOURCE_TEST_NAME):
 					scene = GD.Load<PackedScene>(CARD_BURGER);
 					break;
-				case ("Offense Test"):
+				case (Card.OFFENSE_TEST_NAME):
 					scene = GD.Load<PackedScene>(CARD_MOE);
 					break;
 				default:

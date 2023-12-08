@@ -7,8 +7,8 @@ namespace Model
 {
     public partial class Unit : Resource
     {
-        private static int lastId = 0;
-        public int id {get; private set;}
+        private static uint lastId = 0;
+        public uint id {get; private set;}
 
         public AxialCS.Axial pos;
         public int ownerIndex;
@@ -106,16 +106,20 @@ namespace Model
         {
             return $"(owner:{ownerIndex}, pos:{pos}, hp:{hp}, || id:{id}, move:{move}, atk:{atk}, remainingMove:{TurnActions.remainingMovement}, hasAttacked:{TurnActions.hasAttacked} card:{card})";
         }
-        
 
         public static bool operator ==(Unit a, Unit b)
         {
+            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+                return true;
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+                return false;
+
             return a.id == b.id;
         }
 
         public static bool operator !=(Unit a, Unit b)
         {
-            return a.id != b.id;
+            return !(a == b);
         }
 
         public override bool Equals([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object obj)
@@ -133,7 +137,7 @@ namespace Model
             // Use a prime number to combine hash codes in a way that reduces the chance of collisions
             const int prime = 31;
             int hash = 17;  // Another prime number
-            hash = hash * prime + id;
+            hash = hash * prime + (int)id;
             return hash;
         }
     }

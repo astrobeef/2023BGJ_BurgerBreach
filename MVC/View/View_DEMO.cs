@@ -192,8 +192,8 @@ namespace View
             model.OnUnitMove += OnUnitMove;
             model.OnUnitAttack += OnUnitAttack;
             model.OnBaseDestroyed += OnBaseDestroyed;
-            model.OnDamaged += OnDamaged;
-            model.OnDeath += OnDeath;
+            model.OnUnitDamaged += OnUnitDamaged;
+            model.OnUnitDeath += OnUnitDeath;
             model.OnCollision += OnCollision;
 
             model.OnCardDrawn += OnCardDrawn;
@@ -307,7 +307,7 @@ namespace View
             Color attackerColor = GetColor(attacker);
         }
 
-        private void OnDamaged(Unit unit)
+        private void OnUnitDamaged(Unit unit)
         {
             Print($"Unit ${unit.name} was damaged!");
 
@@ -338,7 +338,7 @@ namespace View
             Print($"Unit ${mover.name} collided with {occupant.name}!");
         }
 
-        private void OnDeath(Unit unit)
+        private void OnUnitDeath(Unit unit)
         {
             Print($"Unit ${unit.name} destroyed!");
             // Remove currently rendered hex if needed

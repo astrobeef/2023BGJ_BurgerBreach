@@ -16,6 +16,7 @@ public partial class Board3D : Node3D
 
 	private static string COIN_BURGER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
 	private static string COIN_BASE = "res://MVC/View/3D Assets/Prototype/Coin/coin_base.tscn";
+	private static string COIN_MOE = "res://MVC/View/3D Assets/Prototype/Coin/coin_moe.tscn";
 
 
 	private Unit3D[] _ActiveUnit3Ds;
@@ -62,7 +63,19 @@ public partial class Board3D : Node3D
 
 		if (hex3DtoAddTo != null)
 		{
-			PackedScene scene = GD.Load<PackedScene>(COIN_BASE);
+			PackedScene scene = null;
+			switch(newUnit.card.NAME)
+			{
+				case(Card.BASE_TEST_NAME):
+				scene = GD.Load<PackedScene>(COIN_BASE);
+				break;
+				case(Card.RESOURCE_TEST_NAME):
+				scene = GD.Load<PackedScene>(COIN_BURGER);
+				break;
+				case(Card.OFFENSE_TEST_NAME):
+				scene = GD.Load<PackedScene>(COIN_MOE);
+				break;
+			}
 			if (scene != null)
 			{
 				CreateUnit3D(scene, hex3DtoAddTo, newUnit);
@@ -80,6 +93,7 @@ public partial class Board3D : Node3D
 		Unit3D unit3D = (Unit3D)scene.Instantiate();
 		unit3D.unit = unitModel;
 		parentHex.GetChild(0).AddChild(unit3D);
+		parentHex.SetStatsText(false);
 	}
 
 	private void OnUnitAttack(Unit attacker, Unit target)

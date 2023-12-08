@@ -38,9 +38,9 @@ namespace Model
 
         // CARD SET
         private static readonly Card[] _CardSet = new Card[] {
-            new Card(false, "Base Test", Card.CardType.Base, 10),
-            new Card(false, "Resource Test", Card.CardType.Resource, 3),
-            new Card(false, "Offense Test", 2, 3, 1)
+            new Card(false, Card.BASE_TEST_NAME, Card.CardType.Base, 10),
+            new Card(false, Card.RESOURCE_TEST_NAME, Card.CardType.Resource, 3),
+            new Card(false, Card.OFFENSE_TEST_NAME, 2, 3, 1)
         };
 
         private static readonly Card[] _CardSet_NoBases = _CardSet
@@ -153,7 +153,7 @@ namespace Model
         public Action<Axial, Unit> OnUnitMove;
         public Action<Unit, Unit> OnUnitAttack;
         public Action<Unit> OnBaseDestroyed;
-        public Action<Unit> OnDamaged;
+        public Action<Unit> OnUnitDamaged;
         public Action<Unit> OnUnitDeath;
         public Action<Unit, Unit> OnCollision;
 
@@ -871,7 +871,7 @@ namespace Model
 
         private bool HandleAttackAction(bool doDisplace, int damage, Axial attackDirection, Unit target)
         {
-            PostAction(OnDamaged, target);
+            PostAction(OnUnitDamaged, target);
             // If the target dies
             if (!target.Damage(damage))
             {
@@ -1064,6 +1064,41 @@ namespace Model
                 return false;
         }
 
+        public bool TryPlaceCard_FromHand(int player_index, uint cardID, Axial location)
+        {
+            if(GetCardByID_FromHand(player_index, cardID, out Card cardFromHand, out int cardFromHand_Index))
+            {
+                return TryPlaceCard_FromHand(player_index, cardFromHand_Index, location);
+            }
+            else
+                return false;
+        }
+
+        public bool GetCardByID_FromHand(int player_index, uint cardID, out Card cardFromHand, out int cardFromHand_Index)
+        {
+            cardFromHand = Card.EMPTY;
+
+            if(cardID == 0)
+            {
+                GD.PrintErr("Trying to get card by ID when paramter ID is 0. This method should not be run on cards from the card set (the only cards which should have ID 0)");
+                cardFromHand_Index = -1;
+                return false;
+            }
+
+            for (cardFromHand_Index = 0; cardFromHand_Index < _Hands[player_index].Length; cardFromHand_Index++)
+            {
+                Card card = _Hands[player_index][cardFromHand_Index];
+                if (card.id == cardID)
+                {
+                    cardFromHand = card;
+                    return true;
+                }
+            }
+
+            cardFromHand_Index = -1;
+            return false;
+        }
+
         private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card)
         {
             if(card.TYPE == Card.CardType.Offense){
@@ -1147,6 +1182,9 @@ namespace Model
 
         private bool ActiveBoard_RemoveUnit(int unitToRemove_index, out Unit removedUnit)
         {
+            // Delay before removing unit from board in case its needed for calculations
+            Thread.Sleep(10);
+
             Unit unitToRemove = _ActiveBoard[unitToRemove_index];
             Unit[] newActiveBoard = new Unit[_ActiveBoard.Length - 1];
 

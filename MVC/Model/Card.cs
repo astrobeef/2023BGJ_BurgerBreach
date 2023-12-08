@@ -2,8 +2,12 @@ namespace Model
 {
     public struct Card
     {
-        private static int lastId = 0;
-        public int id {get; private set;}
+        private static uint lastId = 0;
+        public uint id {get; private set;}
+
+        public const string BASE_TEST_NAME = "Base Test",
+            RESOURCE_TEST_NAME = "Resource Test",
+            OFFENSE_TEST_NAME = "Offense Test";
         
         public string NAME;
 
@@ -20,7 +24,7 @@ namespace Model
         {
             id = (isUnique)
              ? System.Threading.Interlocked.Increment(ref lastId)
-              : -1;
+              : 0;
 
             NAME = name;
             TYPE = type;
@@ -34,7 +38,7 @@ namespace Model
         {
             id = (isUnique == true)
              ? System.Threading.Interlocked.Increment(ref lastId)
-              : -1;
+              : 0;
 
             NAME = name;
             TYPE = CardType.Offense;
@@ -48,7 +52,7 @@ namespace Model
         {
             id = (isUnique == true)
              ? System.Threading.Interlocked.Increment(ref lastId)
-              : -1;
+              : 0;
 
             NAME = cardFromSet.NAME;
             TYPE = cardFromSet.TYPE;

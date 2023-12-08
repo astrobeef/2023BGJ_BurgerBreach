@@ -25,13 +25,18 @@ public partial class Card3D : Node3D
 			GD.PrintErr($"Could not find {STATIC_BODY_NAME} on {this.Name}");
 	}
 
-	private Vector3 onHoverDisplace = new Vector3(0, 0.1f, 0.02f);
+	private Vector3 _onHoverDisplace = new Vector3(0, 0.1f, 0.02f);
+	private bool _isOnHoverDisplaced = false;
 
 	private void OnCamHoverNewHit(Hit3D hit)
 	{
-		if(hit.collider == _body)
+		if (hit.collider == _body)
 		{
-			Position += onHoverDisplace;
+			if (!_isOnHoverDisplaced)
+			{
+				_isOnHoverDisplaced = true;
+				Position += _onHoverDisplace;
+			}
 		}
 	}
 
@@ -39,7 +44,11 @@ public partial class Card3D : Node3D
 	{
 		if(hit.collider == _body)
 		{
-			Position -= onHoverDisplace;
+			if (_isOnHoverDisplaced)
+			{
+				_isOnHoverDisplaced = false;
+				Position -= _onHoverDisplace;
+			}
 		}
 	}
 
@@ -55,7 +64,7 @@ public partial class Card3D : Node3D
 	{
 		if(hit.collider == _body)
 		{
-			main.Instance.Player.OnCardDeselected?.Invoke();
+			// main.Instance.Player.OnCardDeselected?.Invoke();
 		}
 	}
 }

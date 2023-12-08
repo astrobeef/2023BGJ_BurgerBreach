@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://dkavq0o6irgjt"]
+
+[ext_resource type="Script" path="res://MVC/Controller/sound_controller.cs" id="1_c6u2s"]
+
+[node name="SoundController" type="Node3D" node_paths=PackedStringArray("player1", "player2", "player3")]
+script = ExtResource("1_c6u2s")
+player1 = NodePath("AudioStreamPlayer")
+player2 = NodePath("AudioStreamPlayer2")
+player3 = NodePath("AudioStreamPlayer3")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
+
+[node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="."]
+
+[node name="AudioStreamPlayer3" type="AudioStreamPlayer" parent="."]

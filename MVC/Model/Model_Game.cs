@@ -106,7 +106,7 @@ namespace Model
                 _Hands[0] = value;
             }
         }
-        private Card[] _enemyHand
+        public Card[] EnemyHand
         {
             get
             {
@@ -121,7 +121,9 @@ namespace Model
         // Board Data
         private AxialGrid _Board;
         public AxialGrid Board => _Board;
-        private Unit[] _ActiveBoard = new Unit[0];
+
+        public Unit[] ActiveBoard => _activeBoard;
+        private Unit[] _activeBoard = new Unit[0];
 
         #endregion
 
@@ -130,7 +132,8 @@ namespace Model
         /// <summary>
         /// The index of the player whose turn it is
         /// </summary>
-        private int _endTurnPlayerIndex = 0;
+        public int TurnPlayerIndex => _turnPlayerIndex;
+        private int _turnPlayerIndex = 0;
 
         #endregion
 
@@ -299,13 +302,14 @@ namespace Model
 
             _turnCounter = 0;
             _Board = new AxialGrid(_BOARD_RADIUS);
-            _ActiveBoard = new Unit[0];
+            _activeBoard = new Unit[0];
             InitHands();
             InitBases();
 
             while(!IsRoundOver(_turnCounter)){
                 StartTurn(ref _turnCounter);
                 _turnCounter++;
+                Thread.Sleep(2);
             }
         }
         
@@ -379,10 +383,13 @@ namespace Model
 
         private void StartTurn(ref int turnCounter)
         {
-            _endTurnPlayerIndex = turnCounter % _PLAYER_COUNT;
-            PostAction(OnTurnStart, turnCounter, _endTurnPlayerIndex);
+            _turnPlayerIndex = turnCounter % _PLAYER_COUNT;
+            GD.PrintErr($"Starting turn. _turnPlayerIndex({_turnPlayerIndex}) = turnCounter({turnCounter}) % _PLAYER_COUNT({_PLAYER_COUNT})");
+            PostAction(OnTurnStart, turnCounter, _turnPlayerIndex);
 
             ResetAllActiveUnitsTurnActions();
+
+            Thread.Sleep(2);
 
             // 1. Draw a card
             for (int iDraw = 0; iDraw < _CARDS_DRAWN_PER_TURN; iDraw++)
@@ -390,8 +397,8 @@ namespace Model
                 // The intention I have is to post an action to begin awaiting some external script to trigger drawing a card
                 // My logic is that this way other scripts do not need to constantly be checking for this condition when its not even possible to trigger it
                 // It also removes the need to manage state, which I prefer not to deal with because I think it is overly complex and unintuitive
-                PostAction(OnAwaitDrawCard, _endTurnPlayerIndex, iDraw);
-                if (AwaitAction(ref TriggerDrawCard, TryDrawCard, _endTurnPlayerIndex))
+                PostAction(OnAwaitDrawCard, _turnPlayerIndex, iDraw);
+                if (AwaitAction(ref TriggerDrawCard, TryDrawCard, _turnPlayerIndex))
                     GD.PrintErr("Successfully drew card after awaiting trigger.");
                 else
                     GD.PrintErr("Failed to draw card after awaiting trigger");
@@ -399,7 +406,7 @@ namespace Model
 
             // Input should allow for placement OR movement OR attack all at the same time
 
-            PostAction(OnAwaitTurnActions, _endTurnPlayerIndex, turnCounter);
+            PostAction(OnAwaitTurnActions, _turnPlayerIndex, turnCounter);
             if (AwaitAction(ref TriggerEndTurn, TryEndTurn))
                 GD.PrintErr("Successfully ended the turn");
             else
@@ -411,9 +418,9 @@ namespace Model
 
             // 3. Move card(s)
 
-            foreach (Unit occupant in _ActiveBoard)
+            foreach (Unit occupant in _activeBoard)
             {
-                if (occupant.ownerIndex == _endTurnPlayerIndex)
+                if (occupant.ownerIndex == _turnPlayerIndex)
                 {
                     Thread.Sleep(_waitTime);
 
@@ -421,34 +428,34 @@ namespace Model
 
                     Axial oldPos = iUnit.pos;
 
-                    GD.Print($"Player {_endTurnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
+                    GD.Print($"Player {_turnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
 
                     if (Unit_TryRandomMove(iUnit, out Axial newPos))
                     {
-                        GD.Print($"Player {_endTurnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
+                        GD.Print($"Player {_turnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
                     }
                     else{
-                        GD.Print($"Player {_endTurnPlayerIndex} could not move {iUnit.name}");
+                        GD.Print($"Player {_turnPlayerIndex} could not move {iUnit.name}");
                     }
                 }
             }
 
-            foreach (Unit occupant in _ActiveBoard)
+            foreach (Unit occupant in _activeBoard)
             {
-                if (occupant.ownerIndex == _endTurnPlayerIndex)
+                if (occupant.ownerIndex == _turnPlayerIndex)
                 {
                     Thread.Sleep(_waitTime);
 
                     Unit iUnit = occupant;
 
-                    GD.Print($"Player {_endTurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
+                    GD.Print($"Player {_turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
 
                     if (Unit_TryRandomAttack(iUnit))
                     {
-                        GD.Print($"Player {_endTurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
+                        GD.Print($"Player {_turnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
                     }
                     else{
-                        GD.Print($"Player {_endTurnPlayerIndex} could not move {iUnit.name}");
+                        GD.Print($"Player {_turnPlayerIndex} could not move {iUnit.name}");
                     }
                 }
             }
@@ -463,7 +470,7 @@ namespace Model
             {
                 int cardIndex = _random.Next(0,_Hands.Length);
 
-                return TryPlaceCardRandomly(_endTurnPlayerIndex, cardIndex);
+                return TryPlaceCardRandomly(_turnPlayerIndex, cardIndex);
             }
 
             return false;
@@ -476,7 +483,7 @@ namespace Model
             // Place based on offense rules
             if (card.TYPE == Card.CardType.Offense)
             {
-                if (ActiveBoard_AllNonOffenseFriendlyUnits(_endTurnPlayerIndex, out Unit[] resourceUnits))
+                if (ActiveBoard_AllNonOffenseFriendlyUnits(_turnPlayerIndex, out Unit[] resourceUnits))
                 {
                     foreach (Unit resource in resourceUnits)
                     {
@@ -495,7 +502,7 @@ namespace Model
             // Else, get a random open tile to place the unit
             else if (TryGetOpenTile(out Axial openTile))
             {
-                TryPlaceCard_FromHand(_endTurnPlayerIndex, cardIndex, openTile);
+                TryPlaceCard_FromHand(_turnPlayerIndex, cardIndex, openTile);
             }
             else
                 GD.Print("Could not place card because all tiles are filled");
@@ -505,7 +512,7 @@ namespace Model
 
         private bool TryEndTurn()
         {
-            PostAction(OnTurnEnd, _turnCounter, _endTurnPlayerIndex);
+            PostAction(OnTurnEnd, _turnCounter, _turnPlayerIndex);
             // No need to increment turn counter or start next turn, turns run in a while loop until the round is over.
             return true;
         }
@@ -526,7 +533,7 @@ namespace Model
 
             if (ActiveBoard_IsAxialOccupied(baseLocation, out int baseIndex))
             {
-                playerBase = _ActiveBoard[baseIndex];
+                playerBase = _activeBoard[baseIndex];
                 return true;
             }
             else
@@ -539,14 +546,14 @@ namespace Model
         }
 
         /// <summary>
-        /// 'out' index within <see cref="_ActiveBoard"/> of the unit at the axial position, if one exists
+        /// 'out' index within <see cref="_activeBoard"/> of the unit at the axial position, if one exists
         /// </summary>
         /// <returns>True if a unit exists at the parameter axial, false if not</returns>
         public bool ActiveBoard_IsAxialOccupied(Axial axial, out int boardIndex)
         {
-            for (int i = 0; i < _ActiveBoard.Length; i++)
+            for (int i = 0; i < _activeBoard.Length; i++)
             {
-                Unit unit = _ActiveBoard[i];
+                Unit unit = _activeBoard[i];
                 if (unit.pos == axial){
                     boardIndex = i;
                     return true;
@@ -590,7 +597,7 @@ namespace Model
             int[] neighborBoardIndexes;
             if(ActiveBoard_FindNeighbors(originAxial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
-                    Unit neighborUnit = _ActiveBoard[index];
+                    Unit neighborUnit = _activeBoard[index];
                     if(neighborUnit.ownerIndex != ownerIndex){
                         enemyNeighborUnit = neighborUnit;
                         return true;
@@ -611,7 +618,7 @@ namespace Model
             int[] neighborBoardIndexes;
             if(ActiveBoard_FindNeighbors(axial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
-                    Unit neighbor = _ActiveBoard[index];
+                    Unit neighbor = _activeBoard[index];
                     if(neighbor.ownerIndex == ownerIndex && neighbor.type != Card.CardType.Offense){
                         friendlyUnit = neighbor;
                         return true;
@@ -627,7 +634,7 @@ namespace Model
         {
             List<Unit> friendlyUnits_List = new List<Unit>(0);
 
-            foreach(Unit unit in _ActiveBoard)
+            foreach(Unit unit in _activeBoard)
             {
                 if(unit.ownerIndex == ownerIndex)
                 {
@@ -728,15 +735,15 @@ namespace Model
         private void DisplayCurrentActiveBoard()
         {
             GD.Print("--- Displaying active board ---");
-            for (int i = 0; i < _ActiveBoard.Length; i++)
+            for (int i = 0; i < _activeBoard.Length; i++)
             {
-                Unit unit = _ActiveBoard[i];
+                Unit unit = _activeBoard[i];
                 GD.Print($"[{i}]:{unit}");
             }
             GD.Print("-------------------------------");
         }
 
-        private bool Unit_TryRandomMove(Unit unit, out Axial newPos){
+        public bool Unit_TryRandomMove(Unit unit, out Axial newPos){
 
             Axial initPos = unit.pos;
             newPos = initPos;
@@ -767,11 +774,11 @@ namespace Model
 
         public bool Unit_TryMove(bool isWillful, int playerIndex, Axial unitPos, Axial destination)
         {
-            if(playerIndex == _endTurnPlayerIndex)
+            if(playerIndex == _turnPlayerIndex)
             {
                 if(ActiveBoard_IsAxialOccupied(unitPos, out int boardIndex))
                 {
-                    Unit unit = _ActiveBoard[boardIndex];
+                    Unit unit = _activeBoard[boardIndex];
 
                     return Unit_TryMove(isWillful, unit, destination);
                 }
@@ -827,7 +834,7 @@ namespace Model
             }
         }
 
-        private bool Unit_TryRandomAttack(Unit unit)
+        public bool Unit_TryRandomAttack(Unit unit)
         {
             if(unit.CanAttack())
             {                
@@ -851,7 +858,9 @@ namespace Model
 
             GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos} in direction {attackDirection}.");
             
-            if(Axial.Distance(Axial.Zero, attackDirection) <= Unit.ATK_RANGE)
+            if(
+                Axial.Distance(Axial.Zero, attackDirection) <= Unit.ATK_RANGE
+                && attacker.CanAttack())
             {
                 attacker.Attack();
                 PostAction(OnUnitAttack, attacker, target);
@@ -929,7 +938,7 @@ namespace Model
 
         private void ResetAllActiveUnitsTurnActions()
         {
-            foreach(Unit unit in _ActiveBoard){
+            foreach(Unit unit in _activeBoard){
                 unit.ResetTurnActions();
             }
         }
@@ -1173,18 +1182,18 @@ namespace Model
 
         private void ActiveBoard_AddUnit(Unit newUnit)
         {
-            if (_ActiveBoard != null)
+            if (_activeBoard != null)
             {
-                Unit[] newActiveBoard = new Unit[_ActiveBoard.Length + 1];
-                _ActiveBoard.CopyTo(newActiveBoard, 0);
+                Unit[] newActiveBoard = new Unit[_activeBoard.Length + 1];
+                _activeBoard.CopyTo(newActiveBoard, 0);
                 newActiveBoard[newActiveBoard.Length - 1] = newUnit;
 
-                _ActiveBoard = newActiveBoard;
+                _activeBoard = newActiveBoard;
                 PostAction(OnUnitAddedToBoard, newUnit);
             }
             else
             {
-                _ActiveBoard = new Unit[1] { newUnit };
+                _activeBoard = new Unit[1] { newUnit };
             }
         }
 
@@ -1192,9 +1201,9 @@ namespace Model
 
             int unit_BoardIndex = -1;
 
-            for (int i = 0; i < _ActiveBoard.Length; i++)
+            for (int i = 0; i < _activeBoard.Length; i++)
             {
-                if(unit == _ActiveBoard[i]){
+                if(unit == _activeBoard[i]){
                     unit_BoardIndex = i;
                     break;
                 }
@@ -1217,23 +1226,23 @@ namespace Model
             // Delay before removing unit from board in case its needed for calculations
             Thread.Sleep(10);
 
-            Unit unitToRemove = _ActiveBoard[unitToRemove_index];
-            Unit[] newActiveBoard = new Unit[_ActiveBoard.Length - 1];
+            Unit unitToRemove = _activeBoard[unitToRemove_index];
+            Unit[] newActiveBoard = new Unit[_activeBoard.Length - 1];
 
             lock (activeBoardLock){
 
-                for (int i = 0, j = 0; i < _ActiveBoard.Length; i++)
+                for (int i = 0, j = 0; i < _activeBoard.Length; i++)
                 {
                     if (i != unitToRemove_index)
                     {
-                        newActiveBoard[j++] = _ActiveBoard[i];
+                        newActiveBoard[j++] = _activeBoard[i];
                     }
                 }
 
-                _ActiveBoard = newActiveBoard;
+                _activeBoard = newActiveBoard;
             }
 
-            foreach(Unit unit in _ActiveBoard)
+            foreach(Unit unit in _activeBoard)
             {
                 if(unit == unitToRemove){
                     GD.PrintErr($"Failed to remove {unitToRemove} from active board");
@@ -1268,7 +1277,7 @@ namespace Model
             if (ActiveBoard_IsAxialOccupied(location, out int boardIndex))
             {
                 GD.Print($"Cannot place unit at {location} because a unit is already placed there.");
-                occupant = _ActiveBoard[boardIndex];
+                occupant = _activeBoard[boardIndex];
                 return false;
             }
 

@@ -1,4 +1,5 @@
 using AxialCS;
+using Controller.AI;
 using Godot;
 using Model;
 using System;
@@ -23,6 +24,7 @@ public partial class main : Node
 
 	public Model_Game gameModel;
 	public player Player;
+	public Controller_AI AI;
 
 	public Action OnProcess;
 
@@ -35,6 +37,8 @@ public partial class main : Node
 		gameModel = new Model_Game();
 		Player = _currentScene.FindChild("Player", true, false) as player;
 		if(Player == null) GD.PrintErr($"Could not find player. Node exists? {_currentScene.FindChild("Player", true, false) != null}");
+
+		AI = new Controller_AI(gameModel);
 	}
 
 	public override void _EnterTree()

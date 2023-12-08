@@ -123,7 +123,6 @@ namespace EditorTools
 						View._Ready();
 						
 					Model = new Model_DEMO(View);
-					new Controller.AI.Controller_AI(Model, View);
 				}
 			}
 		}

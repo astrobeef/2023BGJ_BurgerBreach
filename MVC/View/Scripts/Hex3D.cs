@@ -1,3 +1,4 @@
+using AxialCS;
 using Godot;
 using Model;
 using System;
@@ -7,10 +8,12 @@ using Utility;
 
 public partial class Hex3D : Node3D
 {
-	public AxialCS.Axial AxialPos;
+	public AxialCS.Axial AxialPos = AxialCS.Axial.Empty;
 	[Export]
-	Vector3 _exportAxial{
-		get{
+	Vector3 _exportAxial
+	{
+		get
+		{
 			return new Vector3(AxialPos.Q, AxialPos.S, AxialPos.R);
 		}
 		set
@@ -57,6 +60,7 @@ public partial class Hex3D : Node3D
 		main.Instance.Player.OnCamHoverOff += OnCamHoverOff;
 
 		main.Instance.Player.OnCamClickNewHit += OnCamClickNewHit;
+		main.Instance.Player.OnCamClickUpdate += OnCamClickNewHit;
 		main.Instance.Player.OnCamClickOff += OnCamClickOff;
 
 		main.Instance.gameModel.OnUnitDamaged += OnUnitDamaged;
@@ -72,16 +76,16 @@ public partial class Hex3D : Node3D
 	
 	private Vector3 onHoverDisplace = new Vector3(0, 0.1f, 0.02f);
 	bool isHoverDisplaced = false;
-	
+
 	private void OnCamHoverNewHit(Hit3D hit)
 	{
-		if(hit.collider == _body)
+		if (hit.collider == _body)
 		{
-				if(!isHoverDisplaced)
-				{
-					isHoverDisplaced = true;
-					// activeUnit3D.Position += onHoverDisplace;
-				}
+			if (!isHoverDisplaced)
+			{
+				isHoverDisplaced = true;
+				// activeUnit3D.Position += onHoverDisplace;
+			}
 		}
 	}
 
@@ -104,8 +108,10 @@ public partial class Hex3D : Node3D
 	{
 		if (hit.collider == _body)
 		{
+			GD.PrintErr($"Clicked on {this.Name} @ {AxialPos}");
 			if (main.Instance.Player.selectedCard3D != null)
 			{
+				GD.PrintErr($"{this.Name} @ {AxialPos} attempting to place player's selected card");
 				if (!main.Instance.gameModel
 				.TryPlaceCard_FromHand(
 					0,
@@ -124,16 +130,46 @@ public partial class Hex3D : Node3D
 					}
 				}
 			}
-			else if(activeUnit3D != null)
+
+			if (main.Instance.Player.selectedUnit3D == null
+			 && activeUnit3D != null
+			 && activeUnit3D.unit.ownerIndex == 0
+			 //  && main.Instance.Player.selectedUnit3D != activeUnit3D
+			 )
 			{
-				
+				GD.PrintErr($"{this.Name} @ {AxialPos} attempting to set player's selected unit to {activeUnit3D.unit}");
+				main.Instance.Player.OnUnitSelected(activeUnit3D);
+			}
+			else
+			{
+				GD.PrintErr($"Hex @ {this.AxialPos} did not trigger click interaction because either activeUnit3D is null ({activeUnit3D == null}) or owner is not the player ({activeUnit3D?.unit?.ownerIndex == 0})");
+			}
+
+			if (main.Instance.Player.selectedUnit3D != null
+			 && activeUnit3D == null
+			 )
+			{
+				Axial unitToMove_Pos = main.Instance.Player.selectedUnit3D.unit.pos;
+				main.Instance.gameModel.Unit_TryMove(true, 0, unitToMove_Pos, AxialPos);
+				GD.PrintErr($"{this.Name} @ {AxialPos} attempting to move player's selected unit from {unitToMove_Pos} to {AxialPos}");
+			}
+
+			if (main.Instance.Player.selectedUnit3D != null
+			 && activeUnit3D != null
+			 && main.Instance.Player.selectedUnit3D != activeUnit3D
+			 )
+			{
+				Unit attackerUnit = main.Instance.Player.selectedUnit3D.unit;
+				Axial attackDirection = (AxialPos - attackerUnit.pos);
+				main.Instance.gameModel.Unit_TryAttack(true, attackerUnit, attackDirection, activeUnit3D.unit);
+				GD.PrintErr($"{this.Name} @ {AxialPos} attempting to attack with player's selected unit {attackerUnit} against {activeUnit3D.unit}");
 			}
 		}
 	}
 
 	private void OnCamClickOff(Hit3D hit)
 	{
-		if(hit.collider == _body)
+		if (hit.collider == _body)
 		{
 		}
 	}

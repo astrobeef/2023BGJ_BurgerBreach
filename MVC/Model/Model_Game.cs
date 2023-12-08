@@ -833,7 +833,7 @@ namespace Model
             {                
                 if(ActiveBoard_FindEnemyNeighbor(unit.ownerIndex, unit.pos, out Unit target)){
                     Axial attackDirection = target.pos - unit.pos;
-                    return HandleAttackAction(true, unit, attackDirection, target);
+                    return Unit_TryAttack(true, unit, attackDirection, target);
                 }
             }
 
@@ -841,8 +841,14 @@ namespace Model
             return false;
         }
 
-        private bool HandleAttackAction(bool doDisplace, Unit attacker, Axial attackDirection, Unit target)
+        public bool Unit_TryAttack(bool doDisplace, Unit attacker, Axial attackDirection, Unit target)
         {
+            if(attacker == target)
+            {
+                GD.PrintErr($"Unit {attacker.name} is trying to attack itself");
+                return false;
+            }
+
             GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos} in direction {attackDirection}.");
             
             if(Axial.Distance(Axial.Zero, attackDirection) <= Unit.ATK_RANGE)

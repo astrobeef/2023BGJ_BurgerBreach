@@ -4,6 +4,7 @@ using Model;
 using System;
 using System.Collections.Generic;
 using System.Formats.Asn1;
+using System.Runtime.CompilerServices;
 using Utility;
 
 public partial class Board3D : Node3D
@@ -128,8 +129,27 @@ public partial class Board3D : Node3D
 
 			if (destinationHex3D.GetChild(0) != null)
 			{
-				destinationHex3D.GetChild(0).AddChild(unit3D);
-				destinationHex3D.SetStatsText(false);
+
+				PackedScene scene = null;
+				switch (unit3D.unit.card.NAME)
+				{
+					case (Card.BASE_TEST_NAME):
+						scene = GD.Load<PackedScene>(COIN_BASE);
+						break;
+					case (Card.RESOURCE_TEST_NAME):
+						scene = GD.Load<PackedScene>(COIN_BURGER);
+						break;
+					case (Card.OFFENSE_TEST_NAME):
+						scene = GD.Load<PackedScene>(COIN_MOE);
+						break;
+				}
+				if (scene != null)
+				{
+					CreateUnit3D(scene, destinationHex3D, unit3D.unit);
+				}
+				else GD.PrintErr($"scene is null");
+
+				DestroyUnit3D(originHex3D);
 			}
 			else GD.PrintErr($"${destinationHex3D.Name} missing coin slot");
 		}
@@ -141,22 +161,23 @@ public partial class Board3D : Node3D
 		// Play any VFX/SFX
 	}
 
-	private void OnUnitMove(Axial destination, Unit unit)
+	private void OnUnitMove(Axial oldPosition, Unit movedUnit)
 	{
+		Axial newPosition = movedUnit.pos;
 		// Move 3D unit towards destination then change parent placeholder Node3D. If that's too difficult, destroy and create.
-		if(IsUnitModelOnBoard3D(unit, out Hex3D hex3D))
+		if(IsUnitModelOnBoard3D(movedUnit, out Hex3D oldHex3D))
 		{
-			if(IsAxialOnBoard3D(destination, out Hex3D destHex3D))
+			if(IsAxialOnBoard3D(newPosition, out Hex3D destHex3D))
 			{
-				if (destHex3D.activeUnit3D != null)
+				if (destHex3D.activeUnit3D == null)
 				{
-					MoveUnit3D(hex3D.activeUnit3D, hex3D, destHex3D);
+					MoveUnit3D(oldHex3D.activeUnit3D, oldHex3D, destHex3D);
 				}
-				else GD.PrintErr($"{unit} attempting to move to axial {destination}, but that tile is already occupied by {destHex3D.activeUnit3D.unit.name}. This must be an View error since this case should have been checked in the Model");
+				else GD.PrintErr($"{movedUnit} attempting to move to axial {newPosition}, but that tile is already occupied by {destHex3D.activeUnit3D.unit.name}. This must be an View error since this case should have been checked in the Model");
 			}
-			else GD.PrintErr($"{unit} attempting to move to axial {destination}, but that tile does not exist on the board. This must be a View error since this case should have been checked in the Model");
+			else GD.PrintErr($"{movedUnit} attempting to move to axial {newPosition}, but that tile does not exist on the board. This must be a View error since this case should have been checked in the Model");
 		}
-		else GD.PrintErr($"{unit} attempting to move to axial {destination}, but that unit does not exist on Board3D. This must be a View error since this case should have been checked in the Model");
+		else GD.PrintErr($"{movedUnit} attempting to move to axial {newPosition}, but that unit does not exist on Board3D. This must be a View error since this case should have been checked in the Model");
 	}
 
 	private void OnUnitDeath(Unit unit)

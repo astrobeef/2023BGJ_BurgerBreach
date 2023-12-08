@@ -304,22 +304,18 @@ namespace View
         {
             if (playerIndex == 0)
             {
-                AllowPlayHandCards(turnIndex);
-                AllowMoveUnits(turnIndex);
+                playerInput_1.Text = "End Turn";
             }
         }
 
-        private void AllowPlayHandCards(int turnIndex)
+        private void HandleInput_EndTurn()
         {
-            SubscribeAllCards(0, Card.EMPTY, null);
+            if(playerInput_1 == null)
+            return;
 
-            //When a card is removed from the hand, resubscribe to update for shifted indexes
-            model.OnCardRemoved += SubscribeAllCards;
-        }
-
-        private void AllowMoveUnits(int turnIndex)
-        {
-            main.Instance.OnProcess += OnMouseInput_MoveUnitRequest;
+            playerInput_1.Text = "No Input Registered";
+            model.TriggerEndTurn = true;
+            playerInput_1.Pressed -= HandleInput_EndTurn;
         }
 
         private bool _leftMouseClicked = false;

@@ -51,8 +51,11 @@ public partial class player : Node3D
 
 	private void FireOnCardSelected(Card3D card3D)
 	{
-		SwitchToTopDown();
-		selectedCard3D = card3D;
+		if (card3D != selectedCard3D)
+		{
+			SwitchToTopDown();
+			selectedCard3D = card3D;
+		}
 	}
 
 	private void FireOnCardDeselected()
@@ -70,6 +73,7 @@ public partial class player : Node3D
 	private void FireOnUnitSelected(Unit3D unit)
 	{
 		selectedUnit3D = unit;
+		SwitchToTopDown();
 	}
 
 	private void FireOnUnitDeselected()
@@ -78,9 +82,7 @@ public partial class player : Node3D
 		var Async = async () =>
 		{
 			await System.Threading.Tasks.Task.Delay(5);
-		selectedUnit3D = null;
-			// SwitchToPerspective();
-			// selectedCard3D = null;
+			selectedUnit3D = null;
 		};
 	}
 

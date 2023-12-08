@@ -366,12 +366,12 @@ namespace View
 
         private void OnCamHoverNewHit(Hit3D hit)
         {
-            Print($"Hit new object: {hit}");
+            // Print($"Hit new object: {hit}");
         }
 
         private void OnCamHoverOff(Hit3D hit)
         {
-            Print($"No longer hitting {hit}");
+            // Print($"No longer hitting {hit}");
         }
 
         private void OnCamHoverUpdate(Hit3D hit)

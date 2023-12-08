@@ -64,7 +64,7 @@ public partial class Card3D : Node3D
 	{
 		if(hit.collider == _body)
 		{
-			// main.Instance.Player.OnCardDeselected?.Invoke();
+			main.Instance.Player.OnCardDeselected?.Invoke();
 		}
 	}
 }

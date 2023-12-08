@@ -473,30 +473,19 @@ namespace Model
         {
             Card card = _Hands[playerIndex][cardIndex];
 
-            // Follow offense placement rules
+            // Place based on offense rules
             if (card.TYPE == Card.CardType.Offense)
             {
-                bool canPlaceOffenseUnit = false;
-
                 if (ActiveBoard_AllNonOffenseFriendlyUnits(_turnPlayerIndex, out Unit[] resourceUnits))
                 {
                     foreach (Unit resource in resourceUnits)
                     {
                         if (ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
                         {
-                            if (TryPlaceCard_FromHand(_turnPlayerIndex, cardIndex, openNeighbor))
-                            {
-                                GD.Print($"Player {_turnPlayerIndex} placing card {card.NAME} next to resource {resource}");
-                                HandleAttackAction(false, card.HP, Axial.Empty, resource);
-                                canPlaceOffenseUnit = true;
-                                return true;
-                            }
-                            break;
+                            if(TryPlaceCard_FromHand(playerIndex, cardIndex, openNeighbor))
+                                break;
                         }
                     }
-
-                    if (!canPlaceOffenseUnit)
-                        GD.Print($"Player {_turnPlayerIndex} could not place offense unit because existing friendly units had no vacant neighbors OR there was a failure to place the card.");
                 }
                 else
                 {
@@ -1051,17 +1040,54 @@ namespace Model
         {
             ref Card[] refHand = ref _Hands[player_index];
 
-            if(IsPlacementLocationValid(location) && OffensePlacementRule(player_index, location, card_index)){
+            if (IsPlacementLocationValid(location))
+            {
+                Card.CardType cardType = refHand[card_index].TYPE;
 
-                Card card = RemoveCardFromHand(player_index, card_index);
-                Unit Unit = new Unit(player_index, location, card);
-
-                ActiveBoard_AddUnit(Unit);
+                if (cardType == Card.CardType.Offense)
+                {
+                    if (OffensePlacementRule(player_index, location, card_index, out Unit friendlyResourceUnit))
+                    {
+                        PlaceUnit_FromHand(player_index, card_index, location, friendlyResourceUnit);
+                    }
+                }
+                else
+                {
+                    PlaceUnit_FromHand(player_index, card_index, location);
+                }
 
                 return true;
             }
             else
                 return false;
+        }
+
+        public void PlaceUnit_FromHand(int player_index, int card_index, Axial location)
+        {
+            Card card = RemoveCardFromHand(player_index, card_index);
+            Unit Unit = new Unit(player_index, location, card);
+
+            ActiveBoard_AddUnit(Unit);
+        }
+
+        public void PlaceUnit_FromHand(int player_index, int card_index, Axial location, Unit friendlyResourceUnit)
+        {
+            Card card = RemoveCardFromHand(player_index, card_index);
+            Unit Unit = new Unit(player_index, location, card);
+
+            ActiveBoard_AddUnit(Unit);
+
+            HandleAttackAction(false, card.HP, Axial.Empty, friendlyResourceUnit);
+        }
+
+        public void PlaceUnit_FromVoid(int player_index, Card card, Axial location, Unit friendlyResourceUnit)
+        {
+            Unit Unit = new Unit(player_index, location, card);
+
+            ActiveBoard_AddUnit(Unit);
+
+            if(friendlyResourceUnit != null)
+                HandleAttackAction(false, card.HP, Axial.Empty, friendlyResourceUnit);
         }
 
         public bool TryPlaceCard_FromHand(int player_index, uint cardID, Axial location)
@@ -1099,10 +1125,10 @@ namespace Model
             return false;
         }
 
-        private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card)
+        private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card, out Unit friendlyUnit)
         {
             if(card.TYPE == Card.CardType.Offense){
-                if(ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out Unit friendlyUnit))
+                if(ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out friendlyUnit))
                 {
                     return true;
                 }
@@ -1114,24 +1140,24 @@ namespace Model
             }
             else{
                 // This is not an offense card, so it passes the rule
+                friendlyUnit = null;
                 return true;
             }
         }
 
-        private bool OffensePlacementRule(int player_index, Axial placement, int card_index)
+        private bool OffensePlacementRule(int player_index, Axial placement, int card_index, out Unit friendlyUnit)
         {
             ref Card[] refHand = ref _Hands[player_index];
             Card card = refHand[card_index];
 
-            return CheckOffensePlacementRule(player_index, placement, card);
+            return CheckOffensePlacementRule(player_index, placement, card, out friendlyUnit);
         }
 
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card){
 
-            if(IsPlacementLocationValid(location) && CheckOffensePlacementRule(player_index, location, card)){
-                Unit unit = new Unit(player_index, location, card);
+            if(IsPlacementLocationValid(location) && CheckOffensePlacementRule(player_index, location, card, out Unit friendlyUnit)){
 
-                ActiveBoard_AddUnit(unit);
+                PlaceUnit_FromVoid(player_index, card, location, friendlyUnit);
 
                 return true;
             }

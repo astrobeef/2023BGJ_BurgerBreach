@@ -33,12 +33,20 @@ public partial class player : Node3D
 	public Action OnCardDeselected;
 	public Card3D selectedCard3D;
 
+	public Action<Unit3D> OnUnitSelected;
+	public Action OnUnitDeselected;
+	public Unit3D selectedUnit3D;
+
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 		camera = GetChild(0) as Camera3D;
+
 		OnCardSelected += FireOnCardSelected;
 		OnCardDeselected += FireOnCardDeselected;
+
+		OnUnitSelected += FireOnUnitSelected;
+		OnUnitDeselected += FireOnUnitDeselected;
 	}
 
 	private void FireOnCardSelected(Card3D card3D)
@@ -49,9 +57,33 @@ public partial class player : Node3D
 
 	private void FireOnCardDeselected()
 	{
-		SwitchToPerspective();
-		selectedCard3D = null;
+		var Async = async () =>
+		{
+			await System.Threading.Tasks.Task.Delay(5);
+			// SwitchToPerspective();
+			// selectedCard3D = null;
+		};
+
+		Async.Invoke();
 	}
+
+	private void FireOnUnitSelected(Unit3D unit)
+	{
+		selectedUnit3D = unit;
+	}
+
+	private void FireOnUnitDeselected()
+	{
+		// Delay in case any behavior needs to be done with the unit on deselect
+		var Async = async () =>
+		{
+			await System.Threading.Tasks.Task.Delay(5);
+		selectedUnit3D = null;
+			// SwitchToPerspective();
+			// selectedCard3D = null;
+		};
+	}
+
 
 
 	bool _leftMouseClicked = false;

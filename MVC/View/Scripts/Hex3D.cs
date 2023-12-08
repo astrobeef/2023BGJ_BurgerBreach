@@ -60,7 +60,6 @@ public partial class Hex3D : Node3D
 		main.Instance.Player.OnCamClickOff += OnCamClickOff;
 
 		main.Instance.gameModel.OnUnitDamaged += OnUnitDamaged;
-		main.Instance.gameModel.OnUnitDeath += OnUnitDeath;
 
 		_body = FindChild(STATIC_BODY_NAME) as StaticBody3D;
 		if (_body == null)
@@ -88,11 +87,11 @@ public partial class Hex3D : Node3D
 
 	private void OnCamHoverOff(Hit3D hit)
 	{
-		if(hit.collider == _body)
+		if (hit.collider == _body)
 		{
-			if(activeUnit3D != null)
+			if (activeUnit3D != null)
 			{
-				if(isHoverDisplaced)
+				if (isHoverDisplaced)
 				{
 					isHoverDisplaced = false;
 					// activeUnit3D.Position -= onHoverDisplace;
@@ -103,15 +102,31 @@ public partial class Hex3D : Node3D
 
 	private void OnCamClickNewHit(Hit3D hit)
 	{
-		if(hit.collider == _body)
+		if (hit.collider == _body)
 		{
-			if(main.Instance.Player.selectedCard3D != null)
+			if (main.Instance.Player.selectedCard3D != null)
 			{
-				main.Instance.gameModel
+				if (!main.Instance.gameModel
 				.TryPlaceCard_FromHand(
 					0,
 					main.Instance.Player.selectedCard3D.card.id,
-					AxialPos);
+					AxialPos))
+				{
+					// GD.PrintErr("This should be done with an event like 'OnCardPlacmentFailed', but it works for now");
+					// main.Instance.Player.SwitchToPerspective();
+				}
+				else
+				{
+					if (main.Instance.Player.selectedCard3D.card.TYPE != Card.CardType.Offense)
+					{
+						GD.PrintErr("This should be done with an event like 'OnUnitAdded', but it works for now");
+						main.Instance.Player.SwitchToPerspective();
+					}
+				}
+			}
+			else if(activeUnit3D != null)
+			{
+				
 			}
 		}
 	}
@@ -129,24 +144,10 @@ public partial class Hex3D : Node3D
 		{
 			if (unitDamaged.name == activeUnitModel?.name)
 			{
-				GD.PrintErr($"unit {unitDamaged.name} was damaged. Setting stats");
 				SetStatsText(false);
 			}
 		}
 	}
-	
-	private void OnUnitDeath(Unit unitDead)
-	{
-		if (activeUnitModel != null)
-		{
-			if (unitDead.name == activeUnitModel?.name)
-			{
-				SetStatsText(true);
-			}
-		}
-	}
-
-
 
 	public void SetStatsText(bool reset)
 	{

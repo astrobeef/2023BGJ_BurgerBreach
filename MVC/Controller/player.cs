@@ -33,10 +33,12 @@ public partial class player : Node3D
 
 	public Action<Card3D> OnCardSelected;
 	public Action OnCardDeselected;
+	
 	public Card3D selectedCard3D;
 
 	public Action<Unit3D> OnUnitSelected;
 	public Action OnUnitDeselected;
+
 	public Unit3D selectedUnit3D;
 
 	// Called when the node enters the scene tree for the first time.
@@ -64,6 +66,8 @@ public partial class player : Node3D
 	{
 		if (endTurnPlayerIndex == 0)
 		{
+			selectedUnit3D = null;
+			selectedCard3D = null;
 
 			OnCardSelected -= FireOnCardSelected;
 			OnCardDeselected -= FireOnCardDeselected;
@@ -81,6 +85,7 @@ public partial class player : Node3D
 		{
 			SwitchToTopDown();
 			selectedCard3D = card3D;
+			OnUnitDeselected?.Invoke();
 		}
 	}
 
@@ -90,8 +95,7 @@ public partial class player : Node3D
 		var Async = async () =>
 		{
 			await System.Threading.Tasks.Task.Delay(5);
-			// SwitchToPerspective();
-			// selectedCard3D = null;
+			selectedCard3D = null;
 		};
 
 		Async.Invoke();
@@ -101,6 +105,7 @@ public partial class player : Node3D
 	{
 		if (unit != null)
 		{
+			OnCardDeselected?.Invoke();
 			UnitSelect_Marker.GlobalPosition = unit.GlobalPosition + Vector3.Up * marker_Y;
 
 			GD.PrintErr($"Unit select marker position:" + UnitSelect_Marker.GlobalPosition);

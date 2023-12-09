@@ -331,6 +331,8 @@ namespace Model
         }
 
         private void InitBases(){
+            Thread.Sleep(100);
+
             for(int i = 0; i < _PLAYER_COUNT; i++){
                 Card BaseFromSet = _CardSet[0];
                 Card BaseCard = new Card(true, BaseFromSet);
@@ -768,23 +770,29 @@ namespace Model
 
         public bool Unit_TryMove(bool isWillful, int playerIndex, Axial unitPos, Axial destination)
         {
-            if(playerIndex == _turnPlayerIndex)
+            // Continue if the move is NOT willful OR it is the player's turn (a willful move should only be made on the player's turn)
+            if (!isWillful || playerIndex == _turnPlayerIndex)
             {
-                if(ActiveBoard_IsAxialOccupied(unitPos, out int boardIndex))
+                if (ActiveBoard_IsAxialOccupied(unitPos, out int boardIndex))
                 {
                     Unit unit = _activeBoard[boardIndex];
-
-                    return Unit_TryMove(isWillful, unit, destination);
+                    if (!isWillful || unit.ownerIndex == _turnPlayerIndex)
+                        return Unit_TryMove(isWillful, unit, destination);
+                    else
+                    {
+                        GD.PrintErr($"Cannot move unit @ {unitPos} because it is not this player's({playerIndex}) turn (it is player [{_turnPlayerIndex}]'s turn)");
+                        return false;
+                    }
                 }
+                else
+                {
+                    GD.PrintErr($"Cannot move unit @ {unitPos} because no unit exists at {unitPos}");
+                    return false;
+                }
+            }
             else
             {
-                GD.PrintErr($"Cannot move unit because no unit exists at {unitPos}");
-                return false;
-            }
-            }
-            else
-            {
-                GD.PrintErr("Cannot move unit because it is not this player's turn");
+                GD.PrintErr($"Cannot move unit @ {unitPos} because it is not this player's({playerIndex}) turn (it is player [{_turnPlayerIndex}]'s turn)");
                 return false;
             }
         }

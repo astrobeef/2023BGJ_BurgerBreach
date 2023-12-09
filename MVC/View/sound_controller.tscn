@@ -2,15 +2,31 @@
 
 [ext_resource type="Script" path="res://MVC/Controller/sound_controller.cs" id="1_c6u2s"]
 
-[node name="SoundController" type="Node3D" node_paths=PackedStringArray("player1", "player2", "player3")]
+[node name="SoundController" type="Node3D" node_paths=PackedStringArray("SFXStreams", "MusicStreams")]
 script = ExtResource("1_c6u2s")
-player1 = NodePath("AudioStreamPlayer")
-player2 = NodePath("AudioStreamPlayer2")
-player3 = NodePath("AudioStreamPlayer3")
+SFXStreams = [NodePath("AudioStreamPlayer"), NodePath("AudioStreamPlayer2"), NodePath("AudioStreamPlayer3"), NodePath("AudioStreamPlayer4"), NodePath("AudioStreamPlayer5"), NodePath("AudioStreamPlayer6")]
+MusicStreams = [NodePath("AudioStreamPlayer7"), NodePath("AudioStreamPlayer8")]
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 bus = &"SFX"
 
 [node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
 
 [node name="AudioStreamPlayer3" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
+
+[node name="AudioStreamPlayer4" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
+
+[node name="AudioStreamPlayer5" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
+
+[node name="AudioStreamPlayer6" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
+
+[node name="AudioStreamPlayer7" type="AudioStreamPlayer" parent="."]
+bus = &"Music"
+
+[node name="AudioStreamPlayer8" type="AudioStreamPlayer" parent="."]
+bus = &"Music"

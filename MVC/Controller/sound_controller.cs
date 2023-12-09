@@ -1,46 +1,148 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 public partial class sound_controller : Node3D
 {
-	Dictionary<string, AudioStreamOggVorbis> sounds = new Dictionary<string, AudioStreamOggVorbis>();
+	Dictionary<string, AudioStream> sounds = new Dictionary<string, AudioStream>();
 
-	// AudioStreamOggVorbis CardDraw = ResourceLoader.Load("res://MVC/View/Audio/SFX/CardDraw.ogg") as AudioStreamOggVorbis;
-	// AudioStreamOggVorbis CardMove = ResourceLoader.Load("res://MVC/View/Audio/SFX/CardMove.ogg") as AudioStreamOggVorbis;
-	// AudioStreamOggVorbis CardPlace = ResourceLoader.Load("res://MVC/View/Audio/SFX/CardPlace.ogg") as AudioStreamOggVorbis;
-	// AudioStreamOggVorbis PlayerAttack = ResourceLoader.Load("res://MVC/View/Audio/SFX/PlayerAttack.ogg") as AudioStreamOggVorbis;
+	[Export] private AudioStreamPlayer[] SFXStreams;
+	[Export] private AudioStreamPlayer[] MusicStreams;
 
-	
-
-	
-	[Export] private AudioStreamPlayer player1, player2, player3;
-
-	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		sounds.Add("CardDraw", ResourceLoader.Load("res://MVC/View/Audio/SFX/CardDraw.ogg") as AudioStreamOggVorbis);
-		sounds.Add("CardMove", ResourceLoader.Load("res://MVC/View/Audio/SFX/CardMove.ogg") as AudioStreamOggVorbis);
-		sounds.Add("CardPlace", ResourceLoader.Load("res://MVC/View/Audio/SFX/CardPlace.ogg") as AudioStreamOggVorbis);
-		sounds.Add("PlayerAttack", ResourceLoader.Load("res://MVC/View/Audio/SFX/PlayerAttack.ogg") as AudioStreamOggVorbis);
+		LoadSoundsFromFolder("res://MVC/View/Audio/SFX");
+		LoadSoundsFromFolder("res://MVC/View/Audio/Music");
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
 		
 	}
 
-	public void Play(string soundName) {
-		GetNode<AudioStreamPlayer>("AudioStreamPlayer").Stream = sounds[soundName];
-		GetNode<AudioStreamPlayer>("AudioStreamPlayer").Play();
+	public AudioStreamPlayer Play(string soundName) {
+		return PlaySFX(soundName);
 	}
 
-	public override void _Input(InputEvent @event)
+	public bool Stop(string soundName) {
+		if (!IsSoundLoaded(soundName)) return false;
+		
+		if (StopSFX(soundName)) return true;
+		if (StopMusic(soundName)) return true;
+
+		return false;
+	}
+
+	public AudioStreamPlayer PlaySFX(string soundName) {
+		if (!IsSoundLoaded(soundName)) return null;
+
+		for (int i = 0; i < SFXStreams.Length; i++) {
+			if (!SFXStreams[i].Playing) {
+				SFXStreams[i].Stream = sounds[soundName];
+				SFXStreams[i].Play();
+				return SFXStreams[i];
+			}
+		}
+
+		SFXStreams[0].Stream = sounds[soundName];
+		SFXStreams[0].Play();
+		return SFXStreams[0];
+	}
+
+	public bool StopSFX(string soundName) {
+		if (!IsSoundLoaded(soundName)) return false;
+
+		for (int i = 0; i < SFXStreams.Length; i++) {
+			if (SFXStreams[i].Stream == sounds[soundName]) {
+				SFXStreams[i].Stop();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public AudioStreamPlayer PlayMusic(string soundName) {
+		if (!IsSoundLoaded(soundName)) return null;
+
+		for (int i = 0; i < MusicStreams.Length; i++) {
+			if (!MusicStreams[i].Playing) {
+				MusicStreams[i].Stream = sounds[soundName];
+				MusicStreams[i].Play();
+				return MusicStreams[i];
+			}
+		}
+
+		MusicStreams[0].Stream = sounds[soundName];
+		MusicStreams[0].Play();
+		return MusicStreams[0];
+	}
+
+	public bool StopMusic(string soundName) {
+		if (!IsSoundLoaded(soundName)) return false;
+
+		for (int i = 0; i < SFXStreams.Length; i++) {
+			if (MusicStreams[i].Stream == sounds[soundName]) {
+				MusicStreams[i].Stop();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public void LoadSoundsFromFolder(string path)
 	{
-		if (@event.IsActionPressed("CamControl"))
+		using var dir = DirAccess.Open(path);
+		if (dir != null)
 		{
-			Play("PlayerAttack");
+			dir.ListDirBegin();
+			string fileName = dir.GetNext();
+			while (fileName != "")
+			{
+				if (!dir.CurrentIsDir()) {
+					if (fileName.ToLower().EndsWith(".ogg")) {
+						string key = fileName.Substring(0, fileName.Length - 4);
+						sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamOggVorbis);
+
+					} else if (fileName.ToLower().EndsWith(".wav")) {
+						string key = fileName.Substring(0, fileName.Length - 4);
+						sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamWav);
+
+					} else if (fileName.EndsWith(".mp3")) {
+						string key = fileName.Substring(0, fileName.Length - 4);
+						sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamMP3);
+					}
+				}
+
+				fileName = dir.GetNext();
+			}
+
+		} else {
+			GD.Print("An error occurred when trying to access the path.");
 		}
 	}
+
+	public bool IsSoundLoaded(string soundName) {
+		if (!sounds.ContainsKey(soundName)) {
+			GD.Print("No sound with this name has been loaded");
+			return false;
+		}
+
+		return true;
+	}
+
+	// public override void _Input(InputEvent @event)
+	// {
+	// 	if (@event.IsActionPressed("Debug1"))
+	// 	{
+	// 		PlayMusic("Friday");
+	// 	}
+		
+	// 	if (@event.IsActionPressed("Debug2"))
+	// 	{
+	// 		StopMusic("Friday");
+	// 	}
+	// }
 }

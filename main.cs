@@ -25,6 +25,8 @@ public partial class main : Node
 	public Model_Game gameModel;
 	public player Player;
 	public Controller_AI AI;
+	public sound_controller SoundController;
+	private const string _SOUND_CONTROLLER_PATH = "res://MVC/View/sound_controller.tscn";
 
 	public Action OnProcess;
 
@@ -39,6 +41,16 @@ public partial class main : Node
 		if(Player == null) GD.PrintErr($"Could not find player. Node exists? {_currentScene.FindChild("Player", true, false) != null}");
 
 		AI = new Controller_AI(gameModel);
+
+		InstantiateSoundController();
+	}
+
+	private void InstantiateSoundController()
+	{
+		PackedScene scene = GD.Load<PackedScene>(_SOUND_CONTROLLER_PATH);
+		
+		SoundController = (sound_controller)scene.Instantiate();
+		_currentScene.AddChild(SoundController);
 	}
 
 	public override void _EnterTree()

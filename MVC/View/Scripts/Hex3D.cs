@@ -111,7 +111,8 @@ public partial class Hex3D : Node3D
 	{
 		if (hit.collider == _body)
 		{
-			GD.PrintErr($"Hit @ {GlobalPosition} on {AxialPos}");
+			if (main.Instance.Player.selectedCard3D == null && main.Instance.Player.selectedUnit3D == null)
+				main.Instance.Player?.OnUnitSelected?.Invoke(activeUnit3D);
 
 			// TRY TO PLACE A CARD ON THIS TILE
 			// If this hex tile has been clicked on AND a card is selected
@@ -123,6 +124,7 @@ public partial class Hex3D : Node3D
 					main.Instance.Player.selectedCard3D.card.id,
 					AxialPos))
 				{
+					main.Instance.SoundController.Play(sound_controller.SFX_CARD_PLACE_NAME);
 					// GD.PrintErr("This should be done with an event like 'OnCardPlacmentFailed', but it works for now");
 					// main.Instance.Player.SwitchToPerspective();
 				}
@@ -134,27 +136,48 @@ public partial class Hex3D : Node3D
 						main.Instance.Player.SwitchToPerspective();
 					}
 				}
+
+				return;
 			}
+
 			// TRY TO MOVE TO THIS TILE
 			// Else a card is NOT selected, if a unit is selected AND this hex has no unit
-			else if (main.Instance.Player.selectedUnit3D != null		// A unit is selected
+			if (main.Instance.Player.selectedUnit3D != null		// A unit is selected
 			 && activeUnit3D == null									// This tile has no unit
 			 )
 			{
 				Unit unitToMove = main.Instance.Player.selectedUnit3D.unit;
 				Axial unitToMove_Pos = unitToMove.pos;
-				main.Instance.gameModel.Unit_TryMove(true, unitToMove.ownerIndex, unitToMove_Pos, AxialPos);
+				if(main.Instance.gameModel.Unit_TryMove(true, unitToMove.ownerIndex, unitToMove_Pos, AxialPos))
+				{
+					main.Instance.SoundController.Play(sound_controller.SFX_CARD_MOVE_NAME);
+				}
+				
+				return;
 			}
+			else
+			{
+				GD.PrintErr($"Not trying to move unit because either a unit is NOT selected ({main.Instance.Player.selectedUnit3D == null}) OR this hex has a unit in it ({activeUnit3D != null})");
+			}
+
 			// TRY TO ATTACK THE UNIT ON THIS TILE
 			// Else a card is NOT selected, if a unit is selected AND this hex has a unit AND they are not the same unit
-			else if (main.Instance.Player.selectedUnit3D != null			// A unit is selected
+			if (main.Instance.Player.selectedUnit3D != null			// A unit is selected
 			 && activeUnit3D != null										// This tile has a unit
 			 && main.Instance.Player.selectedUnit3D != activeUnit3D			// This tile is NOT the selected unit
 			 )
 			{
 				Unit attackerUnit = main.Instance.Player.selectedUnit3D.unit;
 				Axial attackDirection = (AxialPos - attackerUnit.pos);
-				main.Instance.gameModel.Unit_TryAttack(true, attackerUnit, attackDirection, activeUnit3D.unit);
+				if(main.Instance.gameModel.Unit_TryAttack(true, attackerUnit, attackDirection, activeUnit3D.unit))
+				{
+					main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
+				}
+				return;
+			}
+			else
+			{
+				GD.PrintErr($"Not trying to attack with this unit because either a unit is NOT selected ({main.Instance.Player.selectedUnit3D == null}) OR this hex does NOT have a unit ({activeUnit3D == null}) OR this hex is the same as the attacker ({main.Instance.Player.selectedUnit3D == activeUnit3D})");
 			}
 			
 			main.Instance.Player?.OnUnitSelected?.Invoke(activeUnit3D);
@@ -165,7 +188,8 @@ public partial class Hex3D : Node3D
 	{
 		if (hit.collider == _body)
 		{
-			main.Instance.Player.OnUnitDeselected?.Invoke();
+			GD.PrintErr($"{activeUnit3D.unit.name} is invoking OnCamClickOff because the hit is this");
+			main.Instance.Player.OnUnitDeselected?.Invoke(activeUnit3D);
 		}
 	}
 

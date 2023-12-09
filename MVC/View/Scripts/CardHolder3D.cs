@@ -51,6 +51,8 @@ public partial class CardHolder3D : Node3D
 	{
 		if (playerIndex == 0)
 		{
+			main.Instance.SoundController.Play(sound_controller.SFX_CARD_DRAW_NAME);
+
 			PackedScene scene;
 
 			switch (cardDrawn.NAME)

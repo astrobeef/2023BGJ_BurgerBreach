@@ -5,6 +5,11 @@ using System.IO;
 
 public partial class sound_controller : Node3D
 {
+	public const string SFX_CARD_DRAW_NAME = "CardDraw_01";
+	public const string SFX_CARD_MOVE_NAME = "CardMove";
+	public const string SFX_CARD_PLACE_NAME = "CardPlace";
+	public const string SFX_PLAYER_ATTACK_NAME = "PlayerAttack";
+
 	Dictionary<string, AudioStream> sounds = new Dictionary<string, AudioStream>();
 
 	[Export] private AudioStreamPlayer[] SFXStreams;
@@ -14,6 +19,14 @@ public partial class sound_controller : Node3D
 	{
 		LoadSoundsFromFolder("res://MVC/View/Audio/SFX");
 		LoadSoundsFromFolder("res://MVC/View/Audio/Music");
+
+		var async = async () =>
+		{
+			await System.Threading.Tasks.Task.Delay(10);
+			Play(SFX_CARD_MOVE_NAME);
+			// Play("Friday");
+		};
+		async.Invoke();
 	}
 
 	public override void _Process(double delta)

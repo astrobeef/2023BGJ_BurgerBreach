@@ -30,7 +30,7 @@ namespace Model
         private static readonly int _CARDS_DRAWN_PER_TURN = 1;
         private static readonly int _CARDS_DRAWN_LIMIT = 6;
         private static readonly int _PLAYER_COUNT = 2;
-        private static readonly int _BOARD_RADIUS = 2;
+        private static readonly int _BOARD_RADIUS = 3;
 
         private static readonly int _COLLISION_DAMAGE = 1;
 
@@ -285,8 +285,8 @@ namespace Model
                 refDeck = new Card[_DECK_COUNT];
                 for (int j = 0; j < refDeck.Length; j++)
                 {
-                    int rand = _random.Next(0, _CardSet_NoBases.Length);
-                    Card cardFromSet = _CardSet_NoBases[rand];
+                    int rand = _random.Next(0, 100);
+                    Card cardFromSet = rand < 70 ? _CardSet_NoBases[1] : _CardSet_NoBases[0];
                     refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
@@ -324,6 +324,7 @@ namespace Model
                 for (int j = 0; j < _HAND_START_COUNT; j++)
                 {
                     TryDrawCard(i);
+                    Thread.Sleep(200);
                 }
 
                 DisplayHand(i);
@@ -870,7 +871,7 @@ namespace Model
                 return HandleAttackAction(doDisplace, attacker.atk, attackDirection, target);
             }
             else{
-                GD.PrintErr($"Could not attack because attack distance ({Axial.Distance(Axial.Zero, attackDirection)}) is greater than 1.");
+                GD.PrintErr($"Unit {attacker.name}@{attacker.pos} Could not attack because attack distance ({Axial.Distance(Axial.Zero, attackDirection)}) is greater than 1 OR card TurnActions said that this unit could not attack.");
                 return false;
             }
         }

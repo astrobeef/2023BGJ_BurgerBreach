@@ -58,7 +58,8 @@ namespace Controller.AI
 
                         GD.Print("AI trying to play a random card");
                             await System.Threading.Tasks.Task.Delay(syntheticWait);
-                            model.TryPlaceRandomCardRandomly();
+                            if(model.TryPlaceRandomCardRandomly())
+                                main.Instance.SoundController.Play(sound_controller.SFX_CARD_PLACE_NAME);
                         }
                     }
                     else
@@ -88,6 +89,7 @@ namespace Controller.AI
 
                             if (model.Unit_TryRandomMove(iUnit, out Axial newPos))
                             {
+                                main.Instance.SoundController.Play(sound_controller.SFX_CARD_MOVE_NAME);
                                 GD.Print($"Player {model.TurnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
                             }
                             else
@@ -114,6 +116,7 @@ namespace Controller.AI
 
                             if (model.Unit_TryRandomAttack(iUnit))
                             {
+                                main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
                                 GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
                             }
                             else

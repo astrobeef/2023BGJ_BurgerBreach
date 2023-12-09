@@ -32,12 +32,12 @@ public partial class player : Node3D
 	public Action<Hit3D> OnCamClickUpdate;
 
 	public Action<Card3D> OnCardSelected;
-	public Action OnCardDeselected;
-	
+	public Action<Card3D> OnCardDeselected;
+
 	public Card3D selectedCard3D;
 
 	public Action<Unit3D> OnUnitSelected;
-	public Action OnUnitDeselected;
+	public Action<Unit3D> OnUnitDeselected;
 
 	public Unit3D selectedUnit3D;
 
@@ -85,31 +85,43 @@ public partial class player : Node3D
 		{
 			SwitchToTopDown();
 			selectedCard3D = card3D;
-			OnUnitDeselected?.Invoke();
+			OnUnitDeselected?.Invoke(selectedUnit3D);
 		}
 	}
 
-	private void FireOnCardDeselected()
+	private void FireOnCardDeselected(Card3D cardToDeselect)
 	{
-		UnitSelect_Marker.GlobalPosition = Vector3.Zero;
-		var Async = async () =>
+		// Only deselect if the parameter is selected
+		if (cardToDeselect == selectedCard3D)
 		{
-			await System.Threading.Tasks.Task.Delay(5);
-			selectedCard3D = null;
-		};
+			UnitSelect_Marker.GlobalPosition = Vector3.Zero;
+			var Async = async () =>
+			{
+				await System.Threading.Tasks.Task.Delay(1);
+				selectedCard3D = null;
+				if(selectedUnit3D == null)
+					SwitchToPerspective();
+			};
 
-		Async.Invoke();
+			Async.Invoke();
+		}
 	}
 
 	private void FireOnUnitSelected(Unit3D unit)
 	{
-		if (unit != null)
+		if (unit != null && unit != selectedUnit3D)
 		{
-			OnCardDeselected?.Invoke();
+			OnCardDeselected?.Invoke(selectedCard3D);
 			UnitSelect_Marker.GlobalPosition = unit.GlobalPosition + Vector3.Up * marker_Y;
-
-			GD.PrintErr($"Unit select marker position:" + UnitSelect_Marker.GlobalPosition);
 			selectedUnit3D = unit;
+			GD.PrintErr($"Registered unit selected. Is unit null ? {selectedUnit3D == null}. Name is: {selectedUnit3D?.unit.name}");
+
+			var async = async () => {
+				await System.Threading.Tasks.Task.Delay(20);
+			GD.PrintErr($"Registered unit selected. Is unit null ? {selectedUnit3D == null}. Name is: {selectedUnit3D?.unit.name}");
+			};
+
+			async.Invoke();
 			// SwitchToTopDown();
 		}
 		else
@@ -118,15 +130,20 @@ public partial class player : Node3D
 		}
 	}
 
-	private void FireOnUnitDeselected()
+	private void FireOnUnitDeselected(Unit3D unitToDeselect)
 	{
-		UnitSelect_Marker.GlobalPosition = Vector3.Zero;
-		// Delay in case any behavior needs to be done with the unit on deselect
-		var Async = async () =>
+		if (unitToDeselect == selectedUnit3D)
 		{
-			await System.Threading.Tasks.Task.Delay(15);
-			selectedUnit3D = null;
-		};
+			UnitSelect_Marker.GlobalPosition = Vector3.Zero;
+			// Delay in case any behavior needs to be done with the unit on deselect
+			var Async = async () =>
+			{
+				await System.Threading.Tasks.Task.Delay(1);
+				selectedUnit3D = null;
+			};
+
+			Async.Invoke();
+		}
 	}
 
 
@@ -143,6 +160,8 @@ public partial class player : Node3D
 		{
 			if (!_leftMouseClicked)
 			{
+				GD.Print($"unit selected before click processes: {(selectedUnit3D == null ? "null" : selectedUnit3D?.unit.name)}@{(selectedUnit3D == null ? "null" : selectedUnit3D?.unit.pos)}");
+				GD.Print($"Card selected before click processes: {(selectedCard3D == null ? "null" : selectedCard3D?.card.NAME)}@{(selectedCard3D == null ? "null" : selectedCard3D.GlobalPosition)}");
 				_leftMouseClicked = true;
 
 				if (Raycasting.RayCast(camera, CameraHitLayers, out Hit3D hit))

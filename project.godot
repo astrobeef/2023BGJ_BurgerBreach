@@ -23,6 +23,7 @@ Main="*res://main.cs"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/initial_position=Vector2i(640, 360)
 
 [dotnet]
 

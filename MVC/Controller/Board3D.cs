@@ -141,7 +141,7 @@ public partial class Board3D : Node3D
 			}
 			else GD.PrintErr($"${parentHex.Name} missing coin slot");
 		}
-		else GD.PrintErr($"This was called on a hex, {parentHex.Name}, with no active unit3D");
+		else GD.PrintErr($"Attempted to destroy hex, {parentHex.Name}, but it has no active unit3D");
 	}
 
 	private void MoveUnit3D(Unit3D unit3D, Hex3D originHex3D, Hex3D destinationHex3D)

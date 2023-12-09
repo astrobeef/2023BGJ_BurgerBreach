@@ -1,15 +1,21 @@
-[gd_scene load_steps=4 format=3 uid="uid://cxhllvolv8otr"]
+[gd_scene load_steps=6 format=3 uid="uid://cxhllvolv8otr"]
 
 [ext_resource type="PackedScene" uid="uid://dkdscj0cwt3g3" path="res://MVC/View/room.tscn" id="1_8c1un"]
 [ext_resource type="Script" path="res://MVC/View/Scripts/roomReferences.cs" id="2_rmn8b"]
 [ext_resource type="Script" path="res://MVC/View/Scripts/View_Game3D.cs" id="3_u0o2o"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2p0hl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gh8td"]
 
 [node name="MAIN" type="Node3D"]
 
 [node name="Room" parent="." instance=ExtResource("1_8c1un")]
 script = ExtResource("2_rmn8b")
 
-[node name="View" type="Control" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="View" type="Control" parent="CanvasLayer"]
 custom_minimum_size = Vector2(1280, 720)
 layout_mode = 3
 anchors_preset = 15
@@ -19,11 +25,75 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("3_u0o2o")
 
-[node name="InputButton" type="Button" parent="View"]
-layout_mode = 0
-offset_left = 473.0
-offset_top = 621.0
-offset_right = 788.0
-offset_bottom = 698.0
-theme_override_font_sizes/font_size = 32
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2p0hl")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/View/PanelContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(250, 100)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(220, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_gh8td")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
+layout_mode = 2
+text = "- 'C' to switch views
+"
+
+[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 470)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 50)
+layout_mode = 2
+
+[node name="InputButton" type="Button" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "This is a button"
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(88.889, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2

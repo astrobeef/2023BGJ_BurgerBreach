@@ -153,7 +153,7 @@ namespace View
             Print("-------------------------");
         }
 
-        private void OnTurnStart(int turnCounter, int turnPlayerIndex)
+        private void OnTurnStart(int turnPlayerIndex, int turnCounter)
         {
             GD.Print("------------------------");
             GD.Print($"----- START TURN {turnCounter + 1} -----");
@@ -161,7 +161,7 @@ namespace View
             GD.Print("------------------------");
         }
 
-        private void OnTurnEnd(int turnCounter, int playerIndex)
+        private void OnTurnEnd(int playerIndex, int turnIndex)
         {
             if(model.OnCardRemoved != null)
                 model.OnCardRemoved -= SubscribeAllCards;

@@ -13,6 +13,8 @@ public partial class player : Node3D
 	[Export] private Vector3 perspective_rotation = new Vector3(-35, 0, 0);
 	[Export] private float transition_time = 0.4f;
 
+	[Export] private MeshInstance3D UnitSelect_Marker;
+
 	private bool top_down = false;
 
 	private Hit3D _camHoverHit;
@@ -31,10 +33,12 @@ public partial class player : Node3D
 
 	public Action<Card3D> OnCardSelected;
 	public Action OnCardDeselected;
+	
 	public Card3D selectedCard3D;
 
 	public Action<Unit3D> OnUnitSelected;
 	public Action OnUnitDeselected;
+
 	public Unit3D selectedUnit3D;
 
 	// Called when the node enters the scene tree for the first time.
@@ -43,33 +47,37 @@ public partial class player : Node3D
 		camera = GetChild(0) as Camera3D;
 
 		main.Instance.gameModel.OnTurnEnd += OnTurnEnd;
-		main.Instance.gameModel.OnTurnStart += OnTurnStart;
+		main.Instance.gameModel.OnAwaitTurnActions += OnAwaitTurnActions;
 	}
 
-	private void OnTurnStart(int turnCounter, int endTurnPlayerIndex)
+	private void OnAwaitTurnActions(int turnPlayerIndex, int turnCounter)
 	{
-		if(endTurnPlayerIndex == 0)
+		if (turnPlayerIndex == 0)
 		{
-		OnCardSelected += FireOnCardSelected;
-		OnCardDeselected += FireOnCardDeselected;
+			OnCardSelected += FireOnCardSelected;
+			OnCardDeselected += FireOnCardDeselected;
 
-		OnUnitSelected += FireOnUnitSelected;
-		OnUnitDeselected += FireOnUnitDeselected;
+			OnUnitSelected += FireOnUnitSelected;
+			OnUnitDeselected += FireOnUnitDeselected;
 		}
 	}
 
-	private void OnTurnEnd(int turnCounter, int endTurnPlayerIndex)
+	private void OnTurnEnd(int endTurnPlayerIndex, int turnCounter)
 	{
-		if(endTurnPlayerIndex == 0)
+		if (endTurnPlayerIndex == 0)
 		{
+			selectedUnit3D = null;
+			selectedCard3D = null;
 
-		OnCardSelected -= FireOnCardSelected;
-		OnCardDeselected -= FireOnCardDeselected;
+			OnCardSelected -= FireOnCardSelected;
+			OnCardDeselected -= FireOnCardDeselected;
 
-		OnUnitSelected -= FireOnUnitSelected;
-		OnUnitDeselected -= FireOnUnitDeselected;
+			OnUnitSelected -= FireOnUnitSelected;
+			OnUnitDeselected -= FireOnUnitDeselected;
 		}
 	}
+
+	float marker_Y = 0.02f;
 
 	private void FireOnCardSelected(Card3D card3D)
 	{
@@ -77,16 +85,17 @@ public partial class player : Node3D
 		{
 			SwitchToTopDown();
 			selectedCard3D = card3D;
+			OnUnitDeselected?.Invoke();
 		}
 	}
 
 	private void FireOnCardDeselected()
 	{
+		UnitSelect_Marker.GlobalPosition = Vector3.Zero;
 		var Async = async () =>
 		{
 			await System.Threading.Tasks.Task.Delay(5);
-			// SwitchToPerspective();
-			// selectedCard3D = null;
+			selectedCard3D = null;
 		};
 
 		Async.Invoke();
@@ -94,16 +103,28 @@ public partial class player : Node3D
 
 	private void FireOnUnitSelected(Unit3D unit)
 	{
-		selectedUnit3D = unit;
-		SwitchToTopDown();
+		if (unit != null)
+		{
+			OnCardDeselected?.Invoke();
+			UnitSelect_Marker.GlobalPosition = unit.GlobalPosition + Vector3.Up * marker_Y;
+
+			GD.PrintErr($"Unit select marker position:" + UnitSelect_Marker.GlobalPosition);
+			selectedUnit3D = unit;
+			// SwitchToTopDown();
+		}
+		else
+		{
+			// selectedUnit3D = null;
+		}
 	}
 
 	private void FireOnUnitDeselected()
 	{
+		UnitSelect_Marker.GlobalPosition = Vector3.Zero;
 		// Delay in case any behavior needs to be done with the unit on deselect
 		var Async = async () =>
 		{
-			await System.Threading.Tasks.Task.Delay(5);
+			await System.Threading.Tasks.Task.Delay(15);
 			selectedUnit3D = null;
 		};
 	}
@@ -126,37 +147,42 @@ public partial class player : Node3D
 
 				if (Raycasting.RayCast(camera, CameraHitLayers, out Hit3D hit))
 				{
-						// If it is a new hit
-						if (_camClickHit != hit)
-						{
-							Hit3D previousHit = _camClickHit;
-							_camClickHit = hit;
-
-							// If the colliders are NOT the same (meaning this hit has hit a new object)
-							if (_camClickHit.collider != previousHit.collider)
-							{
-								OnCamClickOff?.Invoke(previousHit);
-
-								OnCamClickNewHit?.Invoke(_camClickHit);
-								OnCamClickUpdate?.Invoke(_camClickHit);
-							}
-							// Else the hit is at a different position, but on the same object
-							else
-							{
-								OnCamClickUpdate?.Invoke(_camClickHit);
-							}
-						}
-				}
-					else
+					// If it is a new hit
+					if (_camClickHit != hit)
 					{
-						if (_camClickHit != Hit3D.EMPTY)
-						{
-							Hit3D previousHit = _camClickHit;
-							_camClickHit = Hit3D.EMPTY;
+						Hit3D previousHit = _camClickHit;
+						_camClickHit = hit;
 
+						// If the colliders are NOT the same (meaning this hit has hit a new object)
+						if (_camClickHit.collider != previousHit.collider)
+						{
 							OnCamClickOff?.Invoke(previousHit);
+
+							OnCamClickNewHit?.Invoke(_camClickHit);
+							OnCamClickUpdate?.Invoke(_camClickHit);
+						}
+						// Else the hit is at a different position, but on the same object
+						else
+						{
+							OnCamClickUpdate?.Invoke(_camClickHit);
 						}
 					}
+					// Else the hit is at the same point on the same object
+					else
+					{
+						OnCamClickUpdate?.Invoke(_camClickHit);
+					}
+				}
+				else
+				{
+					if (_camClickHit != Hit3D.EMPTY)
+					{
+						Hit3D previousHit = _camClickHit;
+						_camClickHit = Hit3D.EMPTY;
+
+						OnCamClickOff?.Invoke(previousHit);
+					}
+				}
 			}
 		}
 	}

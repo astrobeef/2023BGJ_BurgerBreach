@@ -1,7 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://dc0cearnw8x4i"]
+[gd_scene load_steps=8 format=3 uid="uid://dc0cearnw8x4i"]
 
 [ext_resource type="PackedScene" uid="uid://bggve7oe6phn8" path="res://MVC/View/3D Assets/Prototype/Board/gameBoard_prototype.fbx" id="1_e8wqw"]
 [ext_resource type="Script" path="res://MVC/Controller/Board3D.cs" id="2_hppf3"]
+[ext_resource type="Texture2D" uid="uid://cycyoy7xwq4b6" path="res://MVC/View/3D Assets/Prototype/Coin/coin_texture/coin_prototype_coinInside_BaseColor.png" id="3_ocvbn"]
+[ext_resource type="Texture2D" uid="uid://b8875og4cb2t8" path="res://MVC/View/3D Assets/Prototype/Coin/coin_texture/coinInside_enemy.png" id="4_25wb8"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_em051"]
 albedo_color = Color(0.858824, 0.67451, 0.498039, 1)
@@ -14,6 +16,8 @@ albedo_color = Color(0.407843, 0.27451, 0.168627, 1)
 
 [node name="Board" instance=ExtResource("1_e8wqw")]
 script = ExtResource("2_hppf3")
+coinInside_Friendly = ExtResource("3_ocvbn")
+coinInside_Enemy = ExtResource("4_25wb8")
 
 [node name="gameboard" parent="RootNode" index="0"]
 surface_material_override/0 = SubResource("StandardMaterial3D_em051")

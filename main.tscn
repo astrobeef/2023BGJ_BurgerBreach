@@ -10,16 +10,20 @@
 script = ExtResource("2_rmn8b")
 
 [node name="View" type="Control" parent="."]
+custom_minimum_size = Vector2(1280, 720)
 layout_mode = 3
-anchors_preset = 0
-offset_right = 1280.0
-offset_bottom = 720.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("3_u0o2o")
 
 [node name="InputButton" type="Button" parent="View"]
 layout_mode = 0
-offset_left = 501.038
-offset_top = 146.397
-offset_right = 628.038
-offset_bottom = 177.397
+offset_left = 473.0
+offset_top = 621.0
+offset_right = 788.0
+offset_bottom = 698.0
+theme_override_font_sizes/font_size = 32
 text = "This is a button"

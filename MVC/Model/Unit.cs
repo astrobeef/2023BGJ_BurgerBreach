@@ -62,8 +62,6 @@ namespace Model
         public void Move(bool isWillful, Axial newPos)
         {
             int calculatedDisplacement = Axial.Distance(pos, newPos);
-            GD.Print($"Player {ownerIndex} moved unit {name} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
-
             if(isWillful)
                 TurnActions.remainingMovement -= calculatedDisplacement;
 
@@ -71,6 +69,8 @@ namespace Model
                 GD.PrintErr($"Unit {this} has its turn movement less than 0. This should have been checked before this method.");
 
             pos = newPos;
+
+            GD.Print($"Player {ownerIndex} moved unit {name} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
         }
 
         public void Attack()

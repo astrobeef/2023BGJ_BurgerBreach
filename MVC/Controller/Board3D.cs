@@ -24,7 +24,7 @@ public partial class Board3D : Node3D
 
 	private Hex3D[] _Board3D;
 	private List<Unit3D> _ActiveUnit3Ds = new List<Unit3D>();
-	
+
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -69,17 +69,17 @@ public partial class Board3D : Node3D
 		if (hex3DtoAddTo != null)
 		{
 			PackedScene scene = null;
-			switch(newUnit.card.NAME)
+			switch (newUnit.card.NAME)
 			{
-				case(Card.BASE_TEST_NAME):
-				scene = GD.Load<PackedScene>(COIN_BASE);
-				break;
-				case(Card.RESOURCE_TEST_NAME):
-				scene = GD.Load<PackedScene>(COIN_BURGER);
-				break;
-				case(Card.OFFENSE_TEST_NAME):
-				scene = GD.Load<PackedScene>(COIN_MOE);
-				break;
+				case (Card.BASE_TEST_NAME):
+					scene = GD.Load<PackedScene>(COIN_BASE);
+					break;
+				case (Card.RESOURCE_TEST_NAME):
+					scene = GD.Load<PackedScene>(COIN_BURGER);
+					break;
+				case (Card.OFFENSE_TEST_NAME):
+					scene = GD.Load<PackedScene>(COIN_MOE);
+					break;
 			}
 			if (scene != null)
 			{
@@ -93,10 +93,34 @@ public partial class Board3D : Node3D
 		}
 	}
 
+	[Export]
+	private Texture2D coinInside_Friendly, coinInside_Enemy;
+	private const int coinInsideSurfaceIndex = 0;
+
 	private void CreateUnit3D(PackedScene scene, Hex3D parentHex, Unit unitModel)
 	{
-		Unit3D unit3D = (Unit3D)scene.Instantiate(); //Try duplicating?
+		Unit3D unit3D = (Unit3D)scene.Instantiate().Duplicate(); //Try duplicating?
 		unit3D.unit = unitModel;
+
+		MeshInstance3D meshInstance = unit3D.GetChild<MeshInstance3D>(coinInsideSurfaceIndex);
+		var material = meshInstance.GetActiveMaterial(coinInsideSurfaceIndex) as StandardMaterial3D;
+		if (material != null)
+		{
+			material = material.Duplicate() as StandardMaterial3D;
+
+			if (unitModel.ownerIndex == 0)
+			{
+				material.AlbedoTexture = coinInside_Friendly;
+			}
+			else
+			{
+				material.AlbedoTexture = coinInside_Enemy;
+			}
+
+			meshInstance.SetSurfaceOverrideMaterial(coinInsideSurfaceIndex, material);
+		}
+		else GD.PrintErr("material is null");
+
 		parentHex.GetChild(0).AddChild(unit3D);
 		parentHex.SetStatsText(false);
 		_ActiveUnit3Ds.Add(unit3D);
@@ -165,9 +189,9 @@ public partial class Board3D : Node3D
 	{
 		Axial newPosition = movedUnit.pos;
 		// Move 3D unit towards destination then change parent placeholder Node3D. If that's too difficult, destroy and create.
-		if(IsUnitModelOnBoard3D(movedUnit, out Hex3D oldHex3D))
+		if (IsUnitModelOnBoard3D(movedUnit, out Hex3D oldHex3D))
 		{
-			if(IsAxialOnBoard3D(newPosition, out Hex3D destHex3D))
+			if (IsAxialOnBoard3D(newPosition, out Hex3D destHex3D))
 			{
 				if (destHex3D.activeUnit3D == null)
 				{
@@ -182,19 +206,19 @@ public partial class Board3D : Node3D
 
 	private void OnUnitDeath(Unit unit)
 	{
-		if(IsUnitModelOnBoard3D(unit, out Hex3D hex3D))
+		if (IsUnitModelOnBoard3D(unit, out Hex3D hex3D))
 		{
-					DestroyUnit3D(hex3D);
+			DestroyUnit3D(hex3D);
 		}
 	}
 
 	private bool IsUnitModelOnBoard3D(Unit unit, out Hex3D hex3D)
 	{
-		foreach(Hex3D iHex in _Board3D)
+		foreach (Hex3D iHex in _Board3D)
 		{
-			if(iHex.activeUnit3D != null)
+			if (iHex.activeUnit3D != null)
 			{
-				if(iHex.activeUnit3D.unit == unit)
+				if (iHex.activeUnit3D.unit == unit)
 				{
 					hex3D = iHex;
 					return true;
@@ -208,9 +232,9 @@ public partial class Board3D : Node3D
 
 	private bool IsAxialOnBoard3D(Axial ax, out Hex3D hex3D)
 	{
-		foreach(Hex3D iHex in _Board3D)
+		foreach (Hex3D iHex in _Board3D)
 		{
-			if(iHex.AxialPos == ax)
+			if (iHex.AxialPos == ax)
 			{
 				hex3D = iHex;
 				return true;
@@ -233,6 +257,7 @@ public partial class Board3D : Node3D
 
 			PackedScene scene = GD.Load<PackedScene>("res://MVC/View/board_tile.tscn");
 			Hex3D boardTile3D = (Hex3D)scene.Instantiate();
+			boardTile3D.Name = $"Hex@{ax.ToString()}";
 			boardTile3D.AxialPos = ax;
 			boardTile3D.Position = pos;
 

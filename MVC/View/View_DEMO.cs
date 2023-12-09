@@ -218,7 +218,7 @@ namespace View
             Print("-------------------------");
         }
 
-        private void OnTurnStart(int turnCounter, int turnPlayerIndex)
+        private void OnTurnStart(int turnPlayerIndex, int turnCounter)
         {
             GD.Print("------------------------");
             GD.Print($"----- START TURN {turnCounter + 1} -----");

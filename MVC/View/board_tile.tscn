@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://dhfhwx13amxsa"]
+[gd_scene load_steps=9 format=3 uid="uid://dhfhwx13amxsa"]
 
 [ext_resource type="Script" path="res://MVC/View/Scripts/Hex3D.cs" id="1_fq3gy"]
 
@@ -12,12 +12,19 @@ albedo_color = Color(1, 0.341176, 0.341176, 1)
 material = SubResource("StandardMaterial3D_705qo")
 text = "2"
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_biu8d"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rx3je"]
 albedo_color = Color(0.458824, 1, 0.470588, 1)
 
 [sub_resource type="TextMesh" id="TextMesh_fbp2q"]
-material = SubResource("StandardMaterial3D_biu8d")
+material = SubResource("StandardMaterial3D_rx3je")
 text = "2"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hyibk"]
+albedo_color = Color(0.0392157, 0.0196078, 0.0862745, 1)
+
+[sub_resource type="TextMesh" id="TextMesh_ghaax"]
+material = SubResource("StandardMaterial3D_hyibk")
+text = "(0,0,0)"
 
 [node name="BoardTile" type="Node3D"]
 script = ExtResource("1_fq3gy")
@@ -32,9 +39,14 @@ transform = Transform3D(1.36434, 0, 0, 0, 1.36434, 0, 0, 0, 1.36434, 0, 0.063941
 shape = SubResource("CylinderShape3D_w8qht")
 
 [node name="AtkText3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(3.67977, 0, 0, 0, 1.93219, 3.13166, 0, -3.13166, 1.93219, 0.443875, 0.210062, 0.407066)
+transform = Transform3D(3.67977, 0, 0, 0, 1.93219, 3.13166, 0, -3.13166, 1.93219, -0.407738, 0.210062, 0.407066)
 mesh = SubResource("TextMesh_5s8tm")
 
 [node name="HpText3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(3.29504, 0, 0, 0, 1.73018, 2.80424, 0, -2.80424, 1.73018, -0.412229, 0.210062, 0.407066)
+transform = Transform3D(3.29504, 0, 0, 0, 1.73018, 2.80424, 0, -2.80424, 1.73018, 0.415191, 0.210062, 0.407066)
 mesh = SubResource("TextMesh_fbp2q")
+
+[node name="Axial3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.96213, 0, 0, 0, 0.445489, 1.91088, 0, -1.91088, 0.445489, 0.0347614, 0.288922, -0.340654)
+mesh = SubResource("TextMesh_ghaax")
+skeleton = NodePath("../HpText3D")

@@ -12,6 +12,9 @@ public partial class sound_controller : Node3D
 
 	Dictionary<string, AudioStream> sounds = new Dictionary<string, AudioStream>();
 
+	// private AudioStreamPlayer SFX0, SFX1, SFX2, SFX3, SFX4, SFX5;
+	// private AudioStreamPlayer Music0, Music1;
+	
 	[Export] private AudioStreamPlayer[] SFXStreams;
 	[Export] private AudioStreamPlayer[] MusicStreams;
 
@@ -19,6 +22,16 @@ public partial class sound_controller : Node3D
 	{
 		LoadSoundsFromFolder("res://MVC/View/Audio/SFX");
 		LoadSoundsFromFolder("res://MVC/View/Audio/Music");
+		LoadSoundsFromFolder("res://MVC/View/Audio/");
+		
+		// SFX0 = GetNode<AudioStreamPlayer>("AudioStreamPlayer0");
+		// SFX1 = GetNode<AudioStreamPlayer>("AudioStreamPlayer1");
+		// SFX2 = GetNode<AudioStreamPlayer>("AudioStreamPlayer2");
+		// SFX3 = GetNode<AudioStreamPlayer>("AudioStreamPlayer3");
+		// SFX4 = GetNode<AudioStreamPlayer>("AudioStreamPlayer4");
+		// SFX5 = GetNode<AudioStreamPlayer>("AudioStreamPlayer5");
+		// Music0 = GetNode<AudioStreamPlayer>("AudioStreamPlayer6");
+		// Music1 = GetNode<AudioStreamPlayer>("AudioStreamPlayer7");
 
 		var async = async () =>
 		{
@@ -62,6 +75,46 @@ public partial class sound_controller : Node3D
 		SFXStreams[0].Play();
 		return SFXStreams[0];
 	}
+	
+	// public AudioStreamPlayer PlaySFX(string soundName) {
+	// 	if (!IsSoundLoaded(soundName)) return null;
+
+	// 	if (!SFX0.Playing) {
+	// 		SFX0.Stream = sounds[soundName];
+	// 		SFX0.Play();
+	// 		return SFX0;
+
+	// 	} else if (!SFX1.Playing) {
+	// 		SFX1.Stream = sounds[soundName];
+	// 		SFX1.Play();
+	// 		return SFX1;
+			
+	// 	} else if (!SFX2.Playing) {
+	// 		SFX2.Stream = sounds[soundName];
+	// 		SFX2.Play();
+	// 		return SFX2;
+			
+	// 	} else if (!SFX3.Playing) {
+	// 		SFX3.Stream = sounds[soundName];
+	// 		SFX3.Play();
+	// 		return SFX3;
+			
+	// 	} else if (!SFX4.Playing) {
+	// 		SFX4.Stream = sounds[soundName];
+	// 		SFX4.Play();
+	// 		return SFX4;
+			
+	// 	} else if (!SFX5.Playing) {
+	// 		SFX5.Stream = sounds[soundName];
+	// 		SFX5.Play();
+	// 		return SFX5;
+			
+	// 	}
+
+	// 	SFX0.Stream = sounds[soundName];
+	// 	SFX0.Play();
+	// 	return SFX0;
+	// }
 
 	public bool StopSFX(string soundName) {
 		if (!IsSoundLoaded(soundName)) return false;
@@ -114,23 +167,32 @@ public partial class sound_controller : Node3D
 			string fileName = dir.GetNext();
 			while (fileName != "")
 			{
-				if (!dir.CurrentIsDir()) {
-					if (fileName.ToLower().EndsWith(".ogg")) {
-						string key = fileName.Substring(0, fileName.Length - 4);
-						sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamOggVorbis);
+				// Real loader that doesnt work outside of editor for some unknown reason
 
-					} else if (fileName.ToLower().EndsWith(".wav")) {
-						string key = fileName.Substring(0, fileName.Length - 4);
-						sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamWav);
+				// if (!dir.CurrentIsDir()) {
+				// 	if (fileName.ToLower().EndsWith(".ogg")) {
+				// 		string key = fileName.Substring(0, fileName.Length - 4);
+				// 		sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamOggVorbis);
 
-					} else if (fileName.EndsWith(".mp3")) {
-						string key = fileName.Substring(0, fileName.Length - 4);
-						sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamMP3);
-					}
-				}
+				// 	} else if (fileName.ToLower().EndsWith(".wav")) {
+				// 		string key = fileName.Substring(0, fileName.Length - 4);
+				// 		sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamWav);
+
+				// 	} else if (fileName.EndsWith(".mp3")) {
+				// 		string key = fileName.Substring(0, fileName.Length - 4);
+				// 		sounds.Add(key, ResourceLoader.Load(path + "/" + fileName) as AudioStreamMP3);
+				// 	}
+				// }
 
 				fileName = dir.GetNext();
 			}
+
+			// Scuffed Loader
+			sounds["Friday"] = SFXStreams[0].Stream;
+			sounds["CardDraw_01"] = SFXStreams[1].Stream;
+			sounds["CardMove"] = SFXStreams[2].Stream;
+			sounds["CardPlace"] = SFXStreams[3].Stream;
+			sounds["PlayerAttack"] = SFXStreams[4].Stream;
 
 		} else {
 			GD.Print("An error occurred when trying to access the path.");
@@ -150,12 +212,17 @@ public partial class sound_controller : Node3D
 	// {
 	// 	if (@event.IsActionPressed("Debug1"))
 	// 	{
-	// 		PlayMusic("Friday");
+	// 		PlaySFX(SFX_PLAYER_ATTACK_NAME);
 	// 	}
-		
+
 	// 	if (@event.IsActionPressed("Debug2"))
 	// 	{
-	// 		StopMusic("Friday");
+	// 		PlaySFX(SFX_CARD_MOVE_NAME);
+	// 	}
+
+	// 	if (@event.IsActionPressed("Debug3"))
+	// 	{
+	// 		PlaySFX(SFX_CARD_PLACE_NAME);
 	// 	}
 	// }
 }

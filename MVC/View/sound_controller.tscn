@@ -1,24 +1,34 @@
-[gd_scene load_steps=2 format=3 uid="uid://dkavq0o6irgjt"]
+[gd_scene load_steps=7 format=3 uid="uid://dkavq0o6irgjt"]
 
 [ext_resource type="Script" path="res://MVC/Controller/sound_controller.cs" id="1_c6u2s"]
+[ext_resource type="AudioStream" uid="uid://bsunfhfx2goek" path="res://MVC/View/Audio/Music/Friday.mp3" id="2_qc4a4"]
+[ext_resource type="AudioStream" uid="uid://d076kcyp4fsni" path="res://MVC/View/Audio/SFX/CardDraw_01.mp3" id="3_rtuib"]
+[ext_resource type="AudioStream" uid="uid://cpcnqeqtrx263" path="res://MVC/View/Audio/SFX/CardMove.mp3" id="4_l0722"]
+[ext_resource type="AudioStream" uid="uid://ba84cbdm08co1" path="res://MVC/View/Audio/SFX/CardPlace.mp3" id="5_w82av"]
+[ext_resource type="AudioStream" uid="uid://uq528waslwm7" path="res://MVC/View/Audio/SFX/PlayerAttack.mp3" id="6_b5jk0"]
 
 [node name="SoundController" type="Node3D" node_paths=PackedStringArray("SFXStreams", "MusicStreams")]
 script = ExtResource("1_c6u2s")
-SFXStreams = [NodePath("AudioStreamPlayer"), NodePath("AudioStreamPlayer2"), NodePath("AudioStreamPlayer3"), NodePath("AudioStreamPlayer4"), NodePath("AudioStreamPlayer5"), NodePath("AudioStreamPlayer6")]
-MusicStreams = [NodePath("AudioStreamPlayer7"), NodePath("AudioStreamPlayer8")]
+SFXStreams = [NodePath("AudioStreamPlayer0"), NodePath("AudioStreamPlayer1"), NodePath("AudioStreamPlayer2"), NodePath("AudioStreamPlayer3"), NodePath("AudioStreamPlayer4"), NodePath("AudioStreamPlayer5")]
+MusicStreams = [NodePath("AudioStreamPlayer7"), NodePath("AudioStreamPlayer6")]
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+[node name="AudioStreamPlayer0" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_qc4a4")
+
+[node name="AudioStreamPlayer1" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_rtuib")
 
 [node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_l0722")
 
 [node name="AudioStreamPlayer3" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_w82av")
 
 [node name="AudioStreamPlayer4" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_b5jk0")
 
 [node name="AudioStreamPlayer5" type="AudioStreamPlayer" parent="."]
 
 [node name="AudioStreamPlayer6" type="AudioStreamPlayer" parent="."]
 
 [node name="AudioStreamPlayer7" type="AudioStreamPlayer" parent="."]
-
-[node name="AudioStreamPlayer8" type="AudioStreamPlayer" parent="."]

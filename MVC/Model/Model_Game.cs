@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
+using static Model.ActionPoster;
 
 namespace Model
 {
@@ -30,7 +31,7 @@ namespace Model
         private static readonly int _CARDS_DRAWN_PER_TURN = 1;
         private static readonly int _CARDS_DRAWN_LIMIT = 6;
         private static readonly int _PLAYER_COUNT = 2;
-        private static readonly int _BOARD_RADIUS = 3;
+        private static readonly int _BOARD_RADIUS = 2;
 
         private static readonly int _COLLISION_DAMAGE = 1;
 
@@ -170,7 +171,6 @@ namespace Model
 
         public Action<int, int> OnAwaitTurnActions;
 
-        SynchronizationContext context = SynchronizationContext.Current;
 
         // Await Triggers
         public bool triggerStartGame = false,
@@ -178,57 +178,6 @@ namespace Model
         TriggerEndTurn = false;
 
         #region  Post Action
-
-        public bool PostAction(Action action)
-        {
-            if (action != null)
-            {
-                context.Post(_ => action(), null);
-                return true;
-            }
-            
-            return false;
-        }
-        public bool PostAction<T1>(Action<T1> action, T1 param1)
-        {
-            if (action != null)
-            {
-                context.Post(_ => action(param1), null);
-                return true;
-            }
-            
-            return false;
-        }
-        public bool PostAction<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2)
-        {
-            if (action != null)
-            {
-                context.Post(_ => action(param1, param2), null);
-                return true;
-            }
-
-            return false;
-        }
-        public bool PostAction<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
-        {
-            if (action != null)
-            {
-                context.Post(_ => action(param1, param2, param3), null);
-                return true;
-            }
-
-            return false;
-        }
-        public bool PostAction<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4)
-        {
-            if (action != null)
-            {
-                context.Post(_ => action(param1, param2, param3, param4), null);
-                return true;
-            }
-            
-            return false;
-        }
 
         #endregion
 
@@ -259,7 +208,7 @@ namespace Model
             {
                 _isGameStarted = true;
 
-                context.Post(_ => OnGameStart(_CardSet, _CardSet_NoBases), null);
+                PostAction(OnGameStart, _CardSet, _CardSet_NoBases);
 
                 _roundCounter = 0;
 
@@ -346,43 +295,6 @@ namespace Model
             }
         }
 
-        private bool AwaitAction(ref bool trigger, Func<bool> action)
-        {
-            while (!trigger)
-            {
-                Thread.Sleep(1);
-            }
-            trigger = false;
-            return action();
-        }
-        private bool AwaitAction<T1>(ref bool trigger, Func<T1, bool> action, T1 param1)
-        {
-            while (!trigger)
-            {
-                Thread.Sleep(1);
-            }
-            trigger = false;
-            return action(param1);
-        }
-        private bool AwaitAction<T1, T2>(ref bool trigger, Func<T1, T2, bool> action, T1 param1, T2 param2)
-        {
-            while (!trigger)
-            {
-                Thread.Sleep(1);
-            }
-            trigger = false;
-            return action(param1, param2);
-        }
-        private bool AwaitAction<T1, T2, T3>(ref bool trigger, Func<T1, T2, T3, bool> action, T1 param1, T2 param2, T3 param3)
-        {
-            while (!trigger)
-            {
-                Thread.Sleep(1);
-            }
-            trigger = false;
-            return action(param1, param2, param3);
-        }
-
         private void StartTurn(ref int turnCounter)
         {
             _turnPlayerIndex = turnCounter % _PLAYER_COUNT;
@@ -402,8 +314,6 @@ namespace Model
                 else
                     GD.PrintErr("Failed to draw card after awaiting trigger");
             }
-
-            // Input should allow for placement OR movement OR attack all at the same time
 
             PostAction(OnAwaitTurnActions, _turnPlayerIndex, turnCounter);
             if (AwaitAction(ref TriggerEndTurn, TryEndTurn))

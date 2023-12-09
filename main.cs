@@ -16,11 +16,14 @@ public partial class main : Node
 
 	private static main _instance;
 	public static main Instance => _instance;
+        
+	private SynchronizationContext _context = SynchronizationContext.Current;
+	public SynchronizationContext Context => _context;
 
 	private Node _currentScene;
 
-	public Utility.MouseMoveObserver MouseMoveObserver => _mouseMoveObserver;
 	private Utility.MouseMoveObserver _mouseMoveObserver;
+	public Utility.MouseMoveObserver MouseMoveObserver => _mouseMoveObserver;
 
 	public Model_Game gameModel;
 	public player Player;

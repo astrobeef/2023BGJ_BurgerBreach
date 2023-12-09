@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" path="res://MVC/Controller/sound_controller.cs" id="1_c6u2s"]
 [ext_resource type="AudioStream" uid="uid://bsunfhfx2goek" path="res://MVC/View/Audio/Music/Friday.mp3" id="2_qc4a4"]
-[ext_resource type="AudioStream" uid="uid://d076kcyp4fsni" path="res://MVC/View/Audio/SFX/CardDraw_01.mp3" id="3_rtuib"]
-[ext_resource type="AudioStream" uid="uid://cpcnqeqtrx263" path="res://MVC/View/Audio/SFX/CardMove.mp3" id="4_l0722"]
-[ext_resource type="AudioStream" uid="uid://ba84cbdm08co1" path="res://MVC/View/Audio/SFX/CardPlace.mp3" id="5_w82av"]
-[ext_resource type="AudioStream" uid="uid://uq528waslwm7" path="res://MVC/View/Audio/SFX/PlayerAttack.mp3" id="6_b5jk0"]
+[ext_resource type="AudioStream" uid="uid://dxvm5tsppj8f8" path="res://MVC/View/Audio/SFX/CardDraw_01.mp3" id="3_rtuib"]
+[ext_resource type="AudioStream" uid="uid://cuvphkhmp3grs" path="res://MVC/View/Audio/SFX/CardMove.mp3" id="4_l0722"]
+[ext_resource type="AudioStream" uid="uid://cqg3xbqn0233g" path="res://MVC/View/Audio/SFX/CardPlace.mp3" id="5_w82av"]
+[ext_resource type="AudioStream" uid="uid://cahgk7hnp51hx" path="res://MVC/View/Audio/SFX/PlayerAttack.mp3" id="6_b5jk0"]
 
 [node name="SoundController" type="Node3D" node_paths=PackedStringArray("SFXStreams", "MusicStreams")]
 script = ExtResource("1_c6u2s")

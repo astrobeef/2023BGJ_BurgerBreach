@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using AxialCS;
 using Godot;
+using static Model.ActionPoster;
 
 namespace Model
 {
@@ -31,6 +32,9 @@ namespace Model
 
         public Unit(int ownerIndex, Axial position, Card card)
         {
+            if (card == Card.EMPTY)
+                return;
+
             this.ownerIndex = ownerIndex;
             this.pos = position;
             this.card = card;
@@ -39,22 +43,87 @@ namespace Model
             move = card.MOVE;
             atk = card.ATK;
 
-            main.Instance.gameModel.OnTurnStart += ResetTurnActions;
+            Model_Game model = main.Instance.gameModel;
+
+            model.OnTurnStart += ResetTurnActions;
+
+            model.OnUnitAddedToBoard += OnUnitAddedToBoard;
+            model.OnUnitAttack += OnUnitAttack;
+            model.OnUnitDamaged += OnUnitDamaged;
+            model.OnUnitDeath += OnUnitDeath;
+            model.OnUnitMove += OnUnitMove;
 
             id = System.Threading.Interlocked.Increment(ref lastId);
         }
 
-        public void ResetTurnActions(int turnPlayerIndex, int turnCounter)
+        protected void ResetTurnActions(int turnPlayerIndex, int turnCounter)
         {
             if (turnPlayerIndex == ownerIndex)
                 TurnActions = new TurnActions(move, (atk > 0));
         }
 
-        public bool CanMove(out int remainingMove)
+        protected virtual void OnUnitAddedToBoard(Unit newUnit)
+        {
+        }
+
+        protected virtual void OnUnitAttack(Unit attacker, Unit target)
+        {
+        }
+
+        protected virtual void OnUnitDamaged(Unit target)
+        {
+        }
+
+        protected virtual void OnUnitDeath(Unit deadUnit)
+        {
+        }
+
+        public virtual bool TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
+        {
+            if (main.Instance.gameModel.IsLocationValidAndOpen(newPos, out occupant))
+            {
+                if (HasMovement(out int remainingMove))
+                {
+                    GD.Print($"Attempting to move unit {unit.name} from {unit.pos} to {newPos}");
+
+                    int displacement = Axial.Distance(unit.pos, newPos);
+
+                    if(displacement > 1)
+                        GD.PrintErr("Need to add logic to handle displacement > 1. Easy method would be to recursively check 'isLocationValid' one tile at a time along paths to target");
+
+                    if (!isWillful || displacement <= remainingMove)
+                    {
+                        unit.Move(isWillful, newPos);
+                        return true;
+                    }
+                    else
+                    {
+                        GD.Print($"Unit {unit.name} cannot move because the displacement ({displacement}) is greater than the remaining movement ({remainingMove}) AND the movement is willful ({isWillful})");
+                        return false;
+                    }
+                }
+                else
+                {
+                    GD.Print($"Unit {unit.name} cannot move, according to unit data.");
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public virtual bool HasMovement(out int remainingMove)
         {
             remainingMove = TurnActions.remainingMovement;
             return TurnActions.remainingMovement > 0;
         }
+
+        protected virtual void OnUnitMove(Axial oldPos, Unit movedUnit)
+        {
+        }
+
 
         /// <summary>
         /// Move the unit instance on the board

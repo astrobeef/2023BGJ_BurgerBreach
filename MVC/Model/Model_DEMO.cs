@@ -711,7 +711,7 @@ namespace Model
 
             int iDirection = 0;
 
-            while(unit.CanMove(out int remainingMovement)){
+            while(unit.HasMovement(out int remainingMovement)){
                 Thread.Sleep(waitTime);
 
                 if(iDirection >= Axial.CARDINAL_LENGTH)

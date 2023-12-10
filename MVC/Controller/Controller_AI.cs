@@ -183,7 +183,7 @@ namespace Controller.AI
 
             int iDirection = 0;
 
-            while(unit.CanMove(out int remainingMovement)){
+            while(unit.HasMovement(out int remainingMovement)){
                 if(iDirection >= Axial.CARDINAL_LENGTH)
                 {
                     GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");

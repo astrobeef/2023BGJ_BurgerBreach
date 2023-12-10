@@ -551,7 +551,7 @@ namespace View
                     {
                         if (model.Board.IsAxialOnGrid(axMouse))
                         {
-                            if (model.IsPlacementLocationValid(axMouse))
+                            if (model.IsLocationValidAndOpen(axMouse))
                             {
                                 GD.Print($"User can move the unit to this open tile");
                                 if (model.Unit_TryMove(true, 0, _unitToMove, axMouse))

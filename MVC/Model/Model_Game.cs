@@ -153,8 +153,17 @@ namespace Model
         public Action<int, int, Card> OnDeckBuildAddedCard;
         public Action<int> OnDeckBuildFinished;
 
+        /// <summary>
+        /// (<see cref="Unit"/> newUnit)
+        /// </summary>
         public Action<Unit> OnUnitAddedToBoard;
+        /// <summary>
+        /// (<see cref="Axial"/> oldPos, <see cref="Unit"/> movedUnit)
+        /// </summary>
         public Action<Axial, Unit> OnUnitMove;
+        /// <summary>
+        /// (<see cref="Unit"/> attacker, <see cref="Unit"/> target)
+        /// </summary>
         public Action<Unit, Unit> OnUnitAttack;
         public Action<Unit> OnBaseDestroyed;
         public Action<Unit> OnUnitDamaged;
@@ -580,36 +589,14 @@ namespace Model
 
         public bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
-            if (IsPlacementLocationValid(newPos, out occupant))
-            {
-                if (unit.CanMove(out int remainingMove))
-                {
-                    GD.Print($"Attempting to move unit {unit.name} from {unit.pos} to {newPos}");
+            Axial oldPos = unit.pos;
 
-                    int displacement = Axial.Distance(unit.pos, newPos);
-                    if (!isWillful || displacement <= remainingMove)
-                    {
-                        Axial oldPos = unit.pos;
-                        unit.Move(isWillful, newPos);
-                        PostAction(OnUnitMove, oldPos, unit);
-                        return true;
-                    }
-                    else
-                    {
-                        GD.Print($"Unit {unit.name} cannot move because the displacement ({displacement}) is greater than the remaining movement ({remainingMove}) AND the movement is willful ({isWillful})");
-                        return false;
-                    }
-                }
-                else
-                {
-                    GD.Print($"Unit {unit.name} cannot move, according to unit data.");
-                    return false;
-                }
+            if (unit.TryMove(isWillful, unit, newPos, out occupant))
+            {
+                return PostAction(OnUnitMove, oldPos, unit);
             }
             else
-            {
                 return false;
-            }
         }
 
         public bool Unit_TryAttack(bool doDisplace, Unit attacker, Axial attackDirection, Unit target)
@@ -695,7 +682,7 @@ namespace Model
             Axial = Axial.Empty;
             return false;
         }
-        
+
         private void DisplayHand(int player_index){
 
                 GD.Print(new string('-', 28));
@@ -806,7 +793,7 @@ namespace Model
         {
             ref Card[] refHand = ref _Hands[player_index];
 
-            if (IsPlacementLocationValid(location))
+            if (IsLocationValidAndOpen(location))
             {
                 Card.CardType cardType = refHand[card_index].TYPE;
 
@@ -921,7 +908,7 @@ namespace Model
 
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card){
 
-            if(IsPlacementLocationValid(location) && CheckOffensePlacementRule(player_index, location, card, out Unit friendlyUnit)){
+            if(IsLocationValidAndOpen(location) && CheckOffensePlacementRule(player_index, location, card, out Unit friendlyUnit)){
 
                 PlaceUnit_FromVoid(player_index, card, location, friendlyUnit);
 
@@ -1005,12 +992,18 @@ namespace Model
             return true;
         }
 
-        public bool IsPlacementLocationValid(Axial location)
+        public bool IsLocationValidAndOpen(Axial location)
         {
-            return IsPlacementLocationValid(location, out Unit dummyUnit);
+            return IsLocationValidAndOpen(location, out Unit dummyUnit);
         }
 
-        private bool IsPlacementLocationValid(Axial location, out Unit occupant)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="location">Axial to place at</param>
+        /// <param name="occupant">If the tile is occupied, this is the unit occupying it</param>
+        /// <returns></returns>
+        public bool IsLocationValidAndOpen(Axial location, out Unit occupant)
         {
             occupant = Unit.EMPTY;
 

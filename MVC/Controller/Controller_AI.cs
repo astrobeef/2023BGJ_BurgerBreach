@@ -10,6 +10,8 @@ namespace Controller.AI
     {
         Model_Game model;
 
+        int _myPlayerIndex = 1;
+
         public Controller_AI(Model_Game model)
         {
             this.model = model;
@@ -19,7 +21,7 @@ namespace Controller.AI
 
         private void OnAwaitDrawCard(int playerIndex, int drawIndex)
         {
-            if (playerIndex != 0)
+            if (playerIndex == _myPlayerIndex)
             {
                 GD.Print("AI drawing card");
                 var async = async () =>
@@ -31,13 +33,12 @@ namespace Controller.AI
             }
         }
 
-        Random random = new Random();
+        Random _random = new Random();
 
         private void OnAwaitTurnActions(int playerIndex, int turnCounter)
         {
-            if (playerIndex != 0)
+            if (playerIndex == _myPlayerIndex)
             {
-                GD.Print("AI beginning turn");
                 var async = async () =>
                 {
                     await System.Threading.Tasks.Task.Delay(50);
@@ -48,24 +49,23 @@ namespace Controller.AI
                         // Get a max placements which is at least 1, but otherwise half the amount of cards in hand
                         int maxPlacements = Math.Min(1, (int)(model.EnemyHand.Length * 0.75f));
 
-                        int placements = random.Next(1, maxPlacements);
-
-                        GD.Print($"AI will try to place {placements} cards");
+                        int placements = _random.Next(1, maxPlacements);
 
                         for (int i = 0; i < placements; i++)
                         {
-                            int syntheticWait = random.Next(300, 1200);
+                            int syntheticWait = _random.Next(300, 1200);
 
-                        GD.Print("AI trying to play a random card");
                             await System.Threading.Tasks.Task.Delay(syntheticWait);
-                            if(model.TryPlaceRandomCardRandomly())
+                            if(TryPlaceRandomCardRandomly())
+                            {
+                                GD.PrintErr("Playing sounds or other reactions to the success of an event should be done through a subscription on a the unit itself");
                                 main.Instance.SoundController.Play(sound_controller.SFX_CARD_PLACE_NAME);
+                            }
                         }
                     }
                     else
                     {
-                        GD.Print("AI could not play any cards because their hand is empty");
-                        int syntheticWait = random.Next(250, 500);
+                        int syntheticWait = _random.Next(250, 500);
 
                         await System.Threading.Tasks.Task.Delay(syntheticWait);
                     }
@@ -75,7 +75,7 @@ namespace Controller.AI
 
                     foreach (Unit occupant in model.ActiveBoard)
                     {
-                        int syntheticWait = random.Next(250, 500);
+                        int syntheticWait = _random.Next(250, 500);
 
                         if (occupant.ownerIndex == model.TurnPlayerIndex)
                         {
@@ -85,16 +85,10 @@ namespace Controller.AI
 
                             Axial oldPos = iUnit.pos;
 
-                            GD.Print($"Player {model.TurnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
-
-                            if (model.Unit_TryRandomMove(iUnit, out Axial newPos))
+                            if (Unit_TryRandomMove(iUnit, out Axial newPos))
                             {
+                                GD.PrintErr("Playing sounds or other reactions to the success of an event should be done through a subscription on a the unit itself");
                                 main.Instance.SoundController.Play(sound_controller.SFX_CARD_MOVE_NAME);
-                                GD.Print($"Player {model.TurnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
-                            }
-                            else
-                            {
-                                GD.Print($"Player {model.TurnPlayerIndex} could not move {iUnit.name}");
                             }
                         }
                     }
@@ -104,7 +98,7 @@ namespace Controller.AI
 
                     foreach (Unit occupant in model.ActiveBoard)
                     {
-                        int syntheticWait = random.Next(250, 500);
+                        int syntheticWait = _random.Next(250, 500);
 
                         if (occupant.ownerIndex == model.TurnPlayerIndex)
                         {
@@ -114,8 +108,9 @@ namespace Controller.AI
 
                             GD.Print($"Player {model.TurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
 
-                            if (model.Unit_TryRandomAttack(iUnit))
+                            if (Unit_TryRandomAttack(iUnit))
                             {
+                                GD.PrintErr("Playing sounds or other reactions to the success of an event should be done through a subscription on a the unit itself");
                                 main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
                                 GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
                             }
@@ -132,6 +127,97 @@ namespace Controller.AI
                 
                 async.Invoke();
             }
+        }
+
+        private bool TryPlaceRandomCardRandomly()
+        {
+            if (model.EnemyHand.Length > 0)
+            {
+                int cardIndex = _random.Next(0,model.EnemyHand.Length);
+
+                return TryPlaceCardRandomly(cardIndex);
+            }
+
+            return false;
+        }
+        
+        private bool TryPlaceCardRandomly(int cardIndex)
+        {
+            Card card = model.EnemyHand[cardIndex];
+
+            // Place based on offense rules
+            if (card.TYPE == Card.CardType.Offense)
+            {
+                if (model.ActiveBoard_AllNonOffenseFriendlyUnits(_myPlayerIndex, out Unit[] resourceUnits))
+                {
+                    foreach (Unit resource in resourceUnits)
+                    {
+                        if (model.ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
+                        {
+                            if(model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, openNeighbor))
+                                return true;
+                        }
+                    }
+                }
+                else
+                {
+                    GD.Print($"Could not place offense unit because there are no friendly non-offense units on the board.");
+                }
+            }
+            // Else, get a random open tile to place the unit
+            else if (model.ActiveBoard_TryGetOpenTile(out Axial openTile))
+            {
+                return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, openTile);
+            }
+            else
+                GD.Print("Could not place card because all tiles are filled");
+
+            return false;
+        }
+        
+
+        public bool Unit_TryRandomMove(Unit unit, out Axial newPos){
+
+            Axial initPos = unit.pos;
+            newPos = initPos;
+
+            int iDirection = 0;
+
+            while(unit.CanMove(out int remainingMovement)){
+                if(iDirection >= Axial.CARDINAL_LENGTH)
+                {
+                    GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
+                    return (newPos != initPos);
+                }
+
+                Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
+                Axial movePosition = unit.pos + randDirection;
+                
+                if(model.Unit_TryMove(true, unit, movePosition)){
+                    newPos = movePosition;
+                }
+
+                iDirection++;
+            }
+
+            return (newPos != initPos);
+        }
+
+
+        
+
+        public bool Unit_TryRandomAttack(Unit unit)
+        {
+            if(unit.CanAttack())
+            {                
+                if(model.ActiveBoard_FindEnemyNeighbor(unit.ownerIndex, unit.pos, out Unit target)){
+                    Axial attackDirection = target.pos - unit.pos;
+                    return model.Unit_TryAttack(true, unit, attackDirection, target);
+                }
+            }
+
+            GD.Print($"Player {unit.ownerIndex} can't attack with this unit.");
+            return false;
         }
     }
 }

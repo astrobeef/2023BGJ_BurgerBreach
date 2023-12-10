@@ -16,7 +16,6 @@ namespace View
     {
         public bool isInit = false;
         public bool isInitializing = false;
-        public object initLock = new object();
 
         Model_Game model;
 
@@ -32,8 +31,6 @@ namespace View
                 else Print("Success! Player button initialized!");
 
                 AwaitInitialization();
-
-                // DrawGrid();
             }
         }
 
@@ -138,68 +135,37 @@ namespace View
             main.Instance.Player.OnCamHoverNewHit += OnCamHoverNewHit;
             main.Instance.Player.OnCamHoverOff += OnCamHoverOff;
             main.Instance.Player.OnCamHoverUpdate += OnCamHoverUpdate;
+
+            main.Instance.Player.OnCamClickNewHit += OnCamClickNewHit;
+            main.Instance.Player.OnCamClickOff += OnCamClickOff;
+            main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
         }
 
         private void OnGameStart(Card[] CardSet, Card[] CardSet_NoBases)
         {
-            Print("Game started!");
-            DisplayCardSet(CardSet, CardSet_NoBases);
         }
 
         private void OnRoundStart(int roundCounter)
         {
-            Print("-------------------------");
-            Print($"----- START ROUND {roundCounter} -----");
-            Print("-------------------------");
         }
 
         private void OnTurnStart(int turnPlayerIndex, int turnCounter)
         {
-            GD.Print("------------------------");
-            GD.Print($"----- START TURN {turnCounter + 1} -----");
-            GD.Print($"It is player [{turnPlayerIndex}]'s turn");
-            GD.Print("------------------------");
         }
 
         private void OnTurnEnd(int playerIndex, int turnIndex)
         {
-            if(model.OnCardRemoved != null)
-                model.OnCardRemoved -= SubscribeAllCards;
         }
-
-        private void DisplayCardSet(Card[] CardSet, Card[] CardSet_NoBases)
-        {
-            Print("----- CARD SET W/ BASES -----");
-
-            for (int i = 0; i < CardSet.Length; i++)
-            {
-                Card card = CardSet[i];
-                Print($"[{i}] = {card}");
-            }
-
-            Print("----- CARD SET W/O BASES -----");
-
-            for (int i = 0; i < CardSet_NoBases.Length; i++)
-            {
-                Card card = CardSet_NoBases[i];
-                Print($"[{i}] = {card}");
-            }
-        }
-
         private void OnDeckBuildStart(int ownerIndex)
         {
-            Print($"----- Initializing deck[{ownerIndex}] -----");
         }
 
         private void OnDeckBuildAddedCard(int ownerIndex, int cardIndexInDeck, Card card)
         {
-            Print($"Deck [{ownerIndex}][{cardIndexInDeck}] : {card}");
         }
 
         private void OnDeckBuildFinished(int ownerIndex)
         {
-            Print($"----- Initialized deck[{ownerIndex}] -----");
-            Print("-------------------------------");
         }
 
         private void OnUnitAddedToBoard(Unit newUnit)
@@ -305,8 +271,7 @@ namespace View
             if (playerIndex == 0)
             {
                 playerInput_1.Text = "End Turn";
-            playerInput_1.Pressed += HandleInput_EndTurn;
-                
+                playerInput_1.Pressed += HandleInput_EndTurn;
             }
         }
 
@@ -320,61 +285,38 @@ namespace View
             playerInput_1.Pressed -= HandleInput_EndTurn;
         }
 
-        private bool _leftMouseClicked = false;
-        private Axial _unitToMove = Axial.Empty;
 
-        private void OnMouseInput_MoveUnitRequest()
-        {
-            Utility.MouseMoveObserver MouseMoveObserver = main.Instance.MouseMoveObserver;
-
-            if (_leftMouseClicked)
-                _leftMouseClicked = Input.IsMouseButtonPressed(MouseButton.Left);
-
-            if (Input.IsMouseButtonPressed(MouseButton.Left))
-            {
-                if (!_leftMouseClicked)
-                {
-                    _leftMouseClicked = true;
-                    MouseMoveObserver._pos_cur = GetViewport().GetMousePosition();
-                }
-            }
-        }
-
-        private void SubscribeAllCards(int dummyInt, Card cardRemoved, Card[] dummyHand)
-        {
-        }
-
-        private void SubscribeCardPressed(Button card, int index)
-        {
-            card.Pressed -= OnCardPressed;
-
-            card.Pressed += OnCardPressed;
-
-            void OnCardPressed()
-            {
-                HandleInput_PlaceCard(index);
-                card.Pressed -= OnCardPressed;
-            }
-        }
-
-        private void HandleInput_PlaceCard(int cardIndex)
-        {
-            model.TryPlaceCardRandomly(0, cardIndex);
-        }
 
         private void OnCamHoverNewHit(Hit3D hit)
         {
-            // Print($"Hit new object: {hit}");
+            Print($"Cam hover new object: {hit}");
         }
 
         private void OnCamHoverOff(Hit3D hit)
         {
-            // Print($"No longer hitting {hit}");
+            Print($"Cam no longer hovering: {hit}");
         }
 
         private void OnCamHoverUpdate(Hit3D hit)
         {
-            // Print($"Hit position has changed to: {hit.position}");
+            Print($"Cam hover update hit position: {hit.position}");
+        }
+
+
+
+        private void OnCamClickNewHit(Hit3D hit)
+        {
+            Print($"Cam click new object: {hit}");
+        }
+
+        private void OnCamClickOff(Hit3D hit)
+        {
+            Print($"Cam no longer clicked on: {hit}");
+        }
+
+        private void OnCamClickUpdate(Hit3D hit)
+        {
+            Print($"Cam click update hit position: {hit.position}");
         }
 
         #endregion

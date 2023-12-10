@@ -300,8 +300,6 @@ namespace Model
             _turnPlayerIndex = turnCounter % _PLAYER_COUNT;
             PostAction(OnTurnStart, _turnPlayerIndex, turnCounter);
 
-            ResetAllActiveUnitsTurnActions();
-
             // 1. Draw a card
             for (int iDraw = 0; iDraw < _CARDS_DRAWN_PER_TURN; iDraw++)
             {
@@ -322,101 +320,6 @@ namespace Model
                 GD.PrintErr("Failed to end the turn");
 
             return;
-
-            // 2. Place card(s)
-
-            // 3. Move card(s)
-
-            foreach (Unit occupant in _activeBoard)
-            {
-                if (occupant.ownerIndex == _turnPlayerIndex)
-                {
-                    Thread.Sleep(_waitTime);
-
-                    Unit iUnit = occupant;
-
-                    Axial oldPos = iUnit.pos;
-
-                    GD.Print($"Player {_turnPlayerIndex} attempting to move {iUnit.name} at {oldPos}.");
-
-                    if (Unit_TryRandomMove(iUnit, out Axial newPos))
-                    {
-                        GD.Print($"Player {_turnPlayerIndex} moved {iUnit.name} from {oldPos} to {newPos}.");
-                    }
-                    else{
-                        GD.Print($"Player {_turnPlayerIndex} could not move {iUnit.name}");
-                    }
-                }
-            }
-
-            foreach (Unit occupant in _activeBoard)
-            {
-                if (occupant.ownerIndex == _turnPlayerIndex)
-                {
-                    Thread.Sleep(_waitTime);
-
-                    Unit iUnit = occupant;
-
-                    GD.Print($"Player {_turnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
-
-                    if (Unit_TryRandomAttack(iUnit))
-                    {
-                        GD.Print($"Player {_turnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
-                    }
-                    else{
-                        GD.Print($"Player {_turnPlayerIndex} could not move {iUnit.name}");
-                    }
-                }
-            }
-
-            // 4. Attack card(s)
-            // 5. End turn
-        }
-
-        public bool TryPlaceRandomCardRandomly()
-        {
-            if (_Hands.Length > 0)
-            {
-                int cardIndex = _random.Next(0,_Hands.Length);
-
-                return TryPlaceCardRandomly(_turnPlayerIndex, cardIndex);
-            }
-
-            return false;
-        }
-
-        public bool TryPlaceCardRandomly(int playerIndex, int cardIndex)
-        {
-            Card card = _Hands[playerIndex][cardIndex];
-
-            // Place based on offense rules
-            if (card.TYPE == Card.CardType.Offense)
-            {
-                if (ActiveBoard_AllNonOffenseFriendlyUnits(_turnPlayerIndex, out Unit[] resourceUnits))
-                {
-                    foreach (Unit resource in resourceUnits)
-                    {
-                        if (ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
-                        {
-                            if(TryPlaceCard_FromHand(playerIndex, cardIndex, openNeighbor))
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    GD.Print($"Could not place offense unit because there are no friendly non-offense units on the board.");
-                }
-            }
-            // Else, get a random open tile to place the unit
-            else if (TryGetOpenTile(out Axial openTile))
-            {
-                TryPlaceCard_FromHand(_turnPlayerIndex, cardIndex, openTile);
-            }
-            else
-                GD.Print("Could not place card because all tiles are filled");
-
-            return false;
         }
 
         private bool TryEndTurn()
@@ -477,7 +380,7 @@ namespace Model
         /// 'out' indexes of all adjacent neighbors
         /// </summary>
         /// <returns>True if at least one neighbor found, false if not</returns>
-        private bool ActiveBoard_FindNeighbors(Axial axial, out int[] neighborBoardIndexes)
+        public bool ActiveBoard_FindNeighbors(Axial axial, out int[] neighborBoardIndexes)
         {
             List<int> neighborBoardIndexes_List = new List<int>(0);
 
@@ -501,7 +404,7 @@ namespace Model
         /// </summary>
         /// <returns>True if enemy found, false if not</returns>
         /// <remarks>Used in <see cref="Unit_TryRandomAttack"/></remarks>
-        private bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial originAxial, out Unit enemyNeighborUnit)
+        public bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial originAxial, out Unit enemyNeighborUnit)
         {
             int[] neighborBoardIndexes;
             if(ActiveBoard_FindNeighbors(originAxial, out neighborBoardIndexes)){
@@ -522,7 +425,7 @@ namespace Model
         /// 'out' the first friendly, non-offense neighbor found
         /// </summary>
         /// <returns>True if friendly, non-offense neighbor found, false if not</returns>
-        private bool ActiveBoard_FindFriendlyNonOffenseNeighbor(int ownerIndex, Axial axial, out Unit friendlyUnit)
+        public bool ActiveBoard_FindFriendlyNonOffenseNeighbor(int ownerIndex, Axial axial, out Unit friendlyUnit)
         {
             int[] neighborBoardIndexes;
             if(ActiveBoard_FindNeighbors(axial, out neighborBoardIndexes)){
@@ -539,7 +442,7 @@ namespace Model
             return false;
         }
 
-        private bool ActiveBoard_AllFriendlyUnits(int ownerIndex, out Unit[] friendlyUnits)
+        public bool ActiveBoard_AllFriendlyUnits(int ownerIndex, out Unit[] friendlyUnits)
         {
             List<Unit> friendlyUnits_List = new List<Unit>(0);
 
@@ -562,7 +465,7 @@ namespace Model
         /// <param name="friendlyUnits_nonOf">'out' list of non-offense friendly units</param>
         /// <returns>True if at least one unit found, false if not</returns>
         /// <remarks>The 'out' list sorts 'base' units to the end of the array</remarks>
-        private bool ActiveBoard_AllNonOffenseFriendlyUnits(int ownerIndex, out Unit[] friendlyUnits_nonOf)
+        public bool ActiveBoard_AllNonOffenseFriendlyUnits(int ownerIndex, out Unit[] friendlyUnits_nonOf)
         {
             List<Unit> friendlyUnits_List = new List<Unit>(0);
 
@@ -586,7 +489,7 @@ namespace Model
             return (friendlyUnits_nonOf.Length > 0);
         }
 
-        private bool ActiveBoard_FindFriendlyNonOffenseUnit(int ownerIndex, out Unit friendlyUnit_nonOf)
+        public bool ActiveBoard_FindFriendlyNonOffenseUnit(int ownerIndex, out Unit friendlyUnit_nonOf)
         {
             if(ActiveBoard_AllFriendlyUnits(ownerIndex, out Unit[] friendlyUnits))
             {
@@ -603,7 +506,7 @@ namespace Model
             return false;
         }
 
-        private bool ActiveBoard_FindOpenNeighbor(Axial origin, out Axial openPos)
+        public bool ActiveBoard_FindOpenNeighbor(Axial origin, out Axial openPos)
         {
             if(_Board.IsAxialOnGrid(origin))
             {
@@ -628,7 +531,7 @@ namespace Model
             return false;
         }
 
-        private bool IsRoundOver(int turnCounter){
+        public bool IsRoundOver(int turnCounter){
 
             for(int i = 0; i < _PLAYER_COUNT; i++){
                 if(ActiveBoard_TryGetBaseUnit(i, out Unit playerBase)){
@@ -639,44 +542,6 @@ namespace Model
             }
             
             return turnCounter >= 100;
-        }
-
-        private void DisplayCurrentActiveBoard()
-        {
-            GD.Print("--- Displaying active board ---");
-            for (int i = 0; i < _activeBoard.Length; i++)
-            {
-                Unit unit = _activeBoard[i];
-                GD.Print($"[{i}]:{unit}");
-            }
-            GD.Print("-------------------------------");
-        }
-
-        public bool Unit_TryRandomMove(Unit unit, out Axial newPos){
-
-            Axial initPos = unit.pos;
-            newPos = initPos;
-
-            int iDirection = 0;
-
-            while(unit.CanMove(out int remainingMovement)){
-                if(iDirection >= Axial.CARDINAL_LENGTH)
-                {
-                    GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
-                    return (newPos != initPos);
-                }
-
-                Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
-                Axial movePosition = unit.pos + randDirection;
-                
-                if(Unit_TryMove(true, unit, movePosition)){
-                    newPos = movePosition;
-                }
-
-                iDirection++;
-            }
-
-            return (newPos != initPos);
         }
 
         public bool Unit_TryMove(bool isWillful, int playerIndex, Axial unitPos, Axial destination)
@@ -708,12 +573,12 @@ namespace Model
             }
         }
 
-        private bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos)
+        public bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos)
         {
             return Unit_TryMove(isWillful, unit, newPos, out Unit dummyOccupant);
         }
 
-        private bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
+        public bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
             if (IsPlacementLocationValid(newPos, out occupant))
             {
@@ -745,20 +610,6 @@ namespace Model
             {
                 return false;
             }
-        }
-
-        public bool Unit_TryRandomAttack(Unit unit)
-        {
-            if(unit.CanAttack())
-            {                
-                if(ActiveBoard_FindEnemyNeighbor(unit.ownerIndex, unit.pos, out Unit target)){
-                    Axial attackDirection = target.pos - unit.pos;
-                    return Unit_TryAttack(true, unit, attackDirection, target);
-                }
-            }
-
-            GD.Print($"Player {unit.ownerIndex} can't attack with this unit.");
-            return false;
         }
 
         public bool Unit_TryAttack(bool doDisplace, Unit attacker, Axial attackDirection, Unit target)
@@ -828,7 +679,7 @@ namespace Model
             return true;
         }
 
-        private bool TryGetOpenTile(out Axial Axial)
+        public bool ActiveBoard_TryGetOpenTile(out Axial Axial)
         {
             foreach (Axial ax in _Board.Axials)
             {
@@ -844,14 +695,7 @@ namespace Model
             Axial = Axial.Empty;
             return false;
         }
-
-        private void ResetAllActiveUnitsTurnActions()
-        {
-            foreach(Unit unit in _activeBoard){
-                unit.ResetTurnActions();
-            }
-        }
-
+        
         private void DisplayHand(int player_index){
 
                 GD.Print(new string('-', 28));

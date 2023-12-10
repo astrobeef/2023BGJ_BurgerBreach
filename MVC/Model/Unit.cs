@@ -39,13 +39,15 @@ namespace Model
             move = card.MOVE;
             atk = card.ATK;
 
-            ResetTurnActions();
-            
+            main.Instance.gameModel.OnTurnStart += ResetTurnActions;
+
             id = System.Threading.Interlocked.Increment(ref lastId);
         }
 
-        public void ResetTurnActions(){
-            TurnActions = new TurnActions(move, (atk > 0));
+        public void ResetTurnActions(int turnPlayerIndex, int turnCounter)
+        {
+            if (turnPlayerIndex == ownerIndex)
+                TurnActions = new TurnActions(move, (atk > 0));
         }
 
         public bool CanMove(out int remainingMove)
@@ -61,12 +63,14 @@ namespace Model
         /// <param name="newPos">New position to move towards</param>
         public void Move(bool isWillful, Axial newPos)
         {
+            GD.PrintErr("This is where TryMove should be called, not on the Model_Game. Event should still be called on Model.  It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+
             int calculatedDisplacement = Axial.Distance(pos, newPos);
             if(isWillful)
                 TurnActions.remainingMovement -= calculatedDisplacement;
 
             if (TurnActions.remainingMovement < 0)
-                GD.PrintErr($"Unit {this} has its turn movement less than 0. This should have been checked before this method.");
+                GD.PrintErr($"Unit {this} has its turn movement less than 0. Event should still be called on Model.  This should have been checked before this method.");
 
             pos = newPos;
 
@@ -75,11 +79,15 @@ namespace Model
 
         public void Attack()
         {
+            GD.PrintErr("This is where TryAttack should be called, not on the Model_Game. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+
             TurnActions.hasAttacked = true;
         }
 
         public bool Damage(int amount)
         {
+            GD.PrintErr("This is where TryDamage should be called, not on the Model_Game. Event should still be called on Model. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+
             if(hp < 0)
             {
                 GD.PrintErr($"Unit {name} should have been removed already. Its being attacked, but its HP ({hp}) is already less than 0.");

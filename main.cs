@@ -48,12 +48,16 @@ public partial class main : Node
 		InstantiateSoundController();
 	}
 
-	private void InstantiateSoundController()
+	private async void InstantiateSoundController()
 	{
 		PackedScene scene = GD.Load<PackedScene>(_SOUND_CONTROLLER_PATH);
 		
 		SoundController = (sound_controller)scene.Instantiate();
 		_currentScene.AddChild(SoundController);
+
+		await Task.Delay(100);
+
+		SoundController.PlayMusic("battleMusic");
 	}
 
 	public override void _EnterTree()

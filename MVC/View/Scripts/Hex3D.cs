@@ -124,7 +124,6 @@ public partial class Hex3D : Node3D
 					main.Instance.Player.selectedCard3D.card.id,
 					AxialPos))
 				{
-					main.Instance.SoundController.Play(sound_controller.SFX_CARD_PLACE_NAME);
 					// GD.PrintErr("This should be done with an event like 'OnCardPlacmentFailed', but it works for now");
 					// main.Instance.Player.SwitchToPerspective();
 				}
@@ -157,7 +156,7 @@ public partial class Hex3D : Node3D
 			}
 			else
 			{
-				GD.PrintErr($"Not trying to move unit because either a unit is NOT selected ({main.Instance.Player.selectedUnit3D == null}) OR this hex has a unit in it ({activeUnit3D != null})");
+				GD.PrintErr($"Not trying to move unit because either a unit is NOT selected ({main.Instance.Player.selectedUnit3D == null}) OR this hex({AxialPos}) has a unit in it ({activeUnit3D != null}){((activeUnit3D != null) ? $"unit filling:{activeUnit3D.unit}" : "")}");
 			}
 
 			// TRY TO ATTACK THE UNIT ON THIS TILE
@@ -171,7 +170,7 @@ public partial class Hex3D : Node3D
 				Axial attackDirection = (AxialPos - attackerUnit.pos);
 				if(main.Instance.gameModel.Unit_TryAttack(true, attackerUnit, attackDirection, activeUnit3D.unit))
 				{
-					main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
+					// On success
 				}
 				return;
 			}
@@ -188,7 +187,7 @@ public partial class Hex3D : Node3D
 	{
 		if (hit.collider == _body)
 		{
-			GD.PrintErr($"{activeUnit3D.unit.name} is invoking OnCamClickOff because the hit is this");
+			GD.PrintErr($"{((activeUnit3D == null) ? activeUnit3D?.unit.name : "NULL")}@{AxialPos} is invoking OnCamClickOff because the hit is this");
 			main.Instance.Player.OnUnitDeselected?.Invoke(activeUnit3D);
 		}
 	}

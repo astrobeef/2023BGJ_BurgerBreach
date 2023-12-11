@@ -188,7 +188,7 @@ public partial class sound_controller : Node3D
 			}
 
 			// Scuffed Loader
-			sounds["Friday"] = SFXStreams[0].Stream;
+			sounds["battleMusic"] = SFXStreams[0].Stream;
 			sounds["CardDraw_01"] = SFXStreams[1].Stream;
 			sounds["CardMove"] = SFXStreams[2].Stream;
 			sounds["CardPlace"] = SFXStreams[3].Stream;

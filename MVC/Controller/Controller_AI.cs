@@ -58,8 +58,7 @@ namespace Controller.AI
                             await System.Threading.Tasks.Task.Delay(syntheticWait);
                             if(TryPlaceRandomCardRandomly())
                             {
-                                GD.PrintErr("Playing sounds or other reactions to the success of an event should be done through a subscription on a the unit itself");
-                                main.Instance.SoundController.Play(sound_controller.SFX_CARD_PLACE_NAME);
+                                // On success
                             }
                         }
                     }
@@ -87,8 +86,7 @@ namespace Controller.AI
 
                             if (Unit_TryRandomMove(iUnit, out Axial newPos))
                             {
-                                GD.PrintErr("Playing sounds or other reactions to the success of an event should be done through a subscription on a the unit itself");
-                                main.Instance.SoundController.Play(sound_controller.SFX_CARD_MOVE_NAME);
+                                // On success
                             }
                         }
                     }
@@ -110,8 +108,7 @@ namespace Controller.AI
 
                             if (Unit_TryRandomAttack(iUnit))
                             {
-                                GD.PrintErr("Playing sounds or other reactions to the success of an event should be done through a subscription on a the unit itself");
-                                main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
+                                // On success
                                 GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
                             }
                             else

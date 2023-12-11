@@ -64,6 +64,7 @@ namespace Model
 
         protected virtual void OnUnitAddedToBoard(Unit newUnit)
         {
+            main.Instance.SoundController?.Play(sound_controller.SFX_CARD_PLACE_NAME);
         }
 
         protected virtual void OnUnitAttack(Unit attacker, Unit target)
@@ -72,6 +73,7 @@ namespace Model
 
         protected virtual void OnUnitDamaged(Unit target)
         {
+            main.Instance.SoundController?.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
         }
 
         protected virtual void OnUnitDeath(Unit deadUnit)
@@ -122,6 +124,7 @@ namespace Model
 
         protected virtual void OnUnitMove(Axial oldPos, Unit movedUnit)
         {
+            main.Instance.SoundController?.Play(sound_controller.SFX_CARD_MOVE_NAME);
         }
 
 

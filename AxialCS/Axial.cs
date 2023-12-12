@@ -390,6 +390,15 @@ namespace AxialCS
 			Vector3 axPosToV3 = new Vector3(AxToVetor2.X, 0, AxToVetor2.Y);
 			return offset + axPosToV3;
 		}
+		
+		public static Axial V3ToAx(Vector3 offset, float side_length, Vector3 position)
+		{
+			Vector2 offset_2D = new Vector2(offset.X, offset.Z);
+			Vector2 position_2D = new Vector2(position.X, position.Z);
+			Axial axial = PxToAx(offset_2D, side_length, position_2D);
+			return axial;
+		}
+
 
 		public static Axial Justify(double q_dub, double r_dub, double s_dub)
 		{

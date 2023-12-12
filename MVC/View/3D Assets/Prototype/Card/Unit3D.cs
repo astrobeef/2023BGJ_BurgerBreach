@@ -10,5 +10,80 @@ public partial class Unit3D : Node3D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		// Wait to assign name incase _Ready fires before unit reference is assigned.
+		var async = async () =>
+		{
+			while (unit == null)
+				await System.Threading.Tasks.Task.Delay(10);
+
+			Name = $"[{unit.name}@{unit.pos}]";
+		};
+
+		async.Invoke();
+	}
+
+	public void OnHover()
+	{
+		// Any VFX here
+	}
+
+	public void OnHoverOff()
+	{
+		// Any VFX here
+	}
+
+	public void OnClicked()
+	{
+		// Any VFX here
+	}
+
+	public void OnClickOff()
+	{
+		// Any VFX here
+	}
+
+	public void OnUnitCreated()
+	{
+		// Creation VFX here
+	}
+
+	public void OnUnitMove(Vector3 destination)
+	{
+		// Move the unit here
+		Position = destination;
+	}
+
+	public void OnUnitAttack(Unit3D target3D)
+	{
+		// Attack VFX here
+	}
+
+	public void OnUnitDamaged()
+	{
+		// Damaged VFX here
+	}
+
+	public void OnUnitBuffed()
+	{
+		// Buffed VFX here
+	}
+
+	public void OnUnitDeath()
+	{
+		// Any death VFX here
+	}
+	
+
+
+	public bool OnObjectSelected()
+	{
+		// Do anything when this unit is selected
+		return true;
+	}
+
+	public bool OnObjectDeselected()
+	{
+		// Do anything when this unit is deselected
+		return true;
 	}
 }

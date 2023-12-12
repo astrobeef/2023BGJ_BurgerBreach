@@ -1,3 +1,5 @@
+using AxialCS;
+using Deck;
 using Godot;
 using System;
 using Utility;
@@ -12,8 +14,6 @@ public partial class player : Node3D
 	[Export] private Vector3 perspective_position = new Vector3(0f, 0.9f, 0.7f);
 	[Export] private Vector3 perspective_rotation = new Vector3(-35, 0, 0);
 	[Export] private float transition_time = 0.4f;
-
-	[Export] private MeshInstance3D UnitSelect_Marker;
 
 	private bool top_down = false;
 
@@ -31,15 +31,8 @@ public partial class player : Node3D
 	public Action<Hit3D> OnCamClickOff;
 	public Action<Hit3D> OnCamClickUpdate;
 
-	public Action<Card3D> OnCardSelected;
-	public Action<Card3D> OnCardDeselected;
+	public Node3D selectedObject;
 
-	public Card3D selectedCard3D;
-
-	public Action<Unit3D> OnUnitSelected;
-	public Action<Unit3D> OnUnitDeselected;
-
-	public Unit3D selectedUnit3D;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -54,11 +47,8 @@ public partial class player : Node3D
 	{
 		if (turnPlayerIndex == 0)
 		{
-			OnCardSelected += FireOnCardSelected;
-			OnCardDeselected += FireOnCardDeselected;
-
-			OnUnitSelected += FireOnUnitSelected;
-			OnUnitDeselected += FireOnUnitDeselected;
+			selectedObject = null;
+			playerIntention = PlayerIntention.Open;
 		}
 	}
 
@@ -66,87 +56,10 @@ public partial class player : Node3D
 	{
 		if (endTurnPlayerIndex == 0)
 		{
-			selectedUnit3D = null;
-			selectedCard3D = null;
-
-			OnCardSelected -= FireOnCardSelected;
-			OnCardDeselected -= FireOnCardDeselected;
-
-			OnUnitSelected -= FireOnUnitSelected;
-			OnUnitDeselected -= FireOnUnitDeselected;
+			selectedObject = null;
+			playerIntention = PlayerIntention.DISABLED;
 		}
 	}
-
-	float marker_Y = 0.02f;
-
-	private void FireOnCardSelected(Card3D card3D)
-	{
-		if (card3D != selectedCard3D)
-		{
-			SwitchToTopDown();
-			selectedCard3D = card3D;
-			OnUnitDeselected?.Invoke(selectedUnit3D);
-		}
-	}
-
-	private void FireOnCardDeselected(Card3D cardToDeselect)
-	{
-		// Only deselect if the parameter is selected
-		if (cardToDeselect == selectedCard3D)
-		{
-			UnitSelect_Marker.GlobalPosition = Vector3.Zero;
-			var Async = async () =>
-			{
-				await System.Threading.Tasks.Task.Delay(1);
-				selectedCard3D = null;
-				if(selectedUnit3D == null)
-					SwitchToPerspective();
-			};
-
-			Async.Invoke();
-		}
-	}
-
-	private void FireOnUnitSelected(Unit3D unit)
-	{
-		if (unit != null && unit != selectedUnit3D)
-		{
-			OnCardDeselected?.Invoke(selectedCard3D);
-			UnitSelect_Marker.GlobalPosition = unit.GlobalPosition + Vector3.Up * marker_Y;
-			selectedUnit3D = unit;
-			GD.PrintErr($"Registered unit selected. Is unit null ? {selectedUnit3D == null}. Name is: {selectedUnit3D?.unit.name}");
-
-			var async = async () => {
-				await System.Threading.Tasks.Task.Delay(20);
-			GD.PrintErr($"Registered unit selected. Is unit null ? {selectedUnit3D == null}. Name is: {selectedUnit3D?.unit.name}");
-			};
-
-			async.Invoke();
-			// SwitchToTopDown();
-		}
-		else
-		{
-			// selectedUnit3D = null;
-		}
-	}
-
-	private void FireOnUnitDeselected(Unit3D unitToDeselect)
-	{
-		if (unitToDeselect == selectedUnit3D)
-		{
-			UnitSelect_Marker.GlobalPosition = Vector3.Zero;
-			// Delay in case any behavior needs to be done with the unit on deselect
-			var Async = async () =>
-			{
-				await System.Threading.Tasks.Task.Delay(1);
-				selectedUnit3D = null;
-			};
-
-			Async.Invoke();
-		}
-	}
-
-
 
 	bool _leftMouseClicked = false;
 
@@ -160,8 +73,6 @@ public partial class player : Node3D
 		{
 			if (!_leftMouseClicked)
 			{
-				GD.Print($"unit selected before click processes: {(selectedUnit3D == null ? "null" : selectedUnit3D?.unit.name)}@{(selectedUnit3D == null ? "null" : selectedUnit3D?.unit.pos)}");
-				GD.Print($"Card selected before click processes: {(selectedCard3D == null ? "null" : selectedCard3D?.card.NAME)}@{(selectedCard3D == null ? "null" : selectedCard3D.GlobalPosition)}");
 				_leftMouseClicked = true;
 
 				if (Raycasting.RayCast(camera, CameraHitLayers, out Hit3D hit))
@@ -178,7 +89,6 @@ public partial class player : Node3D
 							OnCamClickOff?.Invoke(previousHit);
 
 							OnCamClickNewHit?.Invoke(_camClickHit);
-							OnCamClickUpdate?.Invoke(_camClickHit);
 						}
 						// Else the hit is at a different position, but on the same object
 						else
@@ -232,7 +142,6 @@ public partial class player : Node3D
 								OnCamHoverOff?.Invoke(previousHit);
 
 								OnCamHoverNewHit?.Invoke(_camHoverHit);
-								OnCamHoverUpdate?.Invoke(_camHoverHit);
 							}
 							// Else the hit is at a different position, but on the same object
 							else
@@ -297,5 +206,315 @@ public partial class player : Node3D
 				SwitchToTopDown();
 			}
 		}
+
+		if (@event.IsActionPressed("EnableAttack"))
+		{
+			if (selectedObject as Unit3D != null)
+			{
+				if (playerIntention != PlayerIntention.UnitAttack)
+				{
+					playerIntention = PlayerIntention.UnitAttack;
+
+					GD.Print($"Changed player intention to {playerIntention}");
+				}
+				else
+				{
+					playerIntention = PlayerIntention.UnitMove;
+
+					GD.Print($"Changed player intention to {playerIntention}");
+				}
+			}
+			else
+			{
+				GD.PrintErr("Cannot enable attack because no unit is selected");
+			}
+		}
+	}
+
+	public enum PlayerIntention { DISABLED, Open, PlaceCard, UnitMove, UnitAttack };
+	public PlayerIntention playerIntention = PlayerIntention.DISABLED;
+
+	public bool HandleObjectClicked(Node3D node3D)
+	{
+		if (playerIntention == PlayerIntention.DISABLED || node3D == selectedObject)
+		{
+			GD.Print($"Not handling clicked object because either player intention is disabled({playerIntention == PlayerIntention.DISABLED}) or this Node3D is already selected({node3D == selectedObject})");
+			return false;
+		}
+
+		switch (node3D)
+		{
+			case Card3D card3D:
+				{
+					switch (playerIntention)
+					{
+						case PlayerIntention.Open:
+							{
+								/*
+								* Assumption is that if the player clicks on a card they want to select it to place it.
+								*/
+
+								Card3D cardToSelect = card3D;
+
+								// Select this card
+								if (cardToSelect != null && cardToSelect.OnObjectSelected())
+								{
+									// Set intention to 'PlaceCard'
+									playerIntention = PlayerIntention.PlaceCard;
+								}
+								else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
+								break;
+							}
+						case PlayerIntention.PlaceCard:
+							{
+								/*
+								* Assumption is that, regardless of current intention, if the player clicks on a card they want to select it to place it.
+								*/
+
+								Card3D selectedCard3D = selectedObject as Card3D;
+								Card3D cardToSelect = card3D;
+
+								// Deselect current object (should be a card based on state)
+								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
+								{
+									// Select this card
+									if (cardToSelect != null && cardToSelect.OnObjectSelected())
+									{
+										// Set intention to 'PlaceCard'
+										playerIntention = PlayerIntention.PlaceCard;
+									}
+									else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
+
+								}
+								else throw new Exception($"Could not deselect \"{selectedCard3D?.Name}\".");
+								break;
+							}
+						case PlayerIntention.UnitMove:
+						case PlayerIntention.UnitAttack:
+							{
+								/*
+								* Assumption is that, regardless of current intention, if the player clicks on a card they want to select it to place it.
+								*/
+
+								Unit3D selectedUnit3D = selectedObject as Unit3D;
+								Card3D cardToSelect = card3D;
+
+								// Deselect current object (should be a unit based on state)
+								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
+								{
+									// Select this card
+									if (cardToSelect != null && cardToSelect.OnObjectSelected())
+									{
+										// Set intention to 'PlaceCard'
+										playerIntention = PlayerIntention.PlaceCard;
+									}
+									else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
+
+								}
+								else throw new Exception($"Could not deselect \"{selectedUnit3D?.Name}\".");
+								break;
+							}
+					}
+					break;
+				}
+			case Unit3D unit3D:
+				{
+					switch (playerIntention)
+					{
+						// TL;DR : Select this unit
+						case PlayerIntention.Open:
+							{
+								/*
+								* Assumption is that, since intention is open, the player wants to select this unit to move it.
+								Nothing should be selected, so we won't worry about deselecting
+								We will select this unit then set player intention to move the unit
+								*/
+
+								// Select this unit
+								if (unit3D != null && unit3D.OnObjectSelected())
+								{
+									// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
+									playerIntention = PlayerIntention.UnitMove;
+								}
+								else throw new Exception($"Could not select \"{unit3D?.Name}\".");
+								break;
+							}
+						// TL;DR : Select this unit
+						case PlayerIntention.PlaceCard:
+							{
+								/*
+								* Assumption is that, even though intention is to place card the player wants to select this unit to move it instead.
+								We will try to deselect the current object (should be a card)
+								We will select this unit then set player intention to move the unit
+								*/
+
+								Card3D selectedCard3D = selectedObject as Card3D;
+
+								// Deselect current card
+								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
+								{
+									// Select this unit
+									if (unit3D != null && unit3D.OnObjectSelected())
+									{
+										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
+										playerIntention = PlayerIntention.UnitMove;
+									}
+									else throw new Exception($"Could not select \"{unit3D?.Name}\". Either unit is null {unit3D == null} or failed to select");
+								}
+								else throw new Exception($"If the intention WAS to place a card, then a card should be deselected. Could not deselect \"{selectedObject?.Name}\". No object is selected ({selectedObject == null}) or it failed to deselect.");
+
+
+								break;
+							}
+						// TL;DR : Select this unit
+						case PlayerIntention.UnitMove:
+							{
+								/*
+								* Assumption is that, even though intention is to move a unit the player wants to select this unit to move it instead.
+								We will try to deselect the current object (should be a unit)
+								We will select this unit then set player intention to move the unit
+								*/
+
+								Unit3D selectedUnit3D = selectedObject as Unit3D;
+
+								// Deselect current object (should be a unit)
+								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
+								{
+									// Select this unit
+									if (unit3D != null && unit3D.OnObjectSelected())
+									{
+										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
+										playerIntention = PlayerIntention.UnitMove;
+									}
+									else throw new Exception($"Could not select \"{unit3D?.Name}\".");
+								}
+								else throw new Exception($"If the intention WAS to move a unit, then a unit should be deselected. Could not deselect \"{selectedObject?.Name}\". No object is selected ({selectedObject == null}) or the call returned false.");
+
+								break;
+							}
+						// TL;DR : Attack this unit with the currently selected unit
+						case PlayerIntention.UnitAttack:
+							{
+								/*
+								* Assumption is that the player wants to attack this unit
+								We will try to attack this unit.
+								We will deselect the current selected unit if it cannot attack anymore.
+								*/
+								Unit3D attackUnit3D = selectedObject as Unit3D;
+								Unit3D target3D = unit3D;
+
+								if (attackUnit3D != null && target3D != null)
+								{
+									Axial attackDirection = target3D.unit.pos - attackUnit3D.unit.pos;
+									if (main.Instance.gameModel.Unit_TryAttack(true, attackUnit3D.unit, attackDirection, target3D.unit))
+									{
+										//If the unit can no longer attack,
+										if (!attackUnit3D.unit.CanAttack())
+										{
+											if (attackUnit3D.OnObjectDeselected())
+											{
+												playerIntention = PlayerIntention.Open;
+											}
+											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
+										}
+
+										GD.Print($"User has successfully attacked ({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}. Player intention set to {playerIntention}");
+									}
+									else throw new Exception($"Player tried to attack({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+
+
+								}
+								else throw new Exception($"Player is attempting to attack a unit, but no unit is currently selected({attackUnit3D == null}) OR the target is null({target3D == null}). This should not be possible since intention is set to 'UnitAttack' and we shouldn't reach this case if target is null.");
+
+								break;
+							}
+					}
+					break;
+				}
+			case Hex3D hex3D:
+				{
+					switch (playerIntention)
+					{
+						case PlayerIntention.UnitAttack:
+						case PlayerIntention.Open:
+							/*
+							* Assumption is that the player does not want to do anything to this hex.
+							*/
+							break;
+						case PlayerIntention.PlaceCard:
+							{
+								/*
+								* Assumption is that the player wants to place their currently selected card.
+								* We will try to place the selected card.
+								* Then try to deselect it if successful.
+								*/
+								Card3D cardToPlace = selectedObject as Card3D;
+
+								if (hex3D != null && cardToPlace != null)
+								{
+									if (main.Instance.gameModel.TryPlaceCard_FromHand(0, cardToPlace.card.id, hex3D.AxialPos))
+									{
+										if (cardToPlace.OnObjectDeselected())
+										{
+											playerIntention = PlayerIntention.Open;
+											GD.Print($"User has successfully placed {cardToPlace.card.NAME}@{hex3D.AxialPos}. Player intention set to {playerIntention}");
+										}
+										else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
+									}
+									else throw new Exception($"User tried to place a card({cardToPlace.card.NAME})@{hex3D.AxialPos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+								}
+								else
+									throw new Exception($"User has clicked a hex with the intenion \"{playerIntention}\", but either no card is currently selected({cardToPlace == null}) OR the hex3D is null ({hex3D == null}). Neither should be possible.");
+								break;
+							}
+						case PlayerIntention.UnitMove:
+							{
+								/*
+								* Assumption is that the player wants to move to this open hex with their currently selected unit.
+								* We will try to move the selected unit.
+								* Then try to deselect it if successful AND if the unit cannot move anymore.
+								*/
+								Unit3D unitToMove = selectedObject as Unit3D;
+
+								if (hex3D != null && unitToMove != null)
+								{
+									if (main.Instance.gameModel.Unit_TryMove(true, unitToMove.unit, hex3D.AxialPos))
+									{
+										//If the unit can NOT move anymore,
+										if (!unitToMove.unit.HasMovement(out int dummyInt))
+										{
+											if (unitToMove.OnObjectDeselected())
+											{
+												playerIntention = PlayerIntention.Open;
+											}
+											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
+										}
+
+										GD.Print($"User has successfully moved unit {unitToMove.Name} to {unitToMove.unit.pos}. Player intention set to {playerIntention}");
+									}
+									else throw new Exception($"User tried to move a unit({unitToMove.unit.name})@{hex3D.AxialPos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+
+								}
+								else
+									throw new Exception($"User has clicked a hex with the intenion \"{playerIntention}\", but either no unit is currently selected({unitToMove == null}) OR the hex3D is null ({hex3D == null}). Neither should be possible.");
+
+								break;
+							}
+					}
+					break;
+				}
+			default:
+				throw new Exception($"Uncaught case for type {node3D.GetType()}");
+		}
+
+		return false;
+	}
+
+	public bool HandleObjectClickOff(Node3D node3D)
+	{
+		if (playerIntention == PlayerIntention.DISABLED)
+			return false;
+
+		return false;
 	}
 }

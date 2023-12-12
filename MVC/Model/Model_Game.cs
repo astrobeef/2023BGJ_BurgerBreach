@@ -167,6 +167,7 @@ namespace Model
         public Action<Unit, Unit> OnUnitAttack;
         public Action<Unit> OnBaseDestroyed;
         public Action<Unit> OnUnitDamaged;
+        public Action<Unit> OnUnitBuffed;
         public Action<Unit> OnUnitDeath;
         public Action<Unit, Unit> OnCollision;
 
@@ -815,7 +816,17 @@ namespace Model
                 return false;
         }
 
-        public void PlaceUnit_FromHand(int player_index, int card_index, Axial location)
+        public bool TryPlaceCard_FromHand(int player_index, uint cardID, Axial location)
+        {
+            if(GetCardByID_FromHand(player_index, cardID, out Card cardFromHand, out int cardFromHand_Index))
+            {
+                return TryPlaceCard_FromHand(player_index, cardFromHand_Index, location);
+            }
+            else
+                return false;
+        }
+
+        private void PlaceUnit_FromHand(int player_index, int card_index, Axial location)
         {
             Card card = RemoveCardFromHand(player_index, card_index);
             Unit Unit = new Unit(player_index, location, card);
@@ -823,7 +834,7 @@ namespace Model
             ActiveBoard_AddUnit(Unit);
         }
 
-        public void PlaceUnit_FromHand(int player_index, int card_index, Axial location, Unit friendlyResourceUnit)
+        private void PlaceUnit_FromHand(int player_index, int card_index, Axial location, Unit friendlyResourceUnit)
         {
             Card card = RemoveCardFromHand(player_index, card_index);
             Unit Unit = new Unit(player_index, location, card);
@@ -841,16 +852,6 @@ namespace Model
 
             if(friendlyResourceUnit != null)
                 HandleAttackAction(false, card.HP, Axial.Empty, friendlyResourceUnit);
-        }
-
-        public bool TryPlaceCard_FromHand(int player_index, uint cardID, Axial location)
-        {
-            if(GetCardByID_FromHand(player_index, cardID, out Card cardFromHand, out int cardFromHand_Index))
-            {
-                return TryPlaceCard_FromHand(player_index, cardFromHand_Index, location);
-            }
-            else
-                return false;
         }
 
         public bool GetCardByID_FromHand(int player_index, uint cardID, out Card cardFromHand, out int cardFromHand_Index)

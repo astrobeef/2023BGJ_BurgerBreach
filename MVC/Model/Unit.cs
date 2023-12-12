@@ -50,10 +50,25 @@ namespace Model
             model.OnUnitAddedToBoard += OnUnitAddedToBoard;
             model.OnUnitAttack += OnUnitAttack;
             model.OnUnitDamaged += OnUnitDamaged;
+            model.OnUnitBuffed += OnUnitBuffed;
             model.OnUnitDeath += OnUnitDeath;
             model.OnUnitMove += OnUnitMove;
 
             id = System.Threading.Interlocked.Increment(ref lastId);
+        }
+
+        private void UnsubscribeEvents()
+        {
+            Model_Game model = main.Instance.gameModel;
+            
+            model.OnTurnStart -= ResetTurnActions;
+
+            model.OnUnitAddedToBoard -= OnUnitAddedToBoard;
+            model.OnUnitAttack -= OnUnitAttack;
+            model.OnUnitDamaged -= OnUnitDamaged;
+            model.OnUnitBuffed -= OnUnitBuffed;
+            model.OnUnitDeath -= OnUnitDeath;
+            model.OnUnitMove -= OnUnitMove;
         }
 
         protected void ResetTurnActions(int turnPlayerIndex, int turnCounter)
@@ -76,8 +91,13 @@ namespace Model
             main.Instance.SoundController?.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
         }
 
+        protected virtual void OnUnitBuffed(Unit target)
+        {
+        }
+
         protected virtual void OnUnitDeath(Unit deadUnit)
         {
+            UnsubscribeEvents();
         }
 
         public virtual bool TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)

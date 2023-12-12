@@ -50,6 +50,7 @@ public partial class main : Node
 
 	private async void InstantiateSoundController()
 	{
+		return;
 		PackedScene scene = GD.Load<PackedScene>(_SOUND_CONTROLLER_PATH);
 		
 		SoundController = (sound_controller)scene.Instantiate();

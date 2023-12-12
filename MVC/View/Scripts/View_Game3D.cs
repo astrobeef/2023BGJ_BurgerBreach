@@ -118,6 +118,7 @@ namespace View
             model.OnUnitAttack += OnUnitAttack;
             model.OnBaseDestroyed += OnBaseDestroyed;
             model.OnUnitDamaged += OnUnitDamaged;
+            model.OnUnitBuffed += OnUnitBuffed;
             model.OnUnitDeath += OnDeath;
             model.OnCollision += OnCollision;
 
@@ -186,6 +187,11 @@ namespace View
         private void OnUnitDamaged(Unit unit)
         {
             Print($"Unit ${unit.name} was damaged!");
+        }
+        
+        private void OnUnitBuffed(Unit unit)
+        {
+            Print($"Unit ${unit.name} was buffed!");
         }
 
         private void OnBaseDestroyed(Unit Base)
@@ -289,17 +295,17 @@ namespace View
 
         private void OnCamHoverNewHit(Hit3D hit)
         {
-            Print($"Cam hover new object: {hit}");
+            // Print($"Cam hover new object: {hit}");
         }
 
         private void OnCamHoverOff(Hit3D hit)
         {
-            Print($"Cam no longer hovering: {hit}");
+            // Print($"Cam no longer hovering: {hit}");
         }
 
         private void OnCamHoverUpdate(Hit3D hit)
         {
-            Print($"Cam hover update hit position: {hit.position}");
+            // Print($"Cam hover update hit position: {hit.position}");
         }
 
 

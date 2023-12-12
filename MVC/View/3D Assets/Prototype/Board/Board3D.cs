@@ -11,16 +11,21 @@ public partial class Board3D : Node3D
 {
 	private Model_Game gameModel;
 
-	[Export] private float _side_length = 0.985f;
+	[Export] public static float _side_length = 0.985f;
 
-	private Vector3 _offset;
+	private static Vector3 _offset;
+	public static Vector3 Offset => _offset;
+
 	private float Y_Offset = 0.5f;
-	private Vector2 _offset_2D => new Vector2(_offset.X, _offset.Z);
+	private static Vector2 _offset_2D => new Vector2(_offset.X, _offset.Z);
 
 	private static string COIN_BURGER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
 	private static string COIN_BASE = "res://MVC/View/3D Assets/Prototype/Coin/coin_base.tscn";
 	private static string COIN_MOE = "res://MVC/View/3D Assets/Prototype/Coin/coin_moe.tscn";
 
+	
+	private StaticBody3D _body;
+	private static string STATIC_BODY_NAME = "StaticBody3D";
 
 	private Hex3D[] _Board3D;
 	private List<Unit3D> _ActiveUnit3Ds = new List<Unit3D>();
@@ -29,8 +34,6 @@ public partial class Board3D : Node3D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		_offset = this.Position + new Vector3(0, Y_Offset, 0);
-
 		AwaitReady();
 	}
 
@@ -42,13 +45,85 @@ public partial class Board3D : Node3D
 		}
 
 		gameModel = main.Instance.gameModel;
+		
+		_body = FindChild(STATIC_BODY_NAME) as StaticBody3D;
+		if (_body == null)
+			GD.PrintErr($"Could not find {STATIC_BODY_NAME} on {this.Name}");
+
+
+		main.Instance.Player.OnCamHoverNewHit += OnCamHoverNewHit;
+		main.Instance.Player.OnCamHoverOff += OnCamHoverOff;
+
+		main.Instance.Player.OnCamClickNewHit += OnCamClickNewHit;
+		main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
+		main.Instance.Player.OnCamClickOff += OnCamClickOff;
+
+		main.Instance.Player.OnObjectSelected += OnObjectSelected;
+		main.Instance.Player.OnObjectDeselected += OnObjectDeselected;
+
 
 		gameModel.OnUnitAddedToBoard += OnUnitAddedToBoard;
 		gameModel.OnUnitAttack += OnUnitAttack;
+		gameModel.OnUnitDamaged += OnUnitDamaged;
+		gameModel.OnUnitBuffed += OnUnitBuffed;
 		gameModel.OnUnitMove += OnUnitMove;
 		gameModel.OnUnitDeath += OnUnitDeath;
 
 		GenerateBoard3D(main.Instance?.gameModel?.Board.Axials);
+	}
+
+	private void OnCamHoverNewHit(Hit3D hit)
+	{
+		if(IsHitOnBoard(hit, out Hex3D hitHex3D))
+		{
+			hitHex3D.activeUnit3D?.OnHover();
+		}
+	}
+
+	private void OnCamHoverOff(Hit3D hitOff)
+	{
+		if(IsHitOnBoard(hitOff, out Hex3D hitHex3D))
+		{
+			hitHex3D.activeUnit3D?.OnHoverOff();
+		}
+	}
+
+	private void OnCamClickNewHit(Hit3D hit)
+	{
+		if (IsHitOnBoard(hit, out Hex3D hitHex3D))
+		{
+			if (hitHex3D.activeUnit3D != null)
+			{
+				if (main.Instance.Player.HandleObjectClicked(hitHex3D.activeUnit3D))
+					hitHex3D.activeUnit3D.OnClicked();
+
+			}
+			else
+			{
+				main.Instance.Player.HandleObjectClicked(hitHex3D);
+			}
+		}
+	}
+
+	private void OnCamClickUpdate(Hit3D hit)
+	{
+		OnCamClickNewHit(hit);
+	}
+
+	private void OnCamClickOff(Hit3D hitOff)
+	{
+		if(IsHitOnBoard(hitOff, out Hex3D hitHex3D))
+		{
+			if(hitHex3D.activeUnit3D != null)
+			{
+				if(main.Instance.Player.HandleObjectClickOff(hitHex3D.activeUnit3D))
+					hitHex3D.activeUnit3D.OnClickOff();
+			}
+			else
+			{
+				main.Instance.Player.HandleObjectClicked(hitHex3D);
+			}
+		}
 	}
 
 
@@ -84,6 +159,7 @@ public partial class Board3D : Node3D
 			if (scene != null)
 			{
 				CreateUnit3D(scene, hex3DtoAddTo, newUnit);
+				
 			}
 			else GD.PrintErr($"scene is null");
 		}
@@ -97,9 +173,9 @@ public partial class Board3D : Node3D
 	private Texture2D coinInside_Friendly, coinInside_Enemy;
 	private const int coinInsideSurfaceIndex = 0;
 
-	private void CreateUnit3D(PackedScene scene, Hex3D parentHex, Unit unitModel)
+	private Unit3D CreateUnit3D(PackedScene scene, Hex3D parentHex, Unit unitModel)
 	{
-		Unit3D unit3D = (Unit3D)scene.Instantiate().Duplicate(); //Try duplicating?
+		Unit3D unit3D = (Unit3D)scene.Instantiate().Duplicate();
 		unit3D.unit = unitModel;
 
 		MeshInstance3D meshInstance = unit3D.GetChild<MeshInstance3D>(coinInsideSurfaceIndex);
@@ -124,6 +200,9 @@ public partial class Board3D : Node3D
 		parentHex.GetChild(0).AddChild(unit3D);
 		parentHex.SetStatsText(false);
 		_ActiveUnit3Ds.Add(unit3D);
+
+		unit3D.OnUnitCreated();
+		return unit3D;
 	}
 
 	private async void DestroyUnit3D(Hex3D parentHex)
@@ -136,6 +215,7 @@ public partial class Board3D : Node3D
 			{
 				Unit3D unit3D = parentHex.activeUnit3D;
 				parentHex.GetChild(0).RemoveChild(unit3D);
+				unit3D.QueueFree();
 				_ActiveUnit3Ds.Remove(unit3D);
 				parentHex.SetStatsText(true);
 			}
@@ -144,45 +224,33 @@ public partial class Board3D : Node3D
 		else GD.PrintErr($"Attempted to destroy hex, {parentHex.Name}, but it has no active unit3D");
 	}
 
-	private void MoveUnit3D(Unit3D unit3D, Hex3D originHex3D, Hex3D destinationHex3D)
-	{
-		if (originHex3D.GetChild(0) != null)
-		{
-			originHex3D.GetChild(0).RemoveChild(unit3D);
-			originHex3D.SetStatsText(true);
-
-			if (destinationHex3D.GetChild(0) != null)
-			{
-
-				PackedScene scene = null;
-				switch (unit3D.unit.card.NAME)
-				{
-					case (Card.BASE_TEST_NAME):
-						scene = GD.Load<PackedScene>(COIN_BASE);
-						break;
-					case (Card.RESOURCE_TEST_NAME):
-						scene = GD.Load<PackedScene>(COIN_BURGER);
-						break;
-					case (Card.OFFENSE_TEST_NAME):
-						scene = GD.Load<PackedScene>(COIN_MOE);
-						break;
-				}
-				if (scene != null)
-				{
-					CreateUnit3D(scene, destinationHex3D, unit3D.unit);
-				}
-				else GD.PrintErr($"scene is null");
-
-				DestroyUnit3D(originHex3D);
-			}
-			else GD.PrintErr($"${destinationHex3D.Name} missing coin slot");
-		}
-		else GD.PrintErr($"${originHex3D.Name} missing coin slot");
-	}
-
 	private void OnUnitAttack(Unit attacker, Unit target)
 	{
-		// Play any VFX/SFX
+		if(IsUnitModelOnBoard3D(attacker, out Hex3D attacker3D))
+		{
+			if(IsUnitModelOnBoard3D(target, out Hex3D target3D))
+			{
+				attacker3D.activeUnit3D.OnUnitAttack(target3D.activeUnit3D);
+			}
+		}
+	}
+
+	private void OnUnitDamaged(Unit target)
+	{
+		if (IsUnitModelOnBoard3D(target, out Hex3D target3D))
+		{
+			target3D.activeUnit3D.OnUnitDamaged();
+			target3D.SetStatsText(false);
+		}
+	}
+
+	private void OnUnitBuffed(Unit unit)
+	{
+		if (IsUnitModelOnBoard3D(unit, out Hex3D unit3D))
+		{
+			unit3D.activeUnit3D.OnUnitBuffed();
+			unit3D.SetStatsText(false);
+		}
 	}
 
 	private void OnUnitMove(Axial oldPosition, Unit movedUnit)
@@ -195,7 +263,7 @@ public partial class Board3D : Node3D
 			{
 				if (destHex3D.activeUnit3D == null)
 				{
-					MoveUnit3D(oldHex3D.activeUnit3D, oldHex3D, destHex3D);
+					MoveHexParents(oldHex3D.activeUnit3D, oldHex3D, destHex3D);
 				}
 				else GD.PrintErr($"{movedUnit} attempting to move to axial {newPosition}, but that tile is already occupied by {destHex3D.activeUnit3D.unit.name}. This must be an View error since this case should have been checked in the Model");
 			}
@@ -204,10 +272,31 @@ public partial class Board3D : Node3D
 		else GD.PrintErr($"{movedUnit} attempting to move to axial {newPosition}, but that unit does not exist on Board3D. This must be a View error since this case should have been checked in the Model");
 	}
 
+	private void MoveHexParents(Unit3D unit3D, Hex3D originHex3D, Hex3D destinationHex3D)
+	{
+		if (destinationHex3D.GetChild(0) != null)
+		{
+			Node3D destinationSlot = destinationHex3D.GetChild(0) as Node3D;
+
+			Transform3D globalTransform = unit3D.GlobalTransform;
+
+			unit3D.GetParent().RemoveChild(unit3D);
+			destinationSlot.AddChild(unit3D);
+
+			unit3D.GlobalTransform = globalTransform;
+
+			unit3D.OnUnitMove(destinationSlot.Position);
+
+			originHex3D.SetStatsText(true);
+		}
+		else GD.PrintErr($"${destinationHex3D.Name} missing coin slot");
+	}
+
 	private void OnUnitDeath(Unit unit)
 	{
 		if (IsUnitModelOnBoard3D(unit, out Hex3D hex3D))
 		{
+			// Do any death animations here
 			DestroyUnit3D(hex3D);
 		}
 	}
@@ -245,9 +334,21 @@ public partial class Board3D : Node3D
 		return false;
 	}
 
+	private bool IsHitOnBoard(Hit3D hit, out Hex3D hitHex3D)
+	{
+		Axial axPos = Axial.V3ToAx(Board3D.Offset, Board3D._side_length, hit.position);
+
+		if(IsAxialOnBoard3D(axPos, out hitHex3D))
+		{
+			return true;
+		}
+		return false;
+	}
+
 
 	private void GenerateBoard3D(Axial[] axials)
 	{
+		_offset = this.Position + new Vector3(0, Y_Offset, 0);
 		_Board3D = new Hex3D[axials.Length];
 
 		for (int i = 0; i < axials.Length; i++)
@@ -263,6 +364,15 @@ public partial class Board3D : Node3D
 
 			_Board3D[i] = boardTile3D;
 			AddChild(boardTile3D);
+		}
+
+		if(IsAxialOnBoard3D(Axial.Zero, out Hex3D hexZero))
+		{
+			if(IsAxialOnBoard3D(Axial.Direction(Axial.Cardinal.E), out Hex3D hexEast))
+			{
+				_side_length = (hexZero.GlobalPosition - hexEast.GlobalPosition).Length() / (float)Axial._SQ3;
+				_offset = this.GlobalPosition;
+			}
 		}
 	}
 }

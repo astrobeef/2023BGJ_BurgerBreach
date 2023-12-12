@@ -18,6 +18,7 @@ public partial class Card3D : Node3D
 		main.Instance.Player.OnCamHoverOff += OnCamHoverOff;
 
 		main.Instance.Player.OnCamClickNewHit += OnCamClickNewHit;
+		main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
 		main.Instance.Player.OnCamClickOff += OnCamClickOff;
 
 		_body = FindChild(STATIC_BODY_NAME) as StaticBody3D;
@@ -25,7 +26,17 @@ public partial class Card3D : Node3D
 			GD.PrintErr($"Could not find {STATIC_BODY_NAME} on {this.Name}");
 	}
 
-	private Vector3 _onHoverDisplace = new Vector3(0, 0.1f, 0.02f);
+    public override void _ExitTree()
+    {
+		main.Instance.Player.OnCamHoverNewHit -= OnCamHoverNewHit;
+		main.Instance.Player.OnCamHoverOff -= OnCamHoverOff;
+
+		main.Instance.Player.OnCamClickNewHit -= OnCamClickNewHit;
+		main.Instance.Player.OnCamClickUpdate -= OnCamClickUpdate;
+		main.Instance.Player.OnCamClickOff -= OnCamClickOff;
+    }
+
+    private Vector3 _onHoverDisplace = new Vector3(0, 0.1f, 0.02f);
 	private bool _isOnHoverDisplaced = false;
 
 	private void OnCamHoverNewHit(Hit3D hit)
@@ -56,15 +67,34 @@ public partial class Card3D : Node3D
 	{
 		if(hit.collider == _body)
 		{
-			main.Instance.Player.OnCardSelected?.Invoke(this);
+			main.Instance.Player.HandleObjectClicked(this);
 		}
+	}
+
+	private void OnCamClickUpdate(Hit3D hit)
+	{
+		OnCamClickNewHit(hit);
 	}
 
 	private void OnCamClickOff(Hit3D hit)
 	{
 		if(hit.collider == _body)
 		{
-			main.Instance.Player.OnCardDeselected?.Invoke(this);
+			main.Instance.Player.HandleObjectClickOff(this);
 		}
 	}
+
+	public bool OnObjectSelected()
+	{
+		// Do anything when this card is selected
+		return true;
+	}
+
+	public bool OnObjectDeselected()
+	{
+		// Do anything when this card is deselected
+		return true;
+	}
+
+	private bool 
 }

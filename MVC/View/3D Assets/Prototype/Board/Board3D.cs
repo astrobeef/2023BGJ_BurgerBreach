@@ -58,9 +58,6 @@ public partial class Board3D : Node3D
 		main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
 		main.Instance.Player.OnCamClickOff += OnCamClickOff;
 
-		main.Instance.Player.OnObjectSelected += OnObjectSelected;
-		main.Instance.Player.OnObjectDeselected += OnObjectDeselected;
-
 
 		gameModel.OnUnitAddedToBoard += OnUnitAddedToBoard;
 		gameModel.OnUnitAttack += OnUnitAttack;

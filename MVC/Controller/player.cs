@@ -87,7 +87,6 @@ public partial class player : Node3D
 						if (_camClickHit.collider != previousHit.collider)
 						{
 							OnCamClickOff?.Invoke(previousHit);
-
 							OnCamClickNewHit?.Invoke(_camClickHit);
 						}
 						// Else the hit is at a different position, but on the same object
@@ -211,13 +210,13 @@ public partial class player : Node3D
 		{
 			if (selectedObject as Unit3D != null)
 			{
-				if (playerIntention != PlayerIntention.UnitAttack)
+				if (playerIntention == PlayerIntention.UnitMove)
 				{
 					playerIntention = PlayerIntention.UnitAttack;
 
 					GD.Print($"Changed player intention to {playerIntention}");
 				}
-				else
+				else if (playerIntention == PlayerIntention.UnitAttack)
 				{
 					playerIntention = PlayerIntention.UnitMove;
 
@@ -261,6 +260,7 @@ public partial class player : Node3D
 								{
 									// Set intention to 'PlaceCard'
 									playerIntention = PlayerIntention.PlaceCard;
+									selectedObject = cardToSelect;
 								}
 								else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
 								break;
@@ -282,6 +282,7 @@ public partial class player : Node3D
 									{
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
+									selectedObject = cardToSelect;
 									}
 									else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
 
@@ -307,6 +308,7 @@ public partial class player : Node3D
 									{
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
+									selectedObject = cardToSelect;
 									}
 									else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
 
@@ -335,6 +337,7 @@ public partial class player : Node3D
 								{
 									// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 									playerIntention = PlayerIntention.UnitMove;
+									selectedObject = unit3D;
 								}
 								else throw new Exception($"Could not select \"{unit3D?.Name}\".");
 								break;
@@ -358,6 +361,7 @@ public partial class player : Node3D
 									{
 										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 										playerIntention = PlayerIntention.UnitMove;
+									selectedObject = unit3D;
 									}
 									else throw new Exception($"Could not select \"{unit3D?.Name}\". Either unit is null {unit3D == null} or failed to select");
 								}
@@ -385,6 +389,7 @@ public partial class player : Node3D
 									{
 										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 										playerIntention = PlayerIntention.UnitMove;
+									selectedObject = unit3D;
 									}
 									else throw new Exception($"Could not select \"{unit3D?.Name}\".");
 								}
@@ -408,14 +413,21 @@ public partial class player : Node3D
 									Axial attackDirection = target3D.unit.pos - attackUnit3D.unit.pos;
 									if (main.Instance.gameModel.Unit_TryAttack(true, attackUnit3D.unit, attackDirection, target3D.unit))
 									{
-										//If the unit can no longer attack,
-										if (!attackUnit3D.unit.CanAttack())
+										//If the unit can no longer attack AND cannot move,
+										if (!attackUnit3D.unit.CanAttack() && !attackUnit3D.unit.HasMovement(out int dummyInt))
 										{
 											if (attackUnit3D.OnObjectDeselected())
 											{
 												playerIntention = PlayerIntention.Open;
+												selectedObject = null;
 											}
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
+										}
+										//If the unit can NOT attack anymore, but CAN move,
+										else if(attackUnit3D.unit.HasMovement(out dummyInt) && !attackUnit3D.unit.CanAttack())
+										{
+											GD.Print("Switching intention to move since the unit cannot attack anymore, but can move");
+											playerIntention = PlayerIntention.UnitMove;
 										}
 
 										GD.Print($"User has successfully attacked ({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}. Player intention set to {playerIntention}");
@@ -457,6 +469,7 @@ public partial class player : Node3D
 										if (cardToPlace.OnObjectDeselected())
 										{
 											playerIntention = PlayerIntention.Open;
+											selectedObject = null;
 											GD.Print($"User has successfully placed {cardToPlace.card.NAME}@{hex3D.AxialPos}. Player intention set to {playerIntention}");
 										}
 										else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
@@ -480,19 +493,26 @@ public partial class player : Node3D
 								{
 									if (main.Instance.gameModel.Unit_TryMove(true, unitToMove.unit, hex3D.AxialPos))
 									{
-										//If the unit can NOT move anymore,
-										if (!unitToMove.unit.HasMovement(out int dummyInt))
+										//If the unit can NOT move anymore AND cannot attack,
+										if (!unitToMove.unit.HasMovement(out int dummyInt) && !unitToMove.unit.CanAttack())
 										{
 											if (unitToMove.OnObjectDeselected())
 											{
 												playerIntention = PlayerIntention.Open;
+												selectedObject = null;
 											}
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
+										}
+										//If the unit can NOT move anymore, but CAN attack,
+										else if(unitToMove.unit.CanAttack() && !unitToMove.unit.HasMovement(out dummyInt))
+										{
+											GD.Print("Switching intention to attack since the unit cannot move anymore, but can attack");
+											playerIntention = PlayerIntention.UnitAttack;
 										}
 
 										GD.Print($"User has successfully moved unit {unitToMove.Name} to {unitToMove.unit.pos}. Player intention set to {playerIntention}");
 									}
-									else throw new Exception($"User tried to move a unit({unitToMove.unit.name})@{hex3D.AxialPos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+									else throw new Exception($"User tried to move a unit({unitToMove.Name}) to {hex3D.AxialPos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
 
 								}
 								else

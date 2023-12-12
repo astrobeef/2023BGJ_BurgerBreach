@@ -86,7 +86,7 @@ public partial class CardHolder3D : Node3D
 	{
 		if (playerIndex == 0)
 		{
-			bool couldRemoveCard = false;
+			Card3D cardRemoved3D = null;
 
 			foreach (Node3D cardSlot in CardSlots3D)
 			{
@@ -95,8 +95,7 @@ public partial class CardHolder3D : Node3D
 					if (card3D.card == cardRemoved)
 					{
 						cardSlot.RemoveChild(card3D);
-						cardSlot.QueueFree();
-						couldRemoveCard = true;
+						cardRemoved3D = card3D;
 						break;
 					}
 				}
@@ -105,8 +104,10 @@ public partial class CardHolder3D : Node3D
 			if (!IsHandModelMatchingVisual(hand))
 				GD.PrintErr("Handle mismatch");
 
-			if (!couldRemoveCard)
+			if (cardRemoved3D == null)
 				GD.PrintErr($"Could not remove card {cardRemoved} from visual");
+			else
+				cardRemoved3D.QueueFree();
 		}
 	}
 

@@ -86,6 +86,7 @@ public partial class Card3D : Node3D
 
 	public bool OnObjectSelected()
 	{
+		main.Instance.Player.SwitchToTopDown();
 		// Do anything when this card is selected
 		return true;
 	}
@@ -95,6 +96,4 @@ public partial class Card3D : Node3D
 		// Do anything when this card is deselected
 		return true;
 	}
-
-	private bool 
 }

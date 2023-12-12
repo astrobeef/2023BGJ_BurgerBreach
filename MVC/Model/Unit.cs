@@ -45,6 +45,8 @@ namespace Model
 
             Model_Game model = main.Instance.gameModel;
 
+            ResetTurnActions(ownerIndex, 0);
+
             model.OnTurnStart += ResetTurnActions;
 
             model.OnUnitAddedToBoard += OnUnitAddedToBoard;

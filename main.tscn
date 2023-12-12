@@ -71,6 +71,7 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_gh8td")
 [node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
 layout_mode = 2
 text = "- 'C' to switch views
+- '1' or 'A' to toggle attack/move
 "
 
 [node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]

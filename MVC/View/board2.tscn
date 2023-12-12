@@ -31,4 +31,3 @@ surface_material_override/2 = SubResource("StandardMaterial3D_4c2dh")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RootNode/StaticBody3D" index="0"]
 shape = SubResource("BoxShape3D_hsll5")
-disabled = true

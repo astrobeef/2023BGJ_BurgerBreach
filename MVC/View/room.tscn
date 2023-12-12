@@ -19,10 +19,9 @@ shadow_enabled = true
 shadow_normal_bias = 10.0
 shadow_opacity = 0.77
 
-[node name="Player" type="Node3D" parent="." node_paths=PackedStringArray("UnitSelect_Marker")]
+[node name="Player" type="Node3D" parent="."]
 transform = Transform3D(1, -4.68079e-16, 3.27752e-16, 3.27752e-16, 0.939692, 0.34202, -4.68079e-16, -0.34202, 0.939692, 0, 0.9, 0.8)
 script = ExtResource("1_d5ki3")
-UnitSelect_Marker = NodePath("")
 
 [node name="CameraMain" type="Camera3D" parent="Player"]
 fov = 36.8817

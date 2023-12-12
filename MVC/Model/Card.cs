@@ -5,9 +5,17 @@ namespace Model
         private static uint lastId = 0;
         public uint id {get; private set;}
 
-        public const string BASE_TEST_NAME = "Base Test",
+        public const string BASE_NAME = "Base",
             RESOURCE_TEST_NAME = "Resource Test",
-            OFFENSE_TEST_NAME = "Offense Test";
+            OFFENSE_TEST_NAME = "Offense Test",
+            BIG_MOE_NAME = "Big Moe",
+            LINE_SQUIRREL_NAME = "Line Squirrel",
+            EXPO_PIGEON_NAME = "Expo Pigeon",
+            BUSSER_RACOON_NAME = "Busser Racoon",
+            CLAM_CHOWDER_NAME = "Moe's Clam Chowder",
+            BURGER_NAME = "Big Moe's Burger",
+            MOE_FAMILY_FRIES_NAME = "Moe's Family Fries",
+            THE_SCRAPS_NAME = "The Scraps";
         
         public string NAME;
 

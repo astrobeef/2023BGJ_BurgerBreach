@@ -143,13 +143,13 @@ public partial class Board3D : Node3D
 			PackedScene scene = null;
 			switch (newUnit.card.NAME)
 			{
-				case (Card.BASE_TEST_NAME):
+				case (Card.BASE_NAME):
 					scene = GD.Load<PackedScene>(COIN_BASE);
 					break;
-				case (Card.RESOURCE_TEST_NAME):
+				case (Card.BURGER_NAME):
 					scene = GD.Load<PackedScene>(COIN_BURGER);
 					break;
-				case (Card.OFFENSE_TEST_NAME):
+				case (Card.BIG_MOE_NAME):
 					scene = GD.Load<PackedScene>(COIN_MOE);
 					break;
 			}
@@ -232,7 +232,7 @@ public partial class Board3D : Node3D
 		}
 	}
 
-	private void OnUnitDamaged(Unit target)
+	private void OnUnitDamaged(Unit attacker, Unit target)
 	{
 		if (IsUnitModelOnBoard3D(target, out Hex3D target3D))
 		{
@@ -285,6 +285,7 @@ public partial class Board3D : Node3D
 			unit3D.OnUnitMove(destinationSlot.Position);
 
 			originHex3D.SetStatsText(true);
+			destinationHex3D.SetStatsText(false);
 		}
 		else GD.PrintErr($"${destinationHex3D.Name} missing coin slot");
 	}

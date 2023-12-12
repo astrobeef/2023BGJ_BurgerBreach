@@ -94,26 +94,29 @@ namespace Controller.AI
                     // --- ATTACK ---
                     await System.Threading.Tasks.Task.Delay(150);
 
-                    foreach (Unit occupant in model.ActiveBoard)
+                    if (model.ActiveBoard_AllFriendlyUnits(_myPlayerIndex, out Unit[] AllFriendlyUnits))
                     {
-                        int syntheticWait = _random.Next(250, 500);
-
-                        if (occupant.ownerIndex == model.TurnPlayerIndex)
+                        foreach (Unit occupant in AllFriendlyUnits)
                         {
-                            await System.Threading.Tasks.Task.Delay(syntheticWait);
+                            int syntheticWait = _random.Next(250, 500);
 
-                            Unit iUnit = occupant;
-
-                            GD.Print($"Player {model.TurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
-
-                            if (Unit_TryRandomAttack(iUnit))
+                            if (occupant.ownerIndex == model.TurnPlayerIndex && occupant.type != Card.CardType.Resource)
                             {
-                                // On success
-                                GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
-                            }
-                            else
-                            {
-                                GD.Print($"Player {model.TurnPlayerIndex} could not attack with {iUnit.name}");
+                                await System.Threading.Tasks.Task.Delay(syntheticWait);
+
+                                Unit iUnit = occupant;
+
+                                GD.Print($"Player {model.TurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
+
+                                if (Unit_TryRandomAttack(iUnit))
+                                {
+                                    // On success
+                                    GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
+                                }
+                                else
+                                {
+                                    GD.Print($"Player {model.TurnPlayerIndex} could not attack with {iUnit.name}");
+                                }
                             }
                         }
                     }
@@ -209,7 +212,7 @@ namespace Controller.AI
             {                
                 if(model.ActiveBoard_FindEnemyNeighbor(unit.ownerIndex, unit.pos, out Unit target)){
                     Axial attackDirection = target.pos - unit.pos;
-                    return model.Unit_TryAttack(true, unit, attackDirection, target);
+                    return model.Unit_TryAttack(unit, attackDirection, target);
                 }
             }
 

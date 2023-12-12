@@ -1,6 +1,7 @@
 using AxialCS;
 using Deck;
 using Godot;
+using Model;
 using System;
 using Utility;
 
@@ -32,6 +33,11 @@ public partial class player : Node3D
 	public Action<Hit3D> OnCamClickUpdate;
 
 	public Node3D selectedObject;
+	public Action<Node3D> OnObjectSelected;
+	public Action<Node3D> OnObjectDeselected;
+
+	[Export]
+	public Node3D DEBUG_selectMarker;
 
 
 	// Called when the node enters the scene tree for the first time.
@@ -41,13 +47,18 @@ public partial class player : Node3D
 
 		main.Instance.gameModel.OnTurnEnd += OnTurnEnd;
 		main.Instance.gameModel.OnAwaitTurnActions += OnAwaitTurnActions;
+
+		OnObjectSelected += DEBUG_OnObjectSelected;
+		main.Instance.gameModel.OnUnitMove += DEBUG_OnObjectSelected;
+		OnObjectDeselected += DEBUG_OnObjectDeselected;
+
 	}
 
 	private void OnAwaitTurnActions(int turnPlayerIndex, int turnCounter)
 	{
 		if (turnPlayerIndex == 0)
 		{
-			selectedObject = null;
+			DeselectObject();
 			playerIntention = PlayerIntention.Open;
 		}
 	}
@@ -56,9 +67,56 @@ public partial class player : Node3D
 	{
 		if (endTurnPlayerIndex == 0)
 		{
-			selectedObject = null;
+			DeselectObject();
 			playerIntention = PlayerIntention.DISABLED;
 		}
+	}
+
+	private void DeselectObject()
+	{
+		OnObjectDeselected?.Invoke(selectedObject);
+		switch (selectedObject)
+		{
+			case Card3D card3D:
+				card3D.OnObjectDeselected();
+				break;
+			case Unit3D unit3D:
+				unit3D.OnObjectDeselected();
+				break;
+			case Hex3D hex3D:
+				hex3D.OnObjectDeselected();
+				break;
+			default:
+				break;
+		}
+
+		selectedObject = null;
+	}
+
+	private void DEBUG_OnObjectSelected(Node3D obj)
+	{
+		if (obj != null)
+			DEBUG_selectMarker.GlobalPosition = obj.GlobalPosition + Vector3.Up * 0.02f;
+	}
+
+	private void DEBUG_OnObjectSelected(Axial position, Unit unit)
+	{
+		var async = async () =>
+		{
+			await System.Threading.Tasks.Task.Delay(10);
+
+			if (unit != null && unit == (selectedObject as Unit3D)?.unit)
+				DEBUG_selectMarker.GlobalPosition = selectedObject.GlobalPosition + Vector3.Up * 0.02f;
+			else
+				GD.PrintErr($"Unit {unit} is not equal to selected object {selectedObject as Unit3D}");
+		};
+
+		async.Invoke();
+	}
+
+	private void DEBUG_OnObjectDeselected(Node3D obj)
+	{
+		DEBUG_selectMarker.GlobalPosition = Vector3.Zero;
 	}
 
 	bool _leftMouseClicked = false;
@@ -258,6 +316,7 @@ public partial class player : Node3D
 								// Select this card
 								if (cardToSelect != null && cardToSelect.OnObjectSelected())
 								{
+									OnObjectSelected?.Invoke(cardToSelect);
 									// Set intention to 'PlaceCard'
 									playerIntention = PlayerIntention.PlaceCard;
 									selectedObject = cardToSelect;
@@ -281,6 +340,7 @@ public partial class player : Node3D
 									// Select this card
 									if (cardToSelect != null && cardToSelect.OnObjectSelected())
 									{
+										OnObjectSelected?.Invoke(cardToSelect);
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
 										selectedObject = cardToSelect;
@@ -308,6 +368,7 @@ public partial class player : Node3D
 									// Select this card
 									if (cardToSelect != null && cardToSelect.OnObjectSelected())
 									{
+										OnObjectSelected?.Invoke(cardToSelect);
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
 										selectedObject = cardToSelect;
@@ -338,6 +399,7 @@ public partial class player : Node3D
 								// Select this unit
 								if (unit3D != null && unit3D.OnObjectSelected())
 								{
+									OnObjectSelected?.Invoke(unit3D);
 									// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 									playerIntention = PlayerIntention.UnitMove;
 									selectedObject = unit3D;
@@ -363,6 +425,7 @@ public partial class player : Node3D
 									// Select this unit
 									if (unit3D != null && unit3D.OnObjectSelected())
 									{
+										OnObjectSelected?.Invoke(unit3D);
 										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 										playerIntention = PlayerIntention.UnitMove;
 										selectedObject = unit3D;
@@ -392,6 +455,7 @@ public partial class player : Node3D
 									// Select this unit
 									if (unit3D != null && unit3D.OnObjectSelected())
 									{
+										OnObjectSelected?.Invoke(unit3D);
 										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 										playerIntention = PlayerIntention.UnitMove;
 										selectedObject = unit3D;
@@ -417,13 +481,14 @@ public partial class player : Node3D
 								if (attackUnit3D != null && target3D != null)
 								{
 									Axial attackDirection = target3D.unit.pos - attackUnit3D.unit.pos;
-									if (main.Instance.gameModel.Unit_TryAttack(true, attackUnit3D.unit, attackDirection, target3D.unit))
+									if (main.Instance.gameModel.Unit_TryAttack(attackUnit3D.unit, attackDirection, target3D.unit))
 									{
 										//If the unit can no longer attack AND cannot move,
 										if (!attackUnit3D.unit.CanAttack() && !attackUnit3D.unit.HasMovement(out int dummyInt))
 										{
 											if (attackUnit3D.OnObjectDeselected())
 											{
+												OnObjectDeselected?.Invoke(selectedObject);
 												playerIntention = PlayerIntention.Open;
 												selectedObject = null;
 												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
@@ -475,6 +540,7 @@ public partial class player : Node3D
 									{
 										if (cardToPlace.OnObjectDeselected())
 										{
+											OnObjectDeselected?.Invoke(selectedObject);
 											playerIntention = PlayerIntention.Open;
 											selectedObject = null;
 											GD.Print($"User has successfully placed {cardToPlace.card.NAME}@{hex3D.AxialPos}. Player intention set to {playerIntention}");
@@ -505,6 +571,7 @@ public partial class player : Node3D
 										{
 											if (unitToMove.OnObjectDeselected())
 											{
+												OnObjectDeselected?.Invoke(selectedObject);
 												playerIntention = PlayerIntention.Open;
 												selectedObject = null;
 												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
@@ -512,7 +579,7 @@ public partial class player : Node3D
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
 										}
 										//If the unit can NOT move anymore, but CAN attack,
-										else if(unitToMove.unit.CanAttack() && !unitToMove.unit.HasMovement(out dummyInt))
+										else if (unitToMove.unit.CanAttack() && !unitToMove.unit.HasMovement(out dummyInt))
 										{
 											GD.Print("Switching intention to attack since the unit cannot move anymore, but can attack");
 											playerIntention = PlayerIntention.UnitAttack;

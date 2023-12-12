@@ -20,11 +20,8 @@ namespace Model
 
         public static Unit EMPTY = new Unit(-1, Axial.Empty, Card.EMPTY);
 
-        [Export]
         public int hp;
-        [Export]
         public int move;
-        [Export]
         public int atk;
         public static readonly int ATK_RANGE = 1;
 
@@ -81,32 +78,57 @@ namespace Model
 
         protected virtual void OnUnitAddedToBoard(Unit newUnit)
         {
-            main.Instance.SoundController?.Play(sound_controller.SFX_CARD_PLACE_NAME);
+            if (newUnit == this)
+            {
+                main.Instance.SoundController?.Play(sound_controller.SFX_CARD_PLACE_NAME);
+            }
         }
 
         protected virtual void OnUnitAttack(Unit attacker, Unit target)
         {
+            if (attacker == this)
+            {
+
+            }
         }
 
-        protected virtual void OnUnitDamaged(Unit target)
+
+        protected virtual void OnUnitMove(Axial oldPos, Unit movedUnit)
         {
-            main.Instance.SoundController?.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
+            if (movedUnit == this)
+            {
+                main.Instance.SoundController?.Play(sound_controller.SFX_CARD_MOVE_NAME);
+            }
+        }
+
+        protected virtual void OnUnitDamaged(Unit attacker, Unit target)
+        {
+            if (target == this)
+            {
+                main.Instance.SoundController?.Play(sound_controller.SFX_PLAYER_ATTACK_NAME);
+            }
         }
 
         protected virtual void OnUnitBuffed(Unit target)
         {
+            if(target == this)
+            {
+            }
         }
 
         protected virtual void OnUnitDeath(Unit deadUnit)
         {
-            UnsubscribeEvents();
+            if (deadUnit == this)
+            {
+                UnsubscribeEvents();
+            }
         }
 
         public virtual bool TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
             if (main.Instance.gameModel.IsLocationValidAndOpen(newPos, out occupant))
             {
-                if (HasMovement(out int remainingMove))
+                if (HasMovement(out int remainingMove) || !isWillful)
                 {
                     GD.Print($"Attempting to move unit {unit.name} from {unit.pos} to {newPos}");
 
@@ -117,8 +139,9 @@ namespace Model
 
                     if (!isWillful || displacement <= remainingMove)
                     {
+                        Axial oldPos = unit.pos;
                         unit.Move(isWillful, newPos);
-                        return true;
+                        return PostAction(main.Instance.gameModel.OnUnitMove, oldPos, unit);
                     }
                     else
                     {
@@ -144,18 +167,12 @@ namespace Model
             return TurnActions.remainingMovement > 0;
         }
 
-        protected virtual void OnUnitMove(Axial oldPos, Unit movedUnit)
-        {
-            main.Instance.SoundController?.Play(sound_controller.SFX_CARD_MOVE_NAME);
-        }
-
-
         /// <summary>
         /// Move the unit instance on the board
         /// </summary>
         /// <param name="isWillful">Did this unit chose to move or was it forced to move?</param>
         /// <param name="newPos">New position to move towards</param>
-        public void Move(bool isWillful, Axial newPos)
+        private void Move(bool isWillful, Axial newPos)
         {
             // GD.PrintErr("This is where TryMove should be called, not on the Model_Game. Event should still be called on Model.  It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
 
@@ -171,17 +188,45 @@ namespace Model
             GD.Print($"Player {ownerIndex} moved unit {name} from {pos} to {newPos}. Calculated displacement: {calculatedDisplacement}. Movement remaining: {TurnActions.remainingMovement}");
         }
 
-        public void Attack()
-        {
-            // GD.PrintErr("This is where TryAttack should be called, not on the Model_Game. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
 
-            TurnActions.hasAttacked = true;
+
+        public virtual bool TryAttack(Unit attacker, Unit target)
+        {
+            if (CanAttack(target))
+            {
+                PostAction(main.Instance.gameModel.OnUnitAttack, attacker, target);
+                return Attack(target);
+            }
+            else return false;
         }
 
-        public bool Damage(int amount)
+        protected virtual bool Attack(Unit target)
         {
-            // GD.PrintErr("This is where TryDamage should be called, not on the Model_Game. Event should still be called on Model. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+            SetAttacked();
+            TryDamage(this, this.atk, target);
 
+            return true;
+        }
+
+        public virtual bool CanBeDamaged()
+        {
+            return true;
+        }
+
+        public virtual bool TryDamage(Unit attacker, int damage, Unit target)
+        {
+            if (target.CanBeDamaged())
+            {
+                PostAction(main.Instance.gameModel.OnUnitDamaged, attacker, target);
+                target.Damage(damage);
+                return true;
+            }
+
+            return false;
+        }
+
+        public virtual bool Damage(int amount)
+        {
             if(hp < 0)
             {
                 GD.PrintErr($"Unit {name} should have been removed already. Its being attacked, but its HP ({hp}) is already less than 0.");
@@ -191,7 +236,58 @@ namespace Model
             
             GD.Print($"Unit {name} has been damaged for {amount}. Remaining hp: {hp}");
 
+            if(hp <= 0 && CanDie())
+            {
+                main.Instance.gameModel.ActiveBoard_RemoveUnit(this, out Unit dummyRemovedUnit);
+            }
+
             return (hp > 0);
+        }
+
+        public bool CanDie()
+        {
+            return true;
+        }
+
+        public virtual bool TryBuff(bool canOverload, int hp_buff, int atk_buff)
+        {
+            if(CanBeBuffed())
+            {
+                bool isBuffed = false;
+
+                if(canOverload || this.hp + hp_buff < this.card.HP)
+                {
+                    isBuffed = true;
+                    this.hp += hp_buff;
+                }
+                    
+                if(canOverload || this.atk + atk_buff < this.card.ATK)
+                {
+                    isBuffed = true;
+                    this.atk += atk_buff;
+                }
+                if (isBuffed)
+                    return PostAction(main.Instance.gameModel.OnUnitBuffed, this);
+                else
+                    return false;
+            }
+
+            return false;
+        }
+
+        protected virtual bool CanBeBuffed()
+        {
+            return true;
+        }
+
+        public bool CanAttack(Unit target)
+        {
+            if (Axial.Distance(this.pos, target.pos) <= ATK_RANGE)
+            {
+                return !TurnActions.hasAttacked;
+            }
+            else
+                return false;
         }
 
         public bool CanAttack()

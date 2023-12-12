@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dkdscj0cwt3g3"]
+[gd_scene load_steps=13 format=3 uid="uid://dkdscj0cwt3g3"]
 
 [ext_resource type="Script" path="res://MVC/Controller/player.cs" id="1_d5ki3"]
 [ext_resource type="PackedScene" uid="uid://wbe1hvc8f4lw" path="res://MVC/View/table.tscn" id="3_58uyu"]
@@ -11,6 +11,12 @@
 [ext_resource type="PackedScene" uid="uid://p4nrole5g5lk" path="res://MVC/View/napkin.tscn" id="8_40lig"]
 [ext_resource type="Script" path="res://MVC/View/Scripts/CardHolder3D.cs" id="10_qvydx"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qhvpd"]
+albedo_color = Color(1, 0.721569, 0.301961, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_fxbos"]
+material = SubResource("StandardMaterial3D_qhvpd")
+
 [node name="Room" type="Node3D"]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
@@ -19,9 +25,10 @@ shadow_enabled = true
 shadow_normal_bias = 10.0
 shadow_opacity = 0.77
 
-[node name="Player" type="Node3D" parent="."]
+[node name="Player" type="Node3D" parent="." node_paths=PackedStringArray("DEBUG_selectMarker")]
 transform = Transform3D(1, -4.68079e-16, 3.27752e-16, 3.27752e-16, 0.939692, 0.34202, -4.68079e-16, -0.34202, 0.939692, 0, 0.9, 0.8)
 script = ExtResource("1_d5ki3")
+DEBUG_selectMarker = NodePath("../DebugMarker")
 
 [node name="CameraMain" type="Camera3D" parent="Player"]
 fov = 36.8817
@@ -76,3 +83,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.836804, 0.192545, -0.189819
 
 [node name="cardSlot7" type="Node3D" parent="CardHolder"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27017, 0.212481, -0.209483)
+
+[node name="DebugMarker" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.0360454, 0, 0, 0, 0.0360454, 0, 0, 0, 0.0360454, 0, 0.574264, 1.00388)
+mesh = SubResource("SphereMesh_fxbos")

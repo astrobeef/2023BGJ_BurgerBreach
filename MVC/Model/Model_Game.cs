@@ -33,15 +33,22 @@ namespace Model
         private static readonly int _PLAYER_COUNT = 2;
         private static readonly int _BOARD_RADIUS = 2;
 
-        private static readonly int _COLLISION_DAMAGE = 1;
+        private const int _RESOURCE_SPAWN_RADIUS = 1;
 
         private static readonly int _waitTime = 5;
 
         // CARD SET
         private static readonly Card[] _CardSet = new Card[] {
-            new Card(false, Card.BASE_TEST_NAME, Card.CardType.Base, 10),
-            new Card(false, Card.RESOURCE_TEST_NAME, Card.CardType.Resource, 3),
-            new Card(false, Card.OFFENSE_TEST_NAME, 2, 3, 1)
+            new Card(false, Card.BASE_NAME, Card.CardType.Base, 10),
+            // new Card(false, Card.RESOURCE_TEST_NAME, Card.CardType.Resource, 3),
+            // new Card(false, Card.OFFENSE_TEST_NAME, 2, 3, 1),
+            new Card(false, Card.BIG_MOE_NAME, 3, 1, 1),
+            // new Card(false, Card.LINE_SQUIRREL_NAME, 1, 1, 1),
+            // new Card(false, Card.EXPO_PIGEON_NAME, 1, 1, 3),
+            // new Card(false, Card.BUSSER_RACOON_NAME, 2, 1, 1),
+            // new Card(false, Card.CLAM_CHOWDER_NAME, Card.CardType.Resource, 1),
+            new Card(false, Card.BURGER_NAME, Card.CardType.Resource, 3)
+            // new Card(false, Card.THE_SCRAPS_NAME, Card.CardType.Resource, 5)
         };
 
         private static readonly Card[] _CardSet_NoBases = _CardSet
@@ -166,7 +173,7 @@ namespace Model
         /// </summary>
         public Action<Unit, Unit> OnUnitAttack;
         public Action<Unit> OnBaseDestroyed;
-        public Action<Unit> OnUnitDamaged;
+        public Action<Unit, Unit> OnUnitDamaged;
         public Action<Unit> OnUnitBuffed;
         public Action<Unit> OnUnitDeath;
         public Action<Unit, Unit> OnCollision;
@@ -245,7 +252,7 @@ namespace Model
                 for (int j = 0; j < refDeck.Length; j++)
                 {
                     int rand = _random.Next(0, 100);
-                    Card cardFromSet = rand < 70 ? _CardSet_NoBases[1] : _CardSet_NoBases[0];
+                    Card cardFromSet = rand < 70 ? _CardSet_NoBases[0] : _CardSet_NoBases[1];
                     refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
@@ -562,6 +569,7 @@ namespace Model
                 if (ActiveBoard_IsAxialOccupied(unitPos, out int boardIndex))
                 {
                     Unit unit = _activeBoard[boardIndex];
+                    // If the attack is NOT willful OR this is the unit's turn
                     if (!isWillful || unit.ownerIndex == _turnPlayerIndex)
                         return Unit_TryMove(isWillful, unit, destination);
                     else
@@ -590,17 +598,10 @@ namespace Model
 
         public bool Unit_TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
-            Axial oldPos = unit.pos;
-
-            if (unit.TryMove(isWillful, unit, newPos, out occupant))
-            {
-                return PostAction(OnUnitMove, oldPos, unit);
-            }
-            else
-                return false;
+            return unit.TryMove(isWillful, unit, newPos, out occupant);
         }
 
-        public bool Unit_TryAttack(bool doDisplace, Unit attacker, Axial attackDirection, Unit target)
+        public bool Unit_TryAttack(Unit attacker, Axial attackDirection, Unit target)
         {
             if(attacker == target)
             {
@@ -608,63 +609,16 @@ namespace Model
                 return false;
             }
 
-            GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos} in direction {attackDirection}.");
-            
-            if(
-                Axial.Distance(Axial.Zero, attackDirection) <= Unit.ATK_RANGE
-                && attacker.CanAttack())
+            if (attacker.TryAttack(attacker, target))
             {
-                attacker.Attack();
-                PostAction(OnUnitAttack, attacker, target);
-
-                return HandleAttackAction(doDisplace, attacker.atk, attackDirection, target);
+                GD.Print($"Player {attacker.ownerIndex} attacked {target.name} @ {target.pos} in direction {attackDirection}.");
+                return true;
             }
-            else{
+            else
+            {
                 GD.PrintErr($"Unit {attacker.name}@{attacker.pos} Could not attack because attack distance ({Axial.Distance(Axial.Zero, attackDirection)}) is greater than 1 OR card TurnActions said that this unit could not attack.");
                 return false;
             }
-        }
-
-        private bool HandleAttackAction(bool doDisplace, int damage, Axial attackDirection, Unit target)
-        {
-            PostAction(OnUnitDamaged, target);
-            // If the target dies
-            if (!target.Damage(damage))
-            {
-                if (target.type == Card.CardType.Base)
-                {
-                    GD.PrintErr($"Player {target.ownerIndex} has had their base destroyed! Need to fire an event to end the game.");
-                    PostAction(OnBaseDestroyed, target);
-                    return true;
-                }
-                else
-                {
-                    ActiveBoard_RemoveUnit(target, out Unit dummyRemovedUnit);
-                }
-            }
-            // Else the target is alive, and if we should displace and the target is an offense unit, then
-            else if (doDisplace && target.type == Card.CardType.Offense)
-            {
-                Axial attackDisplacement = target.pos + attackDirection;
-                if (Unit_TryMove(false, target, attackDisplacement, out Unit occupant))
-                {
-                    GD.Print($"The attack successfully displaced the target.");
-                }
-                else if (occupant != Unit.EMPTY)
-                {
-                    GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
-                    
-                    target.Damage(_COLLISION_DAMAGE);
-                    occupant.Damage(_COLLISION_DAMAGE);
-                    PostAction(OnCollision, target, occupant);
-                }
-                else
-                {
-                    GD.Print($"The target could not be displaced because it would have moved off the map. No consequences.");
-                }
-            }
-
-            return true;
         }
 
         public bool ActiveBoard_TryGetOpenTile(out Axial Axial)
@@ -798,19 +752,13 @@ namespace Model
             {
                 Card.CardType cardType = refHand[card_index].TYPE;
 
-                if (cardType == Card.CardType.Offense)
+                if (CheckOffensePlacementRule(player_index, location, card_index, out Unit friendlyResourceUnit)
+         && CheckResourcePlacementRule(player_index, location, card_index))
                 {
-                    if (OffensePlacementRule(player_index, location, card_index, out Unit friendlyResourceUnit))
-                    {
-                        PlaceUnit_FromHand(player_index, card_index, location, friendlyResourceUnit);
-                    }
+                    PlaceUnit_FromHand(player_index, card_index, location, friendlyResourceUnit);
+                    return true;
                 }
-                else
-                {
-                    PlaceUnit_FromHand(player_index, card_index, location);
-                }
-
-                return true;
+                else return false;
             }
             else
                 return false;
@@ -829,7 +777,7 @@ namespace Model
         private void PlaceUnit_FromHand(int player_index, int card_index, Axial location)
         {
             Card card = RemoveCardFromHand(player_index, card_index);
-            Unit Unit = new Unit(player_index, location, card);
+            Unit Unit = CreateUnitClass(player_index, location, card);
 
             ActiveBoard_AddUnit(Unit);
         }
@@ -837,21 +785,50 @@ namespace Model
         private void PlaceUnit_FromHand(int player_index, int card_index, Axial location, Unit friendlyResourceUnit)
         {
             Card card = RemoveCardFromHand(player_index, card_index);
-            Unit Unit = new Unit(player_index, location, card);
+            Unit Unit = CreateUnitClass(player_index, location, card);
 
             ActiveBoard_AddUnit(Unit);
 
-            HandleAttackAction(false, card.HP, Axial.Empty, friendlyResourceUnit);
+            if (friendlyResourceUnit != null)
+                friendlyResourceUnit.TryDamage(Unit, card.HP, friendlyResourceUnit);
         }
 
         public void PlaceUnit_FromVoid(int player_index, Card card, Axial location, Unit friendlyResourceUnit)
         {
-            Unit Unit = new Unit(player_index, location, card);
+            Unit Unit = CreateUnitClass(player_index, location, card);
 
             ActiveBoard_AddUnit(Unit);
 
-            if(friendlyResourceUnit != null)
-                HandleAttackAction(false, card.HP, Axial.Empty, friendlyResourceUnit);
+            if (friendlyResourceUnit != null)
+                friendlyResourceUnit.TryDamage(Unit, card.HP, friendlyResourceUnit);
+        }
+
+        private Unit CreateUnitClass(int player_index, Axial location, Card card)
+        {
+            switch (card.NAME)
+            {
+                case Card.BASE_NAME:
+                    return new Unit_Base(player_index, location, card);
+                case Card.BIG_MOE_NAME:
+                    return new Unit_BigMoe(player_index, location, card);
+                case Card.BURGER_NAME:
+                    return new Unit_Burger(player_index, location, card);
+                case Card.BUSSER_RACOON_NAME:
+                    return new Unit_BusserRacoon(player_index, location, card);
+                case Card.CLAM_CHOWDER_NAME:
+                    return new Unit_ClamChowder(player_index, location, card);
+                case Card.EXPO_PIGEON_NAME:
+                    return new Unit_ExpoPigeon(player_index, location, card);
+                case Card.LINE_SQUIRREL_NAME:
+                    return new Unit_LineSquirrel(player_index, location, card);
+                case Card.MOE_FAMILY_FRIES_NAME:
+                    return new Unit_FamilyFries(player_index, location, card);
+                case Card.THE_SCRAPS_NAME:
+                    return new Unit_TheScraps(player_index, location, card);
+
+                default:
+                    return new Unit(player_index, location, card);
+            }
         }
 
         public bool GetCardByID_FromHand(int player_index, uint cardID, out Card cardFromHand, out int cardFromHand_Index)
@@ -881,10 +858,17 @@ namespace Model
 
         private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card, out Unit friendlyUnit)
         {
-            if(card.TYPE == Card.CardType.Offense){
-                if(ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out friendlyUnit))
+            if (card.TYPE == Card.CardType.Offense)
+            {
+                if (ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out friendlyUnit))
                 {
-                    return true;
+                    if (friendlyUnit.hp >= card.HP)
+                        return true;
+                    else
+                    {
+                        GD.Print($"Could not place card ({card.NAME}) because the friendly unit ({friendlyUnit.name}) does not have enough HP to place this unit.");
+                        return false;
+                    }
                 }
                 else
                 {
@@ -892,14 +876,15 @@ namespace Model
                     return false;
                 }
             }
-            else{
+            else
+            {
                 // This is not an offense card, so it passes the rule
                 friendlyUnit = null;
                 return true;
             }
         }
 
-        private bool OffensePlacementRule(int player_index, Axial placement, int card_index, out Unit friendlyUnit)
+        private bool CheckOffensePlacementRule(int player_index, Axial placement, int card_index, out Unit friendlyUnit)
         {
             ref Card[] refHand = ref _Hands[player_index];
             Card card = refHand[card_index];
@@ -907,9 +892,41 @@ namespace Model
             return CheckOffensePlacementRule(player_index, placement, card, out friendlyUnit);
         }
 
-        private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card){
+        private bool CheckResourcePlacementRule(int player_index, Axial placement, int card_index)
+        {
+            ref Card[] refHand = ref _Hands[player_index];
+            Card card = refHand[card_index];
 
-            if(IsLocationValidAndOpen(location) && CheckOffensePlacementRule(player_index, location, card, out Unit friendlyUnit)){
+            return CheckResourcePlacementRule(player_index, placement, card);
+        }
+
+        private bool CheckResourcePlacementRule(int player_index, Axial placement, Card card)
+        {
+                GD.PrintErr($"Checking resource placement on {card}");
+            if (card.TYPE == Card.CardType.Resource)
+            {
+                GD.PrintErr("Checking resource placement on resource type");
+                if(ActiveBoard_TryGetBaseUnit(player_index, out Unit playerBase))
+                {
+                    int spawnDistanceFromBase = Axial.Distance(playerBase.pos, placement); 
+
+                GD.PrintErr($"Is resource placement good? {spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS}");
+                    return spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS;
+                }
+                else return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card)
+        {
+            if (IsLocationValidAndOpen(location)
+             && CheckOffensePlacementRule(player_index, location, card, out Unit friendlyUnit)
+             && CheckResourcePlacementRule(player_index, location, card))
+            {
 
                 PlaceUnit_FromVoid(player_index, card, location, friendlyUnit);
 
@@ -936,7 +953,7 @@ namespace Model
             }
         }
 
-        private bool ActiveBoard_RemoveUnit(Unit unit, out Unit removedUnit){
+        public bool ActiveBoard_RemoveUnit(Unit unit, out Unit removedUnit){
 
             int unit_BoardIndex = -1;
 

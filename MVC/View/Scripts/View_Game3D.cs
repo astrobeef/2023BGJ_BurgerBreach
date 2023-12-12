@@ -184,9 +184,9 @@ namespace View
             Print($"Unit ${attacker.name} attacked {target.name}!");
         }
 
-        private void OnUnitDamaged(Unit unit)
+        private void OnUnitDamaged(Unit attacker, Unit target)
         {
-            Print($"Unit ${unit.name} was damaged!");
+            Print($"Unit ${target.name} was damaged by {attacker.name}!");
         }
         
         private void OnUnitBuffed(Unit unit)

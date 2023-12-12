@@ -157,7 +157,7 @@ namespace Model
         /// <param name="newPos">New position to move towards</param>
         public void Move(bool isWillful, Axial newPos)
         {
-            GD.PrintErr("This is where TryMove should be called, not on the Model_Game. Event should still be called on Model.  It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+            // GD.PrintErr("This is where TryMove should be called, not on the Model_Game. Event should still be called on Model.  It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
 
             int calculatedDisplacement = Axial.Distance(pos, newPos);
             if(isWillful)
@@ -173,14 +173,14 @@ namespace Model
 
         public void Attack()
         {
-            GD.PrintErr("This is where TryAttack should be called, not on the Model_Game. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+            // GD.PrintErr("This is where TryAttack should be called, not on the Model_Game. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
 
             TurnActions.hasAttacked = true;
         }
 
         public bool Damage(int amount)
         {
-            GD.PrintErr("This is where TryDamage should be called, not on the Model_Game. Event should still be called on Model. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
+            // GD.PrintErr("This is where TryDamage should be called, not on the Model_Game. Event should still be called on Model. It should be the model's job to identify which unit to perform the action on, but the unit's job to process the action.");
 
             if(hp < 0)
             {

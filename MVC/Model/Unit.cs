@@ -213,7 +213,10 @@ namespace Model
                 PostAction(main.Instance.gameModel.OnUnitAttack, attacker, target);
                 return Attack(target);
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
 
         protected virtual bool Attack(Unit target)
@@ -308,12 +311,16 @@ namespace Model
 
         public virtual bool CanAttack(Unit target)
         {
-            if (Axial.Distance(this.pos, target.pos) <= target.atk_range)
+            if (Axial.Distance(this.pos, target.pos) <= this.atk_range)
             {
+                GD.PrintErr($"Unit {this.name}@{this.pos} has attacked ? {TurnActions.hasAttacked}");
                 return !TurnActions.hasAttacked;
             }
             else
+            {
+                GD.Print($"Unit {this.name}@{this.pos} cannot attack target {target.name}@{target.pos} because the target({Axial.Distance(this.pos, target.pos)} away) is out of range({this.atk_range}).");
                 return false;
+            }
         }
 
         public bool CanAttack()

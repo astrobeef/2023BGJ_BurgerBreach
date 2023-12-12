@@ -45,7 +45,7 @@ namespace Model
             // new Card(false, Card.OFFENSE_TEST_NAME, 2, 3, 1, 1),
             new Card(false, Card.BIG_MOE_NAME, 3, 1, 1, 1),
             new Card(false, Card.LINE_SQUIRREL_NAME, 1, 1, 1, 3),
-            new Card(false, Card.EXPO_PIGEON_NAME, 1, 1, 3, 1),
+            new Card(false, Card.EXPO_PIGEON_NAME, 1, 3, 1, 1),
             new Card(false, Card.BUSSER_RACOON_NAME, 2, 1, 1, 1),
             new Card(false, Card.CLAM_CHOWDER_NAME, Card.CardType.Resource, 1),
             new Card(false, Card.BURGER_NAME, Card.CardType.Resource, 3),
@@ -254,7 +254,7 @@ namespace Model
                 for (int j = 0; j < refDeck.Length; j++)
                 {
                     int rand = _random.Next(0, _CardSet_NoBases.Length);
-                    Card cardFromSet = _CardSet_NoBases[rand];
+                    Card cardFromSet = _CardSet_NoBases[1];
                     refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
@@ -661,7 +661,7 @@ namespace Model
             }
             else
             {
-                GD.PrintErr($"Unit {attacker.name}@{attacker.pos} Could not attack because attack distance ({Axial.Distance(Axial.Zero, attackDirection)}) is greater than 1 OR card TurnActions said that this unit could not attack.");
+                GD.PrintErr($"Unit {attacker.name}@{attacker.pos} Could not attack because attack distance ({Axial.Distance(Axial.Zero, attackDirection)}) is greater than {attacker.atk_range} OR card TurnActions said that this unit could not attack.");
                 return false;
             }
         }

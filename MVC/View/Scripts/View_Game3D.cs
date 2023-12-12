@@ -186,7 +186,7 @@ namespace View
 
         private void OnUnitDamaged(Unit attacker, Unit target)
         {
-            Print($"Unit ${target.name} was damaged by {attacker.name}!");
+            Print($"Unit ${target?.name} was damaged by {attacker?.name}!");
         }
         
         private void OnUnitBuffed(Unit unit)
@@ -220,7 +220,7 @@ namespace View
 
         private void OnCardDrawn_fail(int ownerIndex, int cardsDrawn, int deckCount)
         {
-            Print($"Player {ownerIndex} cannot draw any more cards because their drawn count ({cardsDrawn}) is equal to their deck count ({deckCount})");
+            // Print($"Player {ownerIndex} cannot draw any more cards because either their drawn count ({cardsDrawn}) is equal to their deck count ({deckCount})");
         }
 
         private void Print(string message)

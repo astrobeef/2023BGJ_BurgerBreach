@@ -32,36 +32,30 @@ namespace Model
 
         protected override bool Attack(Unit target)
         {
-            GD.PrintErr("Running override");
             if (base.Attack(target))
             {
-                if (target.hp > 0)
+                Axial attackDirection = target.pos - this.pos;
+                Axial attackDisplacement = target.pos + attackDirection;
+
+                if (main.Instance.gameModel.Unit_TryMove(false, target, attackDisplacement, out Unit occupant))
                 {
-                    Axial attackDirection = target.pos - this.pos;
-                    Axial attackDisplacement = target.pos + attackDirection;
-
-                    if (main.Instance.gameModel.Unit_TryMove(false, target, attackDisplacement, out Unit occupant))
-                    {
-                        GD.Print($"The attack successfully displaced the target.");
-                    }
-                    else if (occupant != Unit.EMPTY)
-                    {
-                        GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
-                        target.TryDamage(null, _COLLISION_DAMAGE, target);
-                        occupant.TryDamage(null, _COLLISION_DAMAGE, occupant);
-                        PostAction(main.Instance.gameModel.OnCollision, target, occupant);
-                    }
-                    else
-                    {
-                        GD.Print($"The target could not be displaced because it would have moved off the map. Damaging unit.");
-
-                        target.TryDamage(null, _COLLISION_DAMAGE, target);
-                        PostAction(main.Instance.gameModel.OnCollision, target, occupant);
-                    }
+                    GD.Print($"The attack successfully displaced the target.");
                 }
-                else
+                else if (occupant != Unit.EMPTY)
                 {
-                    GD.Print($"The target could not be displaced because it is dead.");
+                    GD.Print($"The target could not be displaced because it collided with {occupant}. Damaging both units.");
+                    if (target.hp > 0)
+                        target.TryDamage(null, _COLLISION_DAMAGE, target);
+
+                    occupant.TryDamage(null, _COLLISION_DAMAGE, occupant);
+                    PostAction(main.Instance.gameModel.OnCollision, target, occupant);
+                }
+                else if (target.hp > 0)
+                {
+                    GD.Print($"The target could not be displaced because it would have moved off the map. Damaging unit.");
+
+                    target.TryDamage(null, _COLLISION_DAMAGE, target);
+                    PostAction(main.Instance.gameModel.OnCollision, target, occupant);
                 }
 
                 return true;

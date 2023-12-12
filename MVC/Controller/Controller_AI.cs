@@ -167,6 +167,8 @@ namespace Controller.AI
             // Else, get a random open tile to place the unit
             else if (model.ActiveBoard_TryGetOpenTile(out Axial openTile))
             {
+                GD.PrintErr("The AI is not checking the new resource rule. It is just getting any open tile (like the old rules)");
+                GD.Print($"AI trying to place card {card.NAME} at {openTile}");
                 return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, openTile);
             }
             else

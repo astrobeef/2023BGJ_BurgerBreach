@@ -671,6 +671,8 @@ namespace Model
                 return true;
             }
             else{
+                GD.PrintErr($"Failed to draw card either because draw count is greater than deck count {refDrawnCount > deckCount} OR hand is full ({refHand.Length >= _CARDS_DRAWN_LIMIT})");
+
                 PostAction(OnCardDrawn_fail, player_index, refDrawnCount, deckCount);
 
                 return false;
@@ -902,16 +904,24 @@ namespace Model
 
         private bool CheckResourcePlacementRule(int player_index, Axial placement, Card card)
         {
-                GD.PrintErr($"Checking resource placement on {card}");
             if (card.TYPE == Card.CardType.Resource)
             {
-                GD.PrintErr("Checking resource placement on resource type");
-                if(ActiveBoard_TryGetBaseUnit(player_index, out Unit playerBase))
+                if (ActiveBoard_TryGetBaseUnit(player_index, out Unit playerBase))
                 {
-                    int spawnDistanceFromBase = Axial.Distance(playerBase.pos, placement); 
+                    Axial[] validPlacements = GetAllValidResourcePlacements(player_index);
 
-                GD.PrintErr($"Is resource placement good? {spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS}");
-                    return spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS;
+                    foreach(Axial ax in validPlacements)
+                    {
+                        if(placement == ax)
+                            return true;
+                    }
+
+                    return false;
+
+                    //     int spawnDistanceFromBase = Axial.Distance(playerBase.pos, placement); 
+
+                    // GD.PrintErr($"Is resource placement good? {spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS}");
+                    //     return spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS;
                 }
                 else return false;
             }
@@ -919,6 +929,42 @@ namespace Model
             {
                 return true;
             }
+        }
+
+        Axial[] validResourcePlacements_user = new Axial[] {
+            new Axial(-2,-1),
+            new Axial(-2,0),
+            new Axial(-3,1),
+            new Axial(-2,1),
+            new Axial(-1,1),
+            new Axial(-3,2),
+            new Axial(-1,2),
+            new Axial(0,2),
+            new Axial(1,2),
+            new Axial(-2,3),
+            new Axial(-1,3)
+        };
+
+        Axial[] validResourcePlacements_enemy = new Axial[] {
+            new Axial(1,-3),
+            new Axial(2,-3),
+            new Axial(-1,-2),
+            new Axial(0,-2),
+            new Axial(1,-2),
+            new Axial(3,-2),
+            new Axial(1,-1),
+            new Axial(2,-1),
+            new Axial(3,-1),
+            new Axial(2,0),
+            new Axial(2,1)
+        };
+
+        private Axial[] GetAllValidResourcePlacements(int player_index)
+        {
+            if (player_index == 0)
+                return validResourcePlacements_user;
+            else
+                return validResourcePlacements_enemy;
         }
 
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card)

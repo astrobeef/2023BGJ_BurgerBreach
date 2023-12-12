@@ -566,8 +566,8 @@ public partial class player : Node3D
 								{
 									if (main.Instance.gameModel.Unit_TryMove(true, unitToMove.unit, hex3D.AxialPos))
 									{
-										//If the unit can NOT move anymore AND cannot attack,
-										if (!unitToMove.unit.HasMovement(out int dummyInt) && !unitToMove.unit.CanAttack())
+										//If the unit can NOT move anymore,
+										if (!unitToMove.unit.HasMovement(out int dummyInt))
 										{
 											if (unitToMove.OnObjectDeselected())
 											{
@@ -577,12 +577,6 @@ public partial class player : Node3D
 												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
 											}
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
-										}
-										//If the unit can NOT move anymore, but CAN attack,
-										else if (unitToMove.unit.CanAttack() && !unitToMove.unit.HasMovement(out dummyInt))
-										{
-											GD.Print("Switching intention to attack since the unit cannot move anymore, but can attack");
-											playerIntention = PlayerIntention.UnitAttack;
 										}
 
 										GD.Print($"User has successfully moved unit {unitToMove.Name} to {unitToMove.unit.pos}. Player intention set to {playerIntention}");

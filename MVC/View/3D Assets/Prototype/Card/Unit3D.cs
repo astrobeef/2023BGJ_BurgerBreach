@@ -51,6 +51,11 @@ public partial class Unit3D : Node3D
 	{
 		// Move the unit here
 		Position = destination;
+
+		
+
+		//Update name to show position. Just for debugging
+		Name = $"[{unit.name}@{unit.pos}]";
 	}
 
 	public void OnUnitAttack(Unit3D target3D)

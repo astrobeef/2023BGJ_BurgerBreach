@@ -261,6 +261,7 @@ public partial class player : Node3D
 									// Set intention to 'PlaceCard'
 									playerIntention = PlayerIntention.PlaceCard;
 									selectedObject = cardToSelect;
+									GD.Print($"Selected card {cardToSelect.card.NAME}. Changed player intention to {playerIntention}");
 								}
 								else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
 								break;
@@ -282,7 +283,8 @@ public partial class player : Node3D
 									{
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
-									selectedObject = cardToSelect;
+										selectedObject = cardToSelect;
+										GD.Print($"Selected card {cardToSelect.card.NAME}. Changed player intention to {playerIntention}");
 									}
 									else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
 
@@ -308,7 +310,8 @@ public partial class player : Node3D
 									{
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
-									selectedObject = cardToSelect;
+										selectedObject = cardToSelect;
+										GD.Print($"Selected card {cardToSelect.card.NAME}. Changed player intention to {playerIntention}");
 									}
 									else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
 
@@ -338,6 +341,7 @@ public partial class player : Node3D
 									// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 									playerIntention = PlayerIntention.UnitMove;
 									selectedObject = unit3D;
+									GD.Print($"Selected unit {unit3D.Name}. Changed player intention to {playerIntention}");
 								}
 								else throw new Exception($"Could not select \"{unit3D?.Name}\".");
 								break;
@@ -361,7 +365,8 @@ public partial class player : Node3D
 									{
 										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 										playerIntention = PlayerIntention.UnitMove;
-									selectedObject = unit3D;
+										selectedObject = unit3D;
+										GD.Print($"Selected unit {unit3D.Name}. Changed player intention to {playerIntention}");
 									}
 									else throw new Exception($"Could not select \"{unit3D?.Name}\". Either unit is null {unit3D == null} or failed to select");
 								}
@@ -389,7 +394,8 @@ public partial class player : Node3D
 									{
 										// Set intention to 'UnitMove' (if the player wants to attack, they'll have to input for that)
 										playerIntention = PlayerIntention.UnitMove;
-									selectedObject = unit3D;
+										selectedObject = unit3D;
+										GD.Print($"Selected unit {unit3D.Name}. Changed player intention to {playerIntention}");
 									}
 									else throw new Exception($"Could not select \"{unit3D?.Name}\".");
 								}
@@ -420,11 +426,12 @@ public partial class player : Node3D
 											{
 												playerIntention = PlayerIntention.Open;
 												selectedObject = null;
+												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
 											}
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
 										}
 										//If the unit can NOT attack anymore, but CAN move,
-										else if(attackUnit3D.unit.HasMovement(out dummyInt) && !attackUnit3D.unit.CanAttack())
+										else if (attackUnit3D.unit.HasMovement(out dummyInt) && !attackUnit3D.unit.CanAttack())
 										{
 											GD.Print("Switching intention to move since the unit cannot attack anymore, but can move");
 											playerIntention = PlayerIntention.UnitMove;
@@ -500,6 +507,7 @@ public partial class player : Node3D
 											{
 												playerIntention = PlayerIntention.Open;
 												selectedObject = null;
+												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
 											}
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
 										}

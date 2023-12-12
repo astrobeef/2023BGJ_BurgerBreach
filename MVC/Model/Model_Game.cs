@@ -1029,6 +1029,11 @@ namespace Model
             return returnPlacements.ToArray();
         }
 
+        // public Axial[] GetAllOpenOffensePlacements(int player_index)
+        // {
+
+        // }
+
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card)
         {
             if (IsLocationValidAndOpen(location)

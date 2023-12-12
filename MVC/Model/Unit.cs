@@ -347,15 +347,32 @@ namespace Model
 
 
 
+        /// <summary>
+        /// Get al valid move positions for this unit at its current position 
+        /// </summary>
+        /// <param name="validMoves">All valid movement positions</param>
+        /// <returns>True if at least one Axial is found</returns>
+        /// <remarks>If you want to run this at a different Axial origin, use the override</remarks>
+        public bool GetAllMovePositions(out Axial[] validMoves){
+            return GetAllMovePositions(this.pos, out validMoves);
+        }
 
-        public bool GetAllValidMovePositions(out Axial[] openTiles)
+
+        /// <summary>
+        /// Get al valid move positions for this unit at its current position 
+        /// </summary>
+        /// <param name="origin">Where to originate this method call (useful for simulating this unit at a different position)</param>
+        /// <param name="validMoves">All valid movement positions</param>
+        /// <returns>True if at least one Axial is found</returns>
+        /// <remarks>This override is meant to simulate the unit at a different origin</remarks>
+        public bool GetAllMovePositions(Axial origin, out Axial[] validMoves)
         {
             GD.Print($"!!! DISCLAIMER: This does not use path finding to see if an open tile within range can actually be moved towards (for instance, a blocked path would require more movement). We can get away with this because the only unit with more than 1 movement is the pigeon, which ignores units in its path");
 
-            List<Axial> openTiles_List = new List<Axial>();
-
             if (this.HasMovement(out int remainingMove))
             {
+                List<Axial> validMove_List = new List<Axial>();
+
                 // For each cardinal direction
                 for (int i = 0; i < Axial.CARDINAL_LENGTH; i++)
                 {
@@ -364,30 +381,114 @@ namespace Model
                     // For each movement outwards from this unit up to its movement range
                     for (int j = 1; j <= remainingMove; j++)
                     {
-                        Axial potentialDestination = this.pos + (j * cardinalDirection);
+                        Axial potentialDestination = origin + (j * cardinalDirection);
 
                         // If it is on the board and open
-                        if(main.Instance.gameModel.IsLocationValidAndOpen(potentialDestination))
+                        if (main.Instance.gameModel.IsLocationValidAndOpen(potentialDestination))
                         {
-                            openTiles_List.Add(potentialDestination);
+                            validMove_List.Add(potentialDestination);
                         }
                     }
                 }
+
+                validMoves = validMove_List.ToArray();
+                return validMoves.Length > 0;
             }
             else
             {
-                openTiles = null;
+                validMoves = null;
                 return false;
             }
-
-            openTiles = openTiles_List.ToArray();
-            return openTiles.Length > 0;
+        }
+        
+        /// <summary>
+        /// Get all valid targets (without prejudice)
+        /// </summary>
+        /// <param name="validTargets">All valid units</param>
+        /// <returns>True if at least one unit is found</returns>
+        /// <remarks>If you want to run this at a different Axial origin, use the override</remarks>
+        public bool GetAllAttackTargets(out Unit[] validTargets){
+            return GetAllAttackTargets(this.pos, out validTargets);
         }
 
-        // public bool GetAllValidAttackTargets(out Unit[] attackTargets)
-        // {
+        /// <summary>
+        /// Get all valid targets (without prejudice)
+        /// </summary>
+        /// <param name="origin">Where to originate this method call (useful for simulating this unit at a different position)</param>
+        /// <param name="validTargets">All valid units</param>
+        /// <returns>True if at least one unit is found</returns>
+        /// <remarks>This override is meant to simulate the unit at a different origin</remarks>
+        public bool GetAllAttackTargets(Axial origin, out Unit[] validTargets)
+        {
+            if(this.CanAttack())
+            {
+                List<Unit> validTargets_List = new List<Unit>();
 
-        // }
+                // For each cardinal direction
+                for (int i = 0; i < Axial.CARDINAL_LENGTH; i++)
+                {
+                    Axial cardinalDirection = Axial.Direction((Axial.Cardinal)i);
+
+                    // For each movement outwards from this unit up to its movement range
+                    for (int j = 1; j <= this.atk_range; j++)
+                    {
+                        Axial potentialTargetPos = origin + (j * cardinalDirection);
+
+                        // If the Axial is occupied
+                        if (main.Instance.gameModel.ActiveBoard_IsAxialOccupied(potentialTargetPos, out int activeBoardIndex))
+                        {
+                            Unit potentialTarget = main.Instance.gameModel.ActiveBoard[activeBoardIndex];
+                            validTargets_List.Add(potentialTarget);
+                            break;      //Do not continue further (assuming unit cannot penetrate targets)
+                        }
+                    }
+                }
+
+                validTargets = validTargets_List.ToArray();
+                return validTargets.Length > 0;
+            }
+            else
+            {
+                validTargets = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Filter friendly targets in all attack targets
+        /// </summary>
+        /// <param name="validTargets"></param>
+        /// <returns>Filtered friendly targets</returns>
+        /// <remarks>For parameter, call <see cref="GetAllAttackTargets"/></remarks>
+        public Unit[] GetAllAttackTargets_Friendly(Unit[] validTargets)
+        {
+            List<Unit> friendlyTargets = new List<Unit>();
+            foreach(Unit unit in validTargets)
+            {
+                if(this.ownerIndex == unit.ownerIndex)
+                    friendlyTargets.Add(unit);
+            }
+
+            return friendlyTargets.ToArray();
+        }
+
+        /// <summary>
+        /// Filter enemy targets in all attack targets
+        /// </summary>
+        /// <param name="validTargets"></param>
+        /// <returns>Filtered attack targets</returns>
+        /// <remarks>For parameter, call <see cref="GetAllAttackTargets"/></remarks>
+        public Unit[] GetAllAttackTargets_Enemy(Unit[] validTargets)
+        {
+            List<Unit> enemyTargets = new List<Unit>();
+            foreach(Unit unit in validTargets)
+            {
+                if(this.ownerIndex != unit.ownerIndex)
+                    enemyTargets.Add(unit);
+            }
+
+            return enemyTargets.ToArray();
+        }
 
 
 

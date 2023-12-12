@@ -26,11 +26,12 @@ namespace Model
         #region VARIABLES
 
         // STATIC
+        public static readonly int PLAYER_COUNT = 2;
+
         private static readonly int _DECK_COUNT = 20;
         private static readonly int _HAND_START_COUNT = 2;
         private static readonly int _CARDS_DRAWN_PER_TURN = 1;
         private static readonly int _CARDS_DRAWN_LIMIT = 6;
-        private static readonly int _PLAYER_COUNT = 2;
         private static readonly int _BOARD_RADIUS = 2;
 
         private const int _RESOURCE_SPAWN_RADIUS = 1;
@@ -41,14 +42,14 @@ namespace Model
         private static readonly Card[] _CardSet = new Card[] {
             new Card(false, Card.BASE_NAME, Card.CardType.Base, 10),
             // new Card(false, Card.RESOURCE_TEST_NAME, Card.CardType.Resource, 3),
-            // new Card(false, Card.OFFENSE_TEST_NAME, 2, 3, 1),
-            new Card(false, Card.BIG_MOE_NAME, 3, 1, 1),
-            // new Card(false, Card.LINE_SQUIRREL_NAME, 1, 1, 1),
-            // new Card(false, Card.EXPO_PIGEON_NAME, 1, 1, 3),
-            // new Card(false, Card.BUSSER_RACOON_NAME, 2, 1, 1),
-            // new Card(false, Card.CLAM_CHOWDER_NAME, Card.CardType.Resource, 1),
-            new Card(false, Card.BURGER_NAME, Card.CardType.Resource, 3)
-            // new Card(false, Card.THE_SCRAPS_NAME, Card.CardType.Resource, 5)
+            // new Card(false, Card.OFFENSE_TEST_NAME, 2, 3, 1, 1),
+            new Card(false, Card.BIG_MOE_NAME, 3, 1, 1, 1),
+            new Card(false, Card.LINE_SQUIRREL_NAME, 1, 1, 1, 3),
+            new Card(false, Card.EXPO_PIGEON_NAME, 1, 1, 3, 1),
+            new Card(false, Card.BUSSER_RACOON_NAME, 2, 1, 1, 1),
+            new Card(false, Card.CLAM_CHOWDER_NAME, Card.CardType.Resource, 1),
+            new Card(false, Card.BURGER_NAME, Card.CardType.Resource, 3),
+            new Card(false, Card.THE_SCRAPS_NAME, Card.CardType.Resource, 5)
         };
 
         private static readonly Card[] _CardSet_NoBases = _CardSet
@@ -63,7 +64,7 @@ namespace Model
 
         private int _roundCounter = 0;
 
-        private Card[][] _Decks = new Card[_PLAYER_COUNT][];
+        private Card[][] _Decks = new Card[PLAYER_COUNT][];
         private Card[] _userDeck
         {
             get
@@ -99,10 +100,10 @@ namespace Model
         private int _turnCounter = 0;
         public int TurnCounter => _turnCounter;
 
-        private int[] _CardsDrawn = new int[_PLAYER_COUNT];       // How many cards each player has drawn
+        private int[] _CardsDrawn = new int[PLAYER_COUNT];       // How many cards each player has drawn
 
         // Hands data
-        private Card[][] _Hands = new Card[_PLAYER_COUNT][];
+        private Card[][] _Hands = new Card[PLAYER_COUNT][];
         private Card[] _userHand
         {
             get
@@ -177,6 +178,7 @@ namespace Model
         public Action<Unit> OnUnitBuffed;
         public Action<Unit> OnUnitDeath;
         public Action<Unit, Unit> OnCollision;
+        public Action<Unit> OnUnitOwnerChanged;
 
         public Action<int, Card, Card[], int> OnCardDrawn;
         public Action<int, int, int> OnCardDrawn_fail;
@@ -243,7 +245,7 @@ namespace Model
 
         private void InitDecks()
         {
-            for (int i = 0; i < _PLAYER_COUNT; i++)
+            for (int i = 0; i < PLAYER_COUNT; i++)
             {
                 PostAction(OnDeckBuildStart, i);
 
@@ -251,8 +253,8 @@ namespace Model
                 refDeck = new Card[_DECK_COUNT];
                 for (int j = 0; j < refDeck.Length; j++)
                 {
-                    int rand = _random.Next(0, 100);
-                    Card cardFromSet = rand < 70 ? _CardSet_NoBases[0] : _CardSet_NoBases[1];
+                    int rand = _random.Next(0, _CardSet_NoBases.Length);
+                    Card cardFromSet = _CardSet_NoBases[rand];
                     refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
@@ -280,7 +282,7 @@ namespace Model
         
         private void InitHands()
         {
-            for (int i = 0; i < _PLAYER_COUNT; i++)
+            for (int i = 0; i < PLAYER_COUNT; i++)
             {
                 ref Card[] refHand = ref _Hands[i];
                 ref Card[] refDeck = ref _Decks[i];
@@ -300,7 +302,7 @@ namespace Model
         private void InitBases(){
             Thread.Sleep(100);
 
-            for(int i = 0; i < _PLAYER_COUNT; i++){
+            for(int i = 0; i < PLAYER_COUNT; i++){
                 Card BaseFromSet = _CardSet[0];
                 Card BaseCard = new Card(true, BaseFromSet);
                 Axial BaseLocation = CardSet_GetBaseLocation(i);
@@ -314,7 +316,7 @@ namespace Model
 
         private void StartTurn(ref int turnCounter)
         {
-            _turnPlayerIndex = turnCounter % _PLAYER_COUNT;
+            _turnPlayerIndex = turnCounter % PLAYER_COUNT;
             PostAction(OnTurnStart, _turnPlayerIndex, turnCounter);
 
             // 1. Draw a card
@@ -348,8 +350,8 @@ namespace Model
 
         private Axial CardSet_GetBaseLocation(int player_index){
 
-            if(_PLAYER_COUNT > _base_locations.Length){
-                GD.PrintErr($"Not enough base locations ({_base_locations.Length}) for the amount of players({_PLAYER_COUNT})");
+            if(PLAYER_COUNT > _base_locations.Length){
+                GD.PrintErr($"Not enough base locations ({_base_locations.Length}) for the amount of players({PLAYER_COUNT})");
                 return Axial.Empty;
             }
 
@@ -378,26 +380,43 @@ namespace Model
         /// 'out' index within <see cref="_activeBoard"/> of the unit at the axial position, if one exists
         /// </summary>
         /// <returns>True if a unit exists at the parameter axial, false if not</returns>
-        public bool ActiveBoard_IsAxialOccupied(Axial axial, out int boardIndex)
+        public bool ActiveBoard_IsAxialOccupied(Axial axial, out int activeBoardIndex)
         {
             for (int i = 0; i < _activeBoard.Length; i++)
             {
                 Unit unit = _activeBoard[i];
                 if (unit.pos == axial){
-                    boardIndex = i;
+                    activeBoardIndex = i;
                     return true;
                 }
             }
             
-            boardIndex = -1;
+            activeBoardIndex = -1;
             return false;
+        }
+
+        public bool ActiveBoard_AllOpenTiles(out Axial[] openTiles)
+        {
+            List<Axial> openTiles_List = new List<Axial>();
+
+            foreach(Axial ax in _Board.Axials)
+            {
+                // If the Axial is NOT occupied
+                if(!ActiveBoard_IsAxialOccupied(ax, out int dummyInt))
+                {
+                    openTiles_List.Add(ax);
+                }
+            }
+
+            openTiles = openTiles_List.ToArray();
+            return openTiles.Length > 0;
         }
 
         /// <summary>
         /// 'out' indexes of all adjacent neighbors
         /// </summary>
         /// <returns>True if at least one neighbor found, false if not</returns>
-        public bool ActiveBoard_FindNeighbors(Axial axial, out int[] neighborBoardIndexes)
+        public bool ActiveBoard_FindAllNeighbors(Axial axial, out int[] neighborActiveBoardIndexes)
         {
             List<int> neighborBoardIndexes_List = new List<int>(0);
 
@@ -412,8 +431,34 @@ namespace Model
                 }
             }
 
-            neighborBoardIndexes = neighborBoardIndexes_List.ToArray();
-            return neighborBoardIndexes.Length > 0;
+            neighborActiveBoardIndexes = neighborBoardIndexes_List.ToArray();
+            return neighborActiveBoardIndexes.Length > 0;
+        }
+        
+        /// <summary>
+        /// 'out' indexes of all adjacent friendly neighbors
+        /// </summary>
+        /// <returns>True if at least one friendly neighbor found, false if not</returns>
+        public bool ActiveBoard_FindAllFriendlyNeighbors(int playerIndex, Axial axial, out int[] neighborActiveBoardIndexes)
+        {
+            List<int> neighborBoardIndexes_List = new List<int>(0);
+
+            for (int i = 0; i < Axial.CARDINAL_LENGTH; i++)
+            {
+                Axial iDirection = Axial.Direction((Axial.Cardinal)i);
+                Axial neighbor = axial + iDirection;
+
+                if (ActiveBoard_IsAxialOccupied(neighbor, out int neighborBoardIndex))
+                {
+                    Unit unit = _activeBoard[neighborBoardIndex];
+
+                    if(unit.ownerIndex == playerIndex)
+                        neighborBoardIndexes_List.Add(neighborBoardIndex);
+                }
+            }
+
+            neighborActiveBoardIndexes = neighborBoardIndexes_List.ToArray();
+            return neighborActiveBoardIndexes.Length > 0;
         }
 
         /// <summary>
@@ -424,7 +469,7 @@ namespace Model
         public bool ActiveBoard_FindEnemyNeighbor(int ownerIndex, Axial originAxial, out Unit enemyNeighborUnit)
         {
             int[] neighborBoardIndexes;
-            if(ActiveBoard_FindNeighbors(originAxial, out neighborBoardIndexes)){
+            if(ActiveBoard_FindAllNeighbors(originAxial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
                     Unit neighborUnit = _activeBoard[index];
                     if(neighborUnit.ownerIndex != ownerIndex){
@@ -445,7 +490,7 @@ namespace Model
         public bool ActiveBoard_FindFriendlyNonOffenseNeighbor(int ownerIndex, Axial axial, out Unit friendlyUnit)
         {
             int[] neighborBoardIndexes;
-            if(ActiveBoard_FindNeighbors(axial, out neighborBoardIndexes)){
+            if(ActiveBoard_FindAllNeighbors(axial, out neighborBoardIndexes)){
                 foreach(int index in neighborBoardIndexes){
                     Unit neighbor = _activeBoard[index];
                     if(neighbor.ownerIndex == ownerIndex && neighbor.type != Card.CardType.Offense){
@@ -550,7 +595,7 @@ namespace Model
 
         public bool IsRoundOver(int turnCounter){
 
-            for(int i = 0; i < _PLAYER_COUNT; i++){
+            for(int i = 0; i < PLAYER_COUNT; i++){
                 if(ActiveBoard_TryGetBaseUnit(i, out Unit playerBase)){
                     if(playerBase.hp <= 0){
                         return true;
@@ -908,7 +953,7 @@ namespace Model
             {
                 if (ActiveBoard_TryGetBaseUnit(player_index, out Unit playerBase))
                 {
-                    Axial[] validPlacements = GetAllValidResourcePlacements(player_index);
+                    Axial[] validPlacements = GetAllResourcePlacements(player_index);
 
                     foreach(Axial ax in validPlacements)
                     {
@@ -931,7 +976,7 @@ namespace Model
             }
         }
 
-        Axial[] validResourcePlacements_user = new Axial[] {
+        Axial[] _resourcePlacements_user = new Axial[] {
             new Axial(-2,-1),
             new Axial(-2,0),
             new Axial(-3,1),
@@ -945,7 +990,7 @@ namespace Model
             new Axial(-1,3)
         };
 
-        Axial[] validResourcePlacements_enemy = new Axial[] {
+        Axial[] _resourcePlacements_enemy = new Axial[] {
             new Axial(1,-3),
             new Axial(2,-3),
             new Axial(-1,-2),
@@ -959,12 +1004,29 @@ namespace Model
             new Axial(2,1)
         };
 
-        private Axial[] GetAllValidResourcePlacements(int player_index)
+        private Axial[] GetAllResourcePlacements(int player_index)
         {
             if (player_index == 0)
-                return validResourcePlacements_user;
+                return _resourcePlacements_user;
             else
-                return validResourcePlacements_enemy;
+                return _resourcePlacements_enemy;
+        }
+
+        public Axial[] GetAllOpenResourcePlacements(int player_index)
+        {
+            Axial[] allResourcePlacements = GetAllResourcePlacements(player_index);
+            List<Axial> returnPlacements = new List<Axial>();
+
+            foreach(Axial placement in allResourcePlacements)
+            {
+                // If the Axial is NOT occupied
+                if(!ActiveBoard_IsAxialOccupied(placement, out int activeBoardIndex))
+                {
+                    returnPlacements.Add(placement);
+                }
+            }
+
+            return returnPlacements.ToArray();
         }
 
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card)
@@ -1062,11 +1124,11 @@ namespace Model
         }
 
         /// <summary>
-        /// 
+        /// Check if the parameter Axial is valid (is on the board) and open (not occupied)
         /// </summary>
         /// <param name="location">Axial to place at</param>
         /// <param name="occupant">If the tile is occupied, this is the unit occupying it</param>
-        /// <returns></returns>
+        /// <returns>true if valid and open, false if either are false</returns>
         public bool IsLocationValidAndOpen(Axial location, out Unit occupant)
         {
             occupant = Unit.EMPTY;

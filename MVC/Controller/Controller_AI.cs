@@ -165,14 +165,18 @@ namespace Controller.AI
                 }
             }
             // Else, get a random open tile to place the unit
-            else if (model.ActiveBoard_TryGetOpenTile(out Axial openTile))
-            {
-                GD.PrintErr("The AI is not checking the new resource rule. It is just getting any open tile (like the old rules)");
-                GD.Print($"AI trying to place card {card.NAME} at {openTile}");
-                return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, openTile);
-            }
             else
-                GD.Print("Could not place card because all tiles are filled");
+            {
+                // Get all valid resource placements
+                // Select one at random
+                Axial[] validResourcePlacements = model.GetAllOpenResourcePlacements(_myPlayerIndex);
+                
+                int rand = _random.Next(0,validResourcePlacements.Length);
+                
+                Axial placement = validResourcePlacements[rand];
+
+                return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, placement);
+            }
 
             return false;
         }

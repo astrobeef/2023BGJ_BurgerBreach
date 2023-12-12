@@ -57,6 +57,10 @@ namespace Model
                     target.TryDamage(null, _COLLISION_DAMAGE, target);
                     PostAction(main.Instance.gameModel.OnCollision, target, occupant);
                 }
+                else
+                {
+                    GD.Print($"The target could not be displaced because it is dead.");
+                }
 
                 return true;
             }

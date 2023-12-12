@@ -19,9 +19,15 @@ public partial class Board3D : Node3D
 	private float Y_Offset = 0.5f;
 	private static Vector2 _offset_2D => new Vector2(_offset.X, _offset.Z);
 
-	private static string COIN_BURGER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
 	private static string COIN_BASE = "res://MVC/View/3D Assets/Prototype/Coin/coin_base.tscn";
 	private static string COIN_MOE = "res://MVC/View/3D Assets/Prototype/Coin/coin_moe.tscn";
+	private static string COIN_BURGER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_BUSSER_RACOON = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_CLAM_CHOWDER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_EXPO_PIGEON = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_LINE_SQUIRREL = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_MOE_FAMILY_FRIES = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_THE_SCRAPS = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
 
 	
 	private StaticBody3D _body;
@@ -65,6 +71,7 @@ public partial class Board3D : Node3D
 		gameModel.OnUnitBuffed += OnUnitBuffed;
 		gameModel.OnUnitMove += OnUnitMove;
 		gameModel.OnUnitDeath += OnUnitDeath;
+		gameModel.OnUnitOwnerChanged += OnUnitOwnerChanged;
 
 		GenerateBoard3D(main.Instance?.gameModel?.Board.Axials);
 	}
@@ -140,25 +147,7 @@ public partial class Board3D : Node3D
 
 		if (hex3DtoAddTo != null)
 		{
-			PackedScene scene = null;
-			switch (newUnit.card.NAME)
-			{
-				case (Card.BASE_NAME):
-					scene = GD.Load<PackedScene>(COIN_BASE);
-					break;
-				case (Card.BURGER_NAME):
-					scene = GD.Load<PackedScene>(COIN_BURGER);
-					break;
-				case (Card.BIG_MOE_NAME):
-					scene = GD.Load<PackedScene>(COIN_MOE);
-					break;
-			}
-			if (scene != null)
-			{
-				CreateUnit3D(scene, hex3DtoAddTo, newUnit);
-				
-			}
-			else GD.PrintErr($"scene is null");
+				CreateUnit3D(hex3DtoAddTo, newUnit);
 		}
 		else
 		{
@@ -170,18 +159,88 @@ public partial class Board3D : Node3D
 	private Texture2D coinInside_Friendly, coinInside_Enemy;
 	private const int coinInsideSurfaceIndex = 0;
 
-	private Unit3D CreateUnit3D(PackedScene scene, Hex3D parentHex, Unit unitModel)
+	private Unit3D CreateUnit3D(Hex3D parentHex, Unit unitModel)
 	{
+			PackedScene scene = null;
+			switch (unitModel.card.NAME)
+			{
+				case (Card.BASE_NAME):
+					scene = GD.Load<PackedScene>(COIN_BASE);
+					break;
+				case (Card.BURGER_NAME):
+					scene = GD.Load<PackedScene>(COIN_BURGER);
+					break;
+				case (Card.BIG_MOE_NAME):
+					scene = GD.Load<PackedScene>(COIN_MOE);
+					break;
+			}
+
+
+		switch (unitModel.card.NAME)
+		{
+			case Card.BASE_NAME:
+				scene = GD.Load<PackedScene>(COIN_BASE);
+				break;
+			case Card.BIG_MOE_NAME:
+				scene = GD.Load<PackedScene>(COIN_MOE);
+				break;
+			case Card.BURGER_NAME:
+				scene = GD.Load<PackedScene>(COIN_BURGER);
+				break;
+			case Card.BUSSER_RACOON_NAME:
+				scene = GD.Load<PackedScene>(COIN_BUSSER_RACOON);
+				break;
+			case Card.CLAM_CHOWDER_NAME:
+				scene = GD.Load<PackedScene>(COIN_CLAM_CHOWDER);
+				break;
+			case Card.EXPO_PIGEON_NAME:
+				scene = GD.Load<PackedScene>(COIN_EXPO_PIGEON);
+				break;
+			case Card.LINE_SQUIRREL_NAME:
+				scene = GD.Load<PackedScene>(COIN_LINE_SQUIRREL);
+				break;
+			case Card.MOE_FAMILY_FRIES_NAME:
+				scene = GD.Load<PackedScene>(COIN_MOE_FAMILY_FRIES);
+				break;
+			case Card.THE_SCRAPS_NAME:
+				scene = GD.Load<PackedScene>(COIN_THE_SCRAPS);
+				break;
+			default:
+				GD.PrintErr($"Uncaught case for card name \"{unitModel.card.NAME}\"");
+				return null;
+		}
+
 		Unit3D unit3D = (Unit3D)scene.Instantiate().Duplicate();
 		unit3D.unit = unitModel;
 
+		SetUnitMeshMaterialBasedOnOwnerIndex(unit3D);
+
+		parentHex.GetChild(0).AddChild(unit3D);
+		parentHex.SetStatsText(false);
+		_ActiveUnit3Ds.Add(unit3D);
+
+		unit3D.OnUnitCreated();
+		return unit3D;
+	}
+
+	private void OnUnitOwnerChanged(Unit unit)
+	{
+		if(IsUnitModelOnBoard3D(unit, out Hex3D hex3D))
+		{
+			Unit3D unit3D = hex3D.activeUnit3D;
+			SetUnitMeshMaterialBasedOnOwnerIndex(unit3D);
+		}
+	}
+
+	private void SetUnitMeshMaterialBasedOnOwnerIndex(Unit3D unit3D)
+	{
 		MeshInstance3D meshInstance = unit3D.GetChild<MeshInstance3D>(coinInsideSurfaceIndex);
 		var material = meshInstance.GetActiveMaterial(coinInsideSurfaceIndex) as StandardMaterial3D;
 		if (material != null)
 		{
 			material = material.Duplicate() as StandardMaterial3D;
 
-			if (unitModel.ownerIndex == 0)
+			if (unit3D.unit.ownerIndex == 0)
 			{
 				material.AlbedoTexture = coinInside_Friendly;
 			}
@@ -193,13 +252,6 @@ public partial class Board3D : Node3D
 			meshInstance.SetSurfaceOverrideMaterial(coinInsideSurfaceIndex, material);
 		}
 		else GD.PrintErr("material is null");
-
-		parentHex.GetChild(0).AddChild(unit3D);
-		parentHex.SetStatsText(false);
-		_ActiveUnit3Ds.Add(unit3D);
-
-		unit3D.OnUnitCreated();
-		return unit3D;
 	}
 
 	private async void DestroyUnit3D(Hex3D parentHex)

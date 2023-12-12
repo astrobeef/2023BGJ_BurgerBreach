@@ -10,8 +10,14 @@ public partial class CardHolder3D : Node3D
 	Card3D[] Cards3D;
 	Node3D[] CardSlots3D;
 
-	private static string CARD_BURGER = "res://MVC/View/3D Assets/Prototype/Card/card_burger.tscn";
-	private static string CARD_MOE = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_BURGER = "res://MVC/View/3D Assets/Prototype/Card/card_burger.tscn";
+	private const string CARD_MOE = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_BUSSER_RACOON = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_CLAM_CHOWDER = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_EXPO_PIGEON = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_LINE_SQUIRREL = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_MOE_FAMILY_FRIES = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_THE_SCRAPS = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -53,26 +59,12 @@ public partial class CardHolder3D : Node3D
 		{
 			main.Instance.SoundController?.Play(sound_controller.SFX_CARD_DRAW_NAME);
 
-			PackedScene scene;
-
-			switch (cardDrawn.NAME)
+			// Iterate through slots to find an open one
+			foreach (Node3D cardSlot3D in CardSlots3D)
 			{
-				case (Card.BURGER_NAME):
-					scene = GD.Load<PackedScene>(CARD_BURGER);
-					break;
-				case (Card.BIG_MOE_NAME):
-					scene = GD.Load<PackedScene>(CARD_MOE);
-					break;
-				default:
-					GD.PrintErr($"Uncaught case for card name \"{cardDrawn.NAME}\"");
-					return;
-			}
-
-			foreach (Node3D cardSlot in CardSlots3D)
-			{
-				if (cardSlot.GetChildCount() == 0)
+				if (cardSlot3D.GetChildCount() == 0)
 				{
-					CreateCard3D(scene, cardSlot, cardDrawn);
+					CreateCard3D(cardSlot3D, cardDrawn);
 					break;
 				}
 			}
@@ -139,8 +131,43 @@ public partial class CardHolder3D : Node3D
 		}
 	}
 
-	private void CreateCard3D(PackedScene scene, Node3D parentSlot, Card cardModel)
+	private void CreateCard3D(Node3D parentSlot, Card cardModel)
 	{
+		PackedScene scene;
+
+		switch (cardModel.NAME)
+		{
+			case Card.BIG_MOE_NAME:
+				scene = GD.Load<PackedScene>(CARD_MOE);
+				break;
+			case Card.BURGER_NAME:
+				scene = GD.Load<PackedScene>(CARD_BURGER);
+				break;
+			case Card.BUSSER_RACOON_NAME:
+				scene = GD.Load<PackedScene>(CARD_BUSSER_RACOON);
+				break;
+			case Card.CLAM_CHOWDER_NAME:
+				scene = GD.Load<PackedScene>(CARD_CLAM_CHOWDER);
+				break;
+			case Card.EXPO_PIGEON_NAME:
+				scene = GD.Load<PackedScene>(CARD_EXPO_PIGEON);
+				break;
+			case Card.LINE_SQUIRREL_NAME:
+				scene = GD.Load<PackedScene>(CARD_LINE_SQUIRREL);
+				break;
+			case Card.MOE_FAMILY_FRIES_NAME:
+				scene = GD.Load<PackedScene>(CARD_MOE_FAMILY_FRIES);
+				break;
+			case Card.THE_SCRAPS_NAME:
+				scene = GD.Load<PackedScene>(CARD_THE_SCRAPS);
+				break;
+
+			case Card.BASE_NAME:
+			default:
+				GD.PrintErr($"Uncaught case for card name \"{cardModel.NAME}\"");
+				return;
+		}
+
 		Card3D card3D = (Card3D)scene.Instantiate();
 		card3D.card = cardModel;
 		parentSlot.AddChild(card3D);

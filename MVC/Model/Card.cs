@@ -1,3 +1,5 @@
+using Godot;
+
 namespace Model
 {
     public struct Card
@@ -25,6 +27,7 @@ namespace Model
         public int HP;
         public int MOVE;
         public int ATK;
+        public int ATK_RANGE;
 
         public static Card EMPTY = new Card(false, "NULL", CardType.Base, -1);
 
@@ -40,9 +43,10 @@ namespace Model
 
             MOVE = 0;
             ATK = 0;
+            ATK_RANGE = 1;
         }
 
-        public Card(bool isUnique, string name, int hp, int move, int atk)
+        public Card(bool isUnique, string name, int hp, int move, int atk, int atk_range)
         {
             id = (isUnique == true)
              ? System.Threading.Interlocked.Increment(ref lastId)
@@ -54,6 +58,7 @@ namespace Model
             HP = hp;
             MOVE = move;
             ATK = atk;
+            ATK_RANGE = atk_range;
         }
 
         public Card(bool isUnique, Card cardFromSet)
@@ -68,6 +73,7 @@ namespace Model
             HP = cardFromSet.HP;
             MOVE = cardFromSet.MOVE;
             ATK = cardFromSet.ATK;
+            ATK_RANGE = cardFromSet.ATK_RANGE;
         }
 
         public override string ToString()

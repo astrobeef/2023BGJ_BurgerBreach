@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AxialCS;
 using Godot;
 using Model;
@@ -173,23 +174,38 @@ namespace Controller.AI
             Axial initPos = unit.pos;
             newPos = initPos;
 
-            int iDirection = 0;
+            if(unit.GetAllMovePositions(out Dictionary<Axial.Cardinal, Axial[]> validMoves))
+            {
+                Axial movePosition;
 
-            while(unit.HasMovement(out int remainingMovement)){
-                if(iDirection >= Axial.CARDINAL_LENGTH)
+                if (validMoves[Axial.Cardinal.SW].Length > 0)
                 {
-                    GD.Print($"Player {unit.ownerIndex} can't move this unit anymore because there are no valid directions to move in.");
-                    return (newPos != initPos);
+                    movePosition = validMoves[Axial.Cardinal.SW][0];
+                }
+                else if (validMoves[Axial.Cardinal.W].Length > 0)
+                {
+                    movePosition = validMoves[Axial.Cardinal.W][0];
+                }
+                else if (validMoves[Axial.Cardinal.SE].Length > 0)
+                {
+                    movePosition = validMoves[Axial.Cardinal.SE][0];
+                }
+                else if (validMoves[Axial.Cardinal.E].Length > 0)
+                {
+                    movePosition = validMoves[Axial.Cardinal.E][0];
+                }
+                else if (validMoves[Axial.Cardinal.NW].Length > 0)
+                {
+                    movePosition = validMoves[Axial.Cardinal.NW][0];
+                }
+                else
+                {
+                    movePosition = validMoves[Axial.Cardinal.NE][0];
                 }
 
-                Axial randDirection = Axial.Direction((Axial.Cardinal)iDirection);
-                Axial movePosition = unit.pos + randDirection;
-                
-                if(model.Unit_TryMove(true, unit, movePosition)){
-                    newPos = movePosition;
+                if (model.Unit_TryMove(true, unit, movePosition)){
+                    newPos = unit.pos;
                 }
-
-                iDirection++;
             }
 
             return (newPos != initPos);
@@ -200,12 +216,11 @@ namespace Controller.AI
 
         public bool Unit_TryRandomAttack(Unit unit)
         {
-            if(unit.CanAttack())
-            {                
-                if(model.ActiveBoard_FindEnemyNeighbor(unit.ownerIndex, unit.pos, out Unit target)){
-                    Axial attackDirection = target.pos - unit.pos;
-                    return model.Unit_TryAttack(unit, attackDirection, target);
-                }
+            if(unit.GetAllAttackTargets(out Unit[] validTargets))
+            {
+                Unit target = validTargets[0];
+                Axial attackDirection = target.pos - unit.pos;
+                return model.Unit_TryAttack(unit, attackDirection, target);
             }
 
             GD.Print($"Player {unit.ownerIndex} can't attack with this unit.");

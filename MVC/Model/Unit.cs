@@ -348,7 +348,7 @@ namespace Model
 
 
         /// <summary>
-        /// Get al valid move positions for this unit at its current position 
+        /// Get all valid move positions for this unit at its current position 
         /// </summary>
         /// <param name="validMoves">All valid movement positions</param>
         /// <returns>True if at least one Axial is found</returns>
@@ -359,7 +359,7 @@ namespace Model
 
 
         /// <summary>
-        /// Get al valid move positions for this unit at its current position 
+        /// Get all valid move positions for this unit at its current position 
         /// </summary>
         /// <param name="origin">Where to originate this method call (useful for simulating this unit at a different position)</param>
         /// <param name="validMoves">All valid movement positions</param>
@@ -367,15 +367,65 @@ namespace Model
         /// <remarks>This override is meant to simulate the unit at a different origin</remarks>
         public bool GetAllMovePositions(Axial origin, out Axial[] validMoves)
         {
+            if(GetAllMovePositions(origin, out Dictionary<Axial.Cardinal, Axial[]> validMovesDictionary))
+            {
+                List<Axial> validMoves_List = new List<Axial>();
+
+                foreach(Axial[] moves in validMovesDictionary.Values)
+                {
+                    validMoves_List.AddRange(moves);
+                }
+
+                validMoves = validMoves_List.ToArray();
+                return validMoves.Length > 0;
+            }
+            else
+            {
+                validMoves = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get all valid move positions for this unit at its current position 
+        /// </summary>
+        /// <param name="origin">Where to originate this method call (useful for simulating this unit at a different position)</param>
+        /// <param name="validMoves">All valid movement positions with keys in the direction of movement</param>
+        /// <returns>True if at least one Axial is found</returns>
+        /// <remarks>If you want to run this at a different Axial origin, use the override</remarks>
+        public bool GetAllMovePositions(out Dictionary<Axial.Cardinal, Axial[]> validMovesDictionary)
+        {
+            return GetAllMovePositions(this.pos, out validMovesDictionary);
+        }
+
+        /// <summary>
+        /// Get all valid move positions for this unit at its current position 
+        /// </summary>
+        /// <param name="origin">Where to originate this method call (useful for simulating this unit at a different position)</param>
+        /// <param name="validMoves">All valid movement positions with keys in the direction of movement</param>
+        /// <returns>True if at least one Axial is found</returns>
+        /// <remarks>This override is meant to simulate the unit at a different origin</remarks>
+        public bool GetAllMovePositions(Axial origin, out Dictionary<Axial.Cardinal, Axial[]> validMovesDictionary)
+        {
             GD.Print($"!!! DISCLAIMER: This does not use path finding to see if an open tile within range can actually be moved towards (for instance, a blocked path would require more movement). We can get away with this because the only unit with more than 1 movement is the pigeon, which ignores units in its path");
+
+            /*
+            * The movement does not check for non-linear movements (for instance, starting going NE then moving E after that).
+            * I could look at the grid generation code for how to handle this, but for now I'm leaving it as is
+            */
+
+            validMovesDictionary = new Dictionary<Axial.Cardinal, Axial[]>();
 
             if (this.HasMovement(out int remainingMove))
             {
-                List<Axial> validMove_List = new List<Axial>();
+                bool anyValidMoves = false;
 
                 // For each cardinal direction
                 for (int i = 0; i < Axial.CARDINAL_LENGTH; i++)
                 {
+                    List<Axial> validMove_List = new List<Axial>();
+
+                    Axial.Cardinal card = (Axial.Cardinal)i;
                     Axial cardinalDirection = Axial.Direction((Axial.Cardinal)i);
 
                     // For each movement outwards from this unit up to its movement range
@@ -387,16 +437,17 @@ namespace Model
                         if (main.Instance.gameModel.IsLocationValidAndOpen(potentialDestination))
                         {
                             validMove_List.Add(potentialDestination);
+                            anyValidMoves = true;
                         }
                     }
+                    
+                    validMovesDictionary.Add(card, validMove_List.ToArray());
                 }
 
-                validMoves = validMove_List.ToArray();
-                return validMoves.Length > 0;
+                return anyValidMoves;
             }
             else
             {
-                validMoves = null;
                 return false;
             }
         }

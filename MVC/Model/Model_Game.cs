@@ -1057,6 +1057,10 @@ namespace Model
                 return _resourcePlacements_enemy;
         }
 
+        /// <summary>
+        /// Gets all valid Axials for resource placement
+        /// </summary>
+        /// <returns>True if at least one placement is found, false if not</returns>
         public bool GetAllOpenResourcePlacements(int player_index, out Axial[] returnPlacements)
         {
             Axial[] allResourcePlacements = GetAllResourcePlacements(player_index);
@@ -1075,6 +1079,10 @@ namespace Model
             return returnPlacements.Length > 0;
         }
 
+        /// <summary>
+        /// Gets all valid Axials for offense placement
+        /// </summary>
+        /// <returns>True if at least one placement is found, false if not</returns>
         public bool GetAllValidOffensePlacements(int player_index, Card cardToPlace, out Axial[] validPlacements)
         {
             if (ActiveBoard_AllNonOffenseFriendlyUnits(player_index, out Unit[] friendlyUnits_nonOf))

@@ -942,17 +942,17 @@ namespace Model
 
                     if (validResource.Count > 1)
                     {
-                        foreach (Unit resource in validResource)
-                        {
-                            // Prioritize non-base units for spawning
-                            if (resource.type != Card.CardType.Base)
-                            {
-                                sourceUnit = resource;
-                                return true;
-                            }
-                        }
+                        sourceUnit = validResource
+                            .OrderBy(resource => resource.card.NAME == Card.THE_SCRAPS_NAME ? 1 : 0) // Prioritize non-Scraps
+                            .ThenBy(resource => resource.type == Card.CardType.Base ? 1 : 0) // Then prioritize non-base
+                            .FirstOrDefault();
 
-                        throw new Exception($"The amount of valid resources is {validResource.Count}, and yet none of them were seen as non-base units. This shouldn't be possible");
+                        if(sourceUnit == null)
+                        {
+                            GD.PrintErr($"The amount of valid resources is {validResource.Count}, and yet none of them were seen as non-base units. This shouldn't be possible");
+                            return false;
+                        }
+                        else return true;
                     }
                     else if (validResource.Count == 1)
                     {
@@ -1087,9 +1087,6 @@ namespace Model
         {
             if (ActiveBoard_AllNonOffenseFriendlyUnits(player_index, out Unit[] friendlyUnits_nonOf))
             {
-                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-                stopwatch.Start();
-
                 List<Axial> validPlacements_List = new List<Axial>();
 
                 //For each friendly resource/base unit of the player
@@ -1117,9 +1114,7 @@ namespace Model
                         }
                     }
                 }
-                
-                stopwatch.Stop();
-                GD.PrintErr($"GetAllValidOffensePlacements took {stopwatch.ElapsedMilliseconds}ms to execute");
+
                 validPlacements = validPlacements_List.ToArray();
                 return validPlacements.Length > 0;
             }

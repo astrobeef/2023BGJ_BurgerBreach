@@ -44,7 +44,11 @@ namespace Model
                                     GD.Print($"Squirrel Unit {this.name}@{this.pos} could not attack target {target.name}@{target.pos} because unit ({unitInPath.name}@{unitInPath.pos}) is in the way.");
                                     return false;
                                 }
-                                else throw new Exception($"Squirrel unit check somehow detected the unit it is trying to attack. This should not be possible.");
+                                else
+                                {
+                                    GD.PrintErr($"Squirrel unit check somehow detected the unit it is trying to attack. This should not be possible.");
+                                    return false;
+                                }
                             }
                         }
 

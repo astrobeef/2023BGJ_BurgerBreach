@@ -41,7 +41,11 @@ namespace Model
                             target.ownerIndex = newOwnerIndex;
                             return PostAction(main.Instance.gameModel.OnUnitOwnerChanged, target);
                         }
-                        else throw new Exception("Attack not set up for more than 2 players");
+                        else
+                        {
+                            GD.PrintErr("Attack not set up for more than 2 players");
+                            return false;
+                        }
                     }
                     else
                     {

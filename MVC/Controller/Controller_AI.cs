@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using AxialCS;
 using Godot;
@@ -57,7 +58,7 @@ namespace Controller.AI
                             int syntheticWait = _random.Next(300, 1200);
 
                             await System.Threading.Tasks.Task.Delay(syntheticWait);
-                            if(TryPlaceRandomCardRandomly())
+                            if (TryPlaceRandomCardRandomly())
                             {
                                 // On success
                             }
@@ -70,27 +71,36 @@ namespace Controller.AI
                         await System.Threading.Tasks.Task.Delay(syntheticWait);
                     }
 
+                    GD.Print($"AI beginning move phase...");
+
                     // --- MOVEMENT ---
                     await System.Threading.Tasks.Task.Delay(150);
 
                     foreach (Unit occupant in model.ActiveBoard)
                     {
-                        int syntheticWait = _random.Next(250, 500);
-
                         if (occupant.ownerIndex == model.TurnPlayerIndex)
                         {
+                            int syntheticWait = _random.Next(250, 500);
+
                             await System.Threading.Tasks.Task.Delay(syntheticWait);
 
                             Unit iUnit = occupant;
 
-                            Axial oldPos = iUnit.pos;
+                            GD.Print($"Player {model.TurnPlayerIndex} trying to move {iUnit.name}...");
 
                             if (Unit_TryRandomMove(iUnit, out Axial newPos))
                             {
                                 // On success
+                                GD.Print($"Player {model.TurnPlayerIndex} moved {iUnit.name} to {iUnit.pos}.");
+                            }
+                            else
+                            {
+                                GD.Print($"Player {model.TurnPlayerIndex} failed to move {iUnit.name}");
                             }
                         }
                     }
+
+                    GD.Print($"AI beginning attack phase...");
 
                     // --- ATTACK ---
                     await System.Threading.Tasks.Task.Delay(150);
@@ -107,9 +117,9 @@ namespace Controller.AI
 
                                 Unit iUnit = occupant;
 
-                                GD.Print($"Player {model.TurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}.");
+                                GD.Print($"Player {model.TurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}...");
 
-                                if (Unit_TryRandomAttack(iUnit))
+                                if (Unit_TryPriorityAttack(iUnit))
                                 {
                                     // On success
                                     GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
@@ -122,10 +132,12 @@ namespace Controller.AI
                         }
                     }
 
+                    GD.Print("AI ending turn");
+
                     await System.Threading.Tasks.Task.Delay(1000);
                     model.TriggerEndTurn = true;
                 };
-                
+
                 async.Invoke();
             }
         }
@@ -134,14 +146,14 @@ namespace Controller.AI
         {
             if (model.EnemyHand.Length > 0)
             {
-                int cardIndex = _random.Next(0,model.EnemyHand.Length);
+                int cardIndex = _random.Next(0, model.EnemyHand.Length);
 
                 return TryPlaceCardRandomly(cardIndex);
             }
 
             return false;
         }
-        
+
         private bool TryPlaceCardRandomly(int cardIndex)
         {
             Card card = model.EnemyHand[cardIndex];
@@ -149,10 +161,19 @@ namespace Controller.AI
             // Place based on offense rules
             if (card.TYPE == Card.CardType.Offense)
             {
-                if(model.GetAllValidOffensePlacements(_myPlayerIndex, card, out Axial[] validPlacements))
+                if (model.GetAllValidOffensePlacements(_myPlayerIndex, card, out Axial[] validPlacements))
                 {
+                    Axial placement = validPlacements[0];
                     //Place card at first valid placement
-                    model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validPlacements[0]);
+                    if (model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validPlacements[0]))
+                    {
+                        GD.Print($"AI placed card {card}@{placement} from hand");
+                    }
+                    else GD.Print($"AI could not place card from hand");
+                }
+                else
+                {
+                    GD.Print($"AI could not place {card} because there were no valid placement options");
                 }
             }
             // Else, get a random open tile to place the resource unit
@@ -160,63 +181,226 @@ namespace Controller.AI
             {
                 if (model.GetAllOpenResourcePlacements(_myPlayerIndex, out Axial[] validResourcePlacements))
                 {
+                    Axial placement = validResourcePlacements[0];
                     //Place card at first valid placement
-                    return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validResourcePlacements[0]);
+                    if (model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validResourcePlacements[0]))
+                    {
+                        GD.Print($"AI placed card {card}@{placement} from hand");
+                    }
+                    else GD.Print($"AI could not place card from hand");
+                }
+                else
+                {
+                    GD.Print($"AI could not place {card} because there were no valid placement options");
                 }
             }
 
             return false;
         }
-        
 
-        public bool Unit_TryRandomMove(Unit unit, out Axial newPos){
+        private Axial.Cardinal[] moveDirectionPriority = new Axial.Cardinal[]
+        {
+            Axial.Cardinal.SW,
+            Axial.Cardinal.W,
+            Axial.Cardinal.SE,
+            Axial.Cardinal.E,
+            Axial.Cardinal.NW,
+            Axial.Cardinal.NE
+        };
 
-            Axial initPos = unit.pos;
+        public bool Unit_TryRandomMove(Unit unitToMove, out Axial newPos)
+        {
+            Axial initPos = unitToMove.pos;
             newPos = initPos;
 
-            if(unit.GetAllMovePositions(out Dictionary<Axial.Cardinal, Axial[]> validMoves))
+            if (unitToMove.GetAllMovePositions(out Dictionary<Axial.Cardinal, Axial[]> validMoves))
             {
-                Axial movePosition;
+                Axial chosenMovePosition = GetPriorityMovePosition(unitToMove, validMoves);
 
-                if (validMoves[Axial.Cardinal.SW].Length > 0)
+                GD.Print($"AI trying to move unit {unitToMove.name}@{unitToMove.pos} towards priority position {chosenMovePosition}");
+
+                if (model.Unit_TryMove(true, unitToMove, chosenMovePosition))
                 {
-                    movePosition = validMoves[Axial.Cardinal.SW][0];
-                }
-                else if (validMoves[Axial.Cardinal.W].Length > 0)
-                {
-                    movePosition = validMoves[Axial.Cardinal.W][0];
-                }
-                else if (validMoves[Axial.Cardinal.SE].Length > 0)
-                {
-                    movePosition = validMoves[Axial.Cardinal.SE][0];
-                }
-                else if (validMoves[Axial.Cardinal.E].Length > 0)
-                {
-                    movePosition = validMoves[Axial.Cardinal.E][0];
-                }
-                else if (validMoves[Axial.Cardinal.NW].Length > 0)
-                {
-                    movePosition = validMoves[Axial.Cardinal.NW][0];
+                    GD.Print($"AI moved unit {unitToMove.name}@{unitToMove.pos} towards priority position {chosenMovePosition}");
+                    newPos = unitToMove.pos;
                 }
                 else
                 {
-                    movePosition = validMoves[Axial.Cardinal.NE][0];
+
+                    GD.Print($"AI failed to move unit {unitToMove.name}@{unitToMove.pos} towards priority position {chosenMovePosition}");
+                }
+            }
+            else
+            {
+                GD.Print($"AI could not move because all move positions returned empty");
+            }
+
+            return newPos != initPos;
+        }
+
+        private Axial GetPriorityMovePosition(Unit unitToMove, Dictionary<Axial.Cardinal, Axial[]> validMoves)
+        {
+            GD.Print($"AI is trying to get priority move position for {unitToMove}");
+
+            Unit priorityTarget = GetPriorityAttackTarget_Global(unitToMove);
+            
+            GD.PrintErr($"Got global priority target {priorityTarget}");
+
+            if (priorityTarget != null)
+            {
+                if (Axial.Distance(priorityTarget.pos, unitToMove.pos) == 1)
+                {
+                    //We are next to our priority target, so don't move
+                    return unitToMove.pos;
                 }
 
-                if (model.Unit_TryMove(true, unit, movePosition)){
-                    newPos = unit.pos;
+                //Try to move towards priority target
+                Axial directionTowardsPriority = Axial.ApproximateCardinal(priorityTarget.pos - unitToMove.pos);
+                if (Axial.isCardinal(directionTowardsPriority, out Axial.Cardinal cardinal))
+                {
+                    if(validMoves.ContainsKey(cardinal))
+                    {
+                        //If the direction towards the priority target is available
+                        if (validMoves[cardinal].Length > 0)
+                        {
+                            Axial[] chosenMoveDirection = validMoves[cardinal];
+                            //Chose the furtherst move in the direction chosen
+                            Axial chosenMovePosition = chosenMoveDirection[chosenMoveDirection.Length - 1];
+                            return chosenMovePosition;
+                        }
+                    }
+                    else
+                    {
+                        GD.PrintErr($"validMoves is missing cardinal key {cardinal}. validMoves should have all keys even if there are no values");
+                        return unitToMove.pos;
+                    }
                 }
             }
 
-            return (newPos != initPos);
+            {
+                // Find the first non-null and non-empty move
+                Axial[] chosenMoveDirection = moveDirectionPriority
+                    .Select(direction => validMoves[direction])
+                    .FirstOrDefault(moves => moves != null && moves.Length > 0);
+
+                //Chose the furtherst move in the direction chosen
+                if (chosenMoveDirection != null && chosenMoveDirection.Length > 0)
+                {
+                    Axial chosenMovePosition = chosenMoveDirection[chosenMoveDirection.Length - 1];
+                    return chosenMovePosition;
+                }
+                else
+                {
+                    string error = $"Could not find move direction for {unitToMove}, but this method should not be called if no movement options exist.";
+                    GD.PrintErr(error);
+                    return unitToMove.pos;
+                }
+            }
+        }
+
+        private string[] targetPriority_Enemy = new string[]
+        {
+            Card.CLAM_CHOWDER_NAME,
+            Card.BURGER_NAME,
+            Card.BIG_MOE_NAME,
+            Card.BUSSER_RACOON_NAME,
+            Card.LINE_SQUIRREL_NAME,
+            Card.MOE_FAMILY_FRIES_NAME,
+            Card.BASE_NAME,
+            Card.EXPO_PIGEON_NAME,
+            Card.THE_SCRAPS_NAME
+        };
+
+        private string[] targetPriority_Friendly = new string[]
+        {
+            Card.BURGER_NAME
+        };
+
+        private Unit GetPriorityAttackTarget_Global(Unit attackingUnit)
+        {
+            Unit[] units = model.ActiveBoard;
+            if (units.Length == 0)
+                return null;
+
+            Unit priorityTarget;
+
+            // Try to get a friendly priority (only burgers at the moment)
+            Unit priorityTarget_Friendly = units
+                .Where(unit => unit != null && targetPriority_Friendly.Contains(unit.name)) // Filter out null units and those not in targetPriority
+                .OrderBy(unit => Array.IndexOf(targetPriority_Friendly, unit.name)) // Order by priority
+                .FirstOrDefault(); // Take the first unit
+                
+            // If could not find a friendly unit
+            if (priorityTarget_Friendly == null)
+            {
+                priorityTarget = units
+                    .Where(unit => unit != null && targetPriority_Enemy.Contains(unit.name)) // Filter out null units and those not in targetPriority
+                    .OrderBy(unit => Array.IndexOf(targetPriority_Enemy, unit.name)) // Order by priority
+                    .FirstOrDefault(); // Take the first unit
+            }
+            else priorityTarget = priorityTarget_Friendly;
+
+            if (priorityTarget == null)
+            {
+                GD.PrintErr($"When filtering for priority attack target (global), the attacking unit came back null. This is likely an error with the LINQ or with the priority list (may be missing a card type)");
+                return null;
+            }
+            else return priorityTarget;
+        }
+
+        private bool Unit_TryPriorityAttack(Unit attackingUnit)
+        {
+            Unit priorityTarget = GetPriorityAttackTarget(attackingUnit);
+
+            if (priorityTarget != null)
+            {
+                Axial attackDirection = priorityTarget.pos - attackingUnit.pos;
+                return model.Unit_TryAttack(attackingUnit, attackDirection, priorityTarget);
+            }
+            else
+                return false;
+        }
+
+        private Unit GetPriorityAttackTarget(Unit attackingUnit)
+        {
+            if (attackingUnit.GetAllAttackTargets(out Unit[] validTargets))
+            {
+                Unit priorityTarget;
+
+                // Try to get a friendly priority (only burgers at the moment)
+                Unit priorityTarget_Friendly = validTargets
+                    .Where(unit => unit != null && targetPriority_Friendly.Contains(unit.name)) // Filter out null units and those not in targetPriority
+                    .OrderBy(unit => Array.IndexOf(targetPriority_Friendly, unit.name)) // Order by priority
+                    .FirstOrDefault(); // Take the first unit
+
+                // If could not find a friendly unit
+                if (priorityTarget_Friendly == null)
+                {
+                    priorityTarget = validTargets
+                        .Where(unit => unit != null && targetPriority_Enemy.Contains(unit.name)) // Filter out null units and those not in targetPriority
+                        .OrderBy(unit => Array.IndexOf(targetPriority_Enemy, unit.name)) // Order by priority
+                        .FirstOrDefault(); // Take the first unit
+                }
+                else priorityTarget = priorityTarget_Friendly;
+
+                if (priorityTarget == null)
+                {
+                    GD.PrintErr($"When filtering for priority attack target, the attacking unit came back null. This is likely an error with the LINQ or with the priority list (may be missing a card type)");
+                    return null;
+                }
+                else return priorityTarget;
+            }
+            else
+            {
+                GD.PrintErr($"When filtering for priority attack target, GetAllAttackTargets can back null.");
+                return null;
+            }
         }
 
 
-        
-
-        public bool Unit_TryRandomAttack(Unit unit)
+        private bool Unit_TryRandomAttack(Unit unit)
         {
-            if(unit.GetAllAttackTargets(out Unit[] validTargets))
+            if (unit.GetAllAttackTargets(out Unit[] validTargets))
             {
                 Unit target = validTargets[0];
                 Axial attackDirection = target.pos - unit.pos;

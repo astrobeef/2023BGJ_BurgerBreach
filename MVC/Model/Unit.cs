@@ -135,6 +135,13 @@ namespace Model
 
         public virtual bool TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
+            if(unit.pos == newPos)
+            {
+                GD.Print($"Unit {unit.name}@{unit.pos} cannot move because its attempting to move to its own position {newPos}");
+                occupant = unit;
+                return false;
+            }
+
             if (main.Instance.gameModel.IsLocationValidAndOpen(newPos, out occupant))
             {
                 // Do not move dead units

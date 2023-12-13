@@ -167,15 +167,14 @@ namespace Controller.AI
             // Else, get a random open tile to place the unit
             else
             {
-                // Get all valid resource placements
-                // Select one at random
-                Axial[] validResourcePlacements = model.GetAllOpenResourcePlacements(_myPlayerIndex);
-                
-                int rand = _random.Next(0,validResourcePlacements.Length);
-                
-                Axial placement = validResourcePlacements[rand];
+                if (model.GetAllOpenResourcePlacements(_myPlayerIndex, out Axial[] validResourcePlacements))
+                {
+                    int rand = _random.Next(0, validResourcePlacements.Length);
 
-                return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, placement);
+                    Axial placement = validResourcePlacements[rand];
+
+                    return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, placement);
+                }
             }
 
             return false;

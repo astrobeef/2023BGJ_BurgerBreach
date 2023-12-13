@@ -567,30 +567,49 @@ namespace Model
             friendlyUnit_nonOf = Unit.EMPTY;
             return false;
         }
+        
 
-        public bool ActiveBoard_FindOpenNeighbor(Axial origin, out Axial openPos)
+        public bool ActiveBoard_FindAllOpenNeighbors(Axial origin, out Axial[] openAxials)
         {
             if(_Board.IsAxialOnGrid(origin))
             {
-                for(int i = 0; i < Axial.CARDINAL_LENGTH; i++)
+                List<Axial> openAxials_List = new List<Axial>();
+
+                for (int i = 0; i < Axial.CARDINAL_LENGTH; i++)
                 {
                     Axial iDirection = Axial.Direction((Axial.Cardinal)i);
 
                     Axial neighbor = origin + iDirection;
 
-                    if(_Board.IsAxialOnGrid(neighbor))
+                    if (_Board.IsAxialOnGrid(neighbor))
                     {
-                        if(!ActiveBoard_IsAxialOccupied(neighbor, out int dummyInt))
+                        if (!ActiveBoard_IsAxialOccupied(neighbor, out int dummyInt))
                         {
-                            openPos = neighbor;
-                            return true;
+                            openAxials_List.Add(neighbor);
                         }
                     }
                 }
+
+                openAxials = openAxials_List.ToArray();
+                return openAxials.Length > 0;
             }
 
-            openPos = Axial.Empty;
+            openAxials = null;
             return false;
+        }
+
+        public bool ActiveBoard_FindOpenNeighbor(Axial origin, out Axial openPos)
+        {
+            if(ActiveBoard_FindAllOpenNeighbors(origin, out Axial[] openAxials))
+            {
+                openPos = openAxials[0];
+                return true;
+            }
+            else
+            {
+                openPos = Axial.Empty;
+                return false;
+            }
         }
 
         public bool IsRoundOver(int turnCounter){
@@ -903,30 +922,61 @@ namespace Model
             return false;
         }
 
-        private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card, out Unit friendlyUnit)
+        private bool CheckOffensePlacementRule(int player_index, Axial placement, Card card, out Unit sourceUnit)
         {
             if (card.TYPE == Card.CardType.Offense)
             {
-                if (ActiveBoard_FindFriendlyNonOffenseNeighbor(player_index, placement, out friendlyUnit))
+                if(ActiveBoard_FindAllFriendlyNeighbors(player_index, placement, out int[] neighborActiveBoardIndexes))
                 {
-                    if (friendlyUnit.hp >= card.HP)
+                    List<Unit> validResource = new List<Unit>();
+
+                    foreach (int boardIndex in neighborActiveBoardIndexes)
+                    {
+                        Unit resource = _activeBoard[boardIndex];
+
+                        if (resource.hp >= card.HP)
+                        {
+                            validResource.Add(resource);
+                        }
+                    }
+
+                    if (validResource.Count > 1)
+                    {
+                        foreach (Unit unit in validResource)
+                        {
+                            // Prioritize non-base units for spawning
+                            if (unit.type != Card.CardType.Base)
+                            {
+                                sourceUnit = unit;
+                                return true;
+                            }
+                        }
+
+                        throw new Exception($"The amount of valid resources is {validResource.Count}, and yet none of them were seen as non-base units. This shouldn't be possible");
+                    }
+                    else if (validResource.Count == 1)
+                    {
+                        sourceUnit = validResource[0];
                         return true;
+                    }
                     else
                     {
-                        GD.Print($"Could not place card ({card.NAME}) because the friendly unit ({friendlyUnit.name}) does not have enough HP to place this unit.");
-                        return false;
+                    GD.Print($"Could not place card ({card.NAME}) because no friendly unit had enough HP to place this unit.");
+                    sourceUnit = null;
+                    return false;
                     }
                 }
                 else
                 {
-                    // This is an offense card, but there are no nearby non-offense friendly units, so it fails the rule
+                    GD.Print($"Could not place card ({card.NAME}) because no friendly unit is adjacent.");
+                    sourceUnit = null;
                     return false;
                 }
             }
             else
             {
                 // This is not an offense card, so it passes the rule
-                friendlyUnit = null;
+                sourceUnit = null;
                 return true;
             }
         }
@@ -962,11 +1012,6 @@ namespace Model
                     }
 
                     return false;
-
-                    //     int spawnDistanceFromBase = Axial.Distance(playerBase.pos, placement); 
-
-                    // GD.PrintErr($"Is resource placement good? {spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS}");
-                    //     return spawnDistanceFromBase <= _RESOURCE_SPAWN_RADIUS;
                 }
                 else return false;
             }
@@ -1012,27 +1057,68 @@ namespace Model
                 return _resourcePlacements_enemy;
         }
 
-        public Axial[] GetAllOpenResourcePlacements(int player_index)
+        public bool GetAllOpenResourcePlacements(int player_index, out Axial[] returnPlacements)
         {
             Axial[] allResourcePlacements = GetAllResourcePlacements(player_index);
-            List<Axial> returnPlacements = new List<Axial>();
+            List<Axial> returnPlacements_List = new List<Axial>();
 
             foreach(Axial placement in allResourcePlacements)
             {
                 // If the Axial is NOT occupied
                 if(!ActiveBoard_IsAxialOccupied(placement, out int activeBoardIndex))
                 {
-                    returnPlacements.Add(placement);
+                    returnPlacements_List.Add(placement);
                 }
             }
 
-            return returnPlacements.ToArray();
+            returnPlacements = returnPlacements_List.ToArray();
+            return returnPlacements.Length > 0;
         }
 
-        // public Axial[] GetAllOpenOffensePlacements(int player_index)
-        // {
+        public bool GetAllValidOffensePlacements(int player_index, Card cardToPlace, out Axial[] validPlacements)
+        {
+            if (ActiveBoard_AllNonOffenseFriendlyUnits(player_index, out Unit[] friendlyUnits_nonOf))
+            {
+                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
 
-        // }
+                List<Axial> validPlacements_List = new List<Axial>();
+
+                //For each friendly resource/base unit of the player
+                foreach (Unit friendly_a in friendlyUnits_nonOf)
+                {
+                    //Get all open tiles by this friendly unit
+                    if (ActiveBoard_FindAllOpenNeighbors(friendly_a.pos, out Axial[] openAxials))
+                    {
+                        //For each open tile around this friendly unit
+                        foreach (Axial placement in openAxials)
+                        {
+                            if (validPlacements_List.Contains(placement))
+                                continue;
+
+                            //For each neighbor of this placement
+                            foreach (Unit friendly_d in friendlyUnits_nonOf)
+                            {
+                                //If the resource has enough to place this unit
+                                if (friendly_d.hp >= cardToPlace.HP)
+                                {
+                                    validPlacements_List.Add(placement);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stopwatch.Stop();
+                GD.PrintErr($"GetAllValidOffensePlacements took {stopwatch.ElapsedMilliseconds}ms to execute");
+                validPlacements = validPlacements_List.ToArray();
+                return validPlacements.Length > 0;
+            }
+
+            validPlacements = null;
+            return false;
+        }
 
         private bool TryPlaceCard_FromVoid(int player_index, Axial location, Card card)
         {

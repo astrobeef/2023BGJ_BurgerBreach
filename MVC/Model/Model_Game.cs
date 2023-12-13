@@ -254,7 +254,7 @@ namespace Model
                 for (int j = 0; j < refDeck.Length; j++)
                 {
                     int rand = _random.Next(0, _CardSet_NoBases.Length);
-                    Card cardFromSet = _CardSet_NoBases[1];
+                    Card cardFromSet = _CardSet_NoBases[rand];
                     refDeck[j] = new Card(true, cardFromSet);
 
                     PostAction(OnDeckBuildAddedCard, i, j, refDeck[j]);
@@ -932,22 +932,22 @@ namespace Model
 
                     foreach (int boardIndex in neighborActiveBoardIndexes)
                     {
-                        Unit resource = _activeBoard[boardIndex];
+                        Unit unit = _activeBoard[boardIndex];
 
-                        if (resource.hp >= card.HP)
+                        if (unit.type != Card.CardType.Offense && unit.hp >= card.HP)
                         {
-                            validResource.Add(resource);
+                            validResource.Add(unit);
                         }
                     }
 
                     if (validResource.Count > 1)
                     {
-                        foreach (Unit unit in validResource)
+                        foreach (Unit resource in validResource)
                         {
                             // Prioritize non-base units for spawning
-                            if (unit.type != Card.CardType.Base)
+                            if (resource.type != Card.CardType.Base)
                             {
-                                sourceUnit = unit;
+                                sourceUnit = resource;
                                 return true;
                             }
                         }

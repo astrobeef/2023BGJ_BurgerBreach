@@ -148,32 +148,19 @@ namespace Controller.AI
             // Place based on offense rules
             if (card.TYPE == Card.CardType.Offense)
             {
-                if (model.ActiveBoard_AllNonOffenseFriendlyUnits(_myPlayerIndex, out Unit[] resourceUnits))
+                if(model.GetAllValidOffensePlacements(_myPlayerIndex, card, out Axial[] validPlacements))
                 {
-                    foreach (Unit resource in resourceUnits)
-                    {
-                        if (model.ActiveBoard_FindOpenNeighbor(resource.pos, out Axial openNeighbor))
-                        {
-                            if(model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, openNeighbor))
-                                return true;
-                        }
-                    }
-                }
-                else
-                {
-                    GD.Print($"Could not place offense unit because there are no friendly non-offense units on the board.");
+                    //Place card at first valid placement
+                    model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validPlacements[0]);
                 }
             }
-            // Else, get a random open tile to place the unit
+            // Else, get a random open tile to place the resource unit
             else
             {
                 if (model.GetAllOpenResourcePlacements(_myPlayerIndex, out Axial[] validResourcePlacements))
                 {
-                    int rand = _random.Next(0, validResourcePlacements.Length);
-
-                    Axial placement = validResourcePlacements[rand];
-
-                    return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, placement);
+                    //Place card at first valid placement
+                    return model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validResourcePlacements[0]);
                 }
             }
 

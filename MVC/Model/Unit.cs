@@ -30,9 +30,6 @@ namespace Model
 
         public Unit(int ownerIndex, Axial position, Card card)
         {
-            if (card == Card.EMPTY)
-                return;
-
             this.ownerIndex = ownerIndex;
             this.pos = position;
             this.card = card;
@@ -44,20 +41,23 @@ namespace Model
 
             Model_Game model = main.Instance.gameModel;
 
-            ResetTurnActions(ownerIndex, 0);
+            if (card != Card.EMPTY)
+            {
+                ResetTurnActions(ownerIndex, 0);
 
-            model.OnTurnStart += ResetTurnActions;
+                model.OnTurnStart += ResetTurnActions;
 
-            model.OnUnitAddedToBoard += OnUnitAddedToBoard;
-            model.OnUnitAttack += OnUnitAttack;
-            model.OnUnitDamaged += OnUnitDamaged;
-            model.OnUnitBuffed += OnUnitBuffed;
-            model.OnUnitDeath += OnUnitDeath;
-            model.OnUnitMove += OnUnitMove;
+                model.OnUnitAddedToBoard += OnUnitAddedToBoard;
+                model.OnUnitAttack += OnUnitAttack;
+                model.OnUnitDamaged += OnUnitDamaged;
+                model.OnUnitBuffed += OnUnitBuffed;
+                model.OnUnitDeath += OnUnitDeath;
+                model.OnUnitMove += OnUnitMove;
 
-            id = System.Threading.Interlocked.Increment(ref lastId);
+                id = System.Threading.Interlocked.Increment(ref lastId);
 
-            GD.Print($"Unit [{this}] created");
+                GD.Print($"Created unit:: [{this}]");
+            }
         }
 
         private void UnsubscribeEvents()
@@ -320,7 +320,6 @@ namespace Model
         {
             if (Axial.Distance(this.pos, target.pos) <= this.atk_range)
             {
-                GD.PrintErr($"Unit {this.name}@{this.pos} has attacked ? {TurnActions.hasAttacked}");
                 return !TurnActions.hasAttacked;
             }
             else
@@ -388,7 +387,7 @@ namespace Model
             }
             else
             {
-                validMoves = null;
+                validMoves = new Axial[0];
                 return false;
             }
         }
@@ -487,7 +486,7 @@ namespace Model
                 {
                     Axial cardinalDirection = Axial.Direction((Axial.Cardinal)i);
 
-                    // For each movement outwards from this unit up to its movement range
+                    // For each Axial outwards from this unit up to its attack range
                     for (int j = 1; j <= this.atk_range; j++)
                     {
                         Axial potentialTargetPos = origin + (j * cardinalDirection);
@@ -507,7 +506,8 @@ namespace Model
             }
             else
             {
-                validTargets = null;
+                GD.Print($"Not getting targets because this unit cannot attack");
+                validTargets = new Unit[0];
                 return false;
             }
         }

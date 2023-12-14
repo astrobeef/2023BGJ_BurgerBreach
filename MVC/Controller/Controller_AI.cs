@@ -111,22 +111,20 @@ namespace Controller.AI
                         {
                             int syntheticWait = _random.Next(250, 500);
 
-                            if (occupant.ownerIndex == model.TurnPlayerIndex && occupant.type != Card.CardType.Resource)
+                            if (occupant != null && occupant.ownerIndex == model.TurnPlayerIndex && occupant.type != Card.CardType.Resource)
                             {
                                 await System.Threading.Tasks.Task.Delay(syntheticWait);
 
-                                Unit iUnit = occupant;
+                                GD.Print($"AI attempting to attack with {occupant.name} at {occupant.pos}...");
 
-                                GD.Print($"Player {model.TurnPlayerIndex} attempting to attack with {iUnit.name} at {iUnit.pos}...");
-
-                                if (Unit_TryPriorityAttack(iUnit))
+                                if (Unit_TryPriorityAttack(occupant))
                                 {
                                     // On success
-                                    GD.Print($"Player {model.TurnPlayerIndex} made an attack with {iUnit.name} from {iUnit.pos}.");
+                                    GD.Print($"AI made an attack with {occupant.name} from {occupant.pos}.");
                                 }
                                 else
                                 {
-                                    GD.Print($"Player {model.TurnPlayerIndex} could not attack with {iUnit.name}");
+                                    GD.Print($"AI could not attack with {occupant.name}");
                                 }
                             }
                         }
@@ -232,7 +230,7 @@ namespace Controller.AI
             }
             else
             {
-                GD.Print($"AI could not move because all move positions returned empty");
+                GD.Print($"AI could not move {unitToMove.name} because all move positions returned empty OR this unit cannot move");
             }
 
             return newPos != initPos;
@@ -240,15 +238,13 @@ namespace Controller.AI
 
         private Axial GetPriorityMovePosition(Unit unitToMove, Dictionary<Axial.Cardinal, Axial[]> validMoves)
         {
-            GD.Print($"AI is trying to get priority move position for {unitToMove}");
-
             Unit priorityTarget = GetPriorityAttackTarget_Global(unitToMove);
             
             GD.PrintErr($"Got global priority target {priorityTarget}");
 
             if (priorityTarget != null)
             {
-                if (Axial.Distance(priorityTarget.pos, unitToMove.pos) == 1)
+                if (Axial.Distance(priorityTarget.pos, unitToMove.pos) <= unitToMove.atk_range)
                 {
                     //We are next to our priority target, so don't move
                     return unitToMove.pos;
@@ -319,23 +315,23 @@ namespace Controller.AI
         private Unit GetPriorityAttackTarget_Global(Unit attackingUnit)
         {
             Unit[] units = model.ActiveBoard;
-            if (units.Length == 0)
+            if (units.Length == 0 || attackingUnit == null)
                 return null;
 
             Unit priorityTarget;
 
             // Try to get a friendly priority (only burgers at the moment)
             Unit priorityTarget_Friendly = units
-                .Where(unit => unit != null && targetPriority_Friendly.Contains(unit.name)) // Filter out null units and those not in targetPriority
-                .OrderBy(unit => Array.IndexOf(targetPriority_Friendly, unit.name)) // Order by priority
+                .Where(unit => unit != null && unit != attackingUnit && targetPriority_Friendly.Contains(unit.card.NAME)) // Filter out null units and those not in targetPriority
+                .OrderBy(unit => Array.IndexOf(targetPriority_Friendly, unit.card.NAME)) // Order by priority
                 .FirstOrDefault(); // Take the first unit
                 
             // If could not find a friendly unit
             if (priorityTarget_Friendly == null)
             {
                 priorityTarget = units
-                    .Where(unit => unit != null && targetPriority_Enemy.Contains(unit.name)) // Filter out null units and those not in targetPriority
-                    .OrderBy(unit => Array.IndexOf(targetPriority_Enemy, unit.name)) // Order by priority
+                    .Where(unit => unit != null && unit != attackingUnit && targetPriority_Enemy.Contains(unit.card.NAME) && unit.ownerIndex != _myPlayerIndex) // Filter out null units and those not in targetPriority
+                    .OrderBy(unit => Array.IndexOf(targetPriority_Enemy, unit.card.NAME)) // Order by priority
                     .FirstOrDefault(); // Take the first unit
             }
             else priorityTarget = priorityTarget_Friendly;
@@ -352,7 +348,7 @@ namespace Controller.AI
         {
             Unit priorityTarget = GetPriorityAttackTarget(attackingUnit);
 
-            if (priorityTarget != null)
+            if (priorityTarget != null && attackingUnit != null)
             {
                 Axial attackDirection = priorityTarget.pos - attackingUnit.pos;
                 return model.Unit_TryAttack(attackingUnit, attackDirection, priorityTarget);
@@ -369,30 +365,30 @@ namespace Controller.AI
 
                 // Try to get a friendly priority (only burgers at the moment)
                 Unit priorityTarget_Friendly = validTargets
-                    .Where(unit => unit != null && targetPriority_Friendly.Contains(unit.name)) // Filter out null units and those not in targetPriority
-                    .OrderBy(unit => Array.IndexOf(targetPriority_Friendly, unit.name)) // Order by priority
+                    .Where(unit => unit != null && unit != attackingUnit && targetPriority_Friendly.Contains(unit.card.NAME)) // Filter out null units and those not in targetPriority
+                    .OrderBy(unit => Array.IndexOf(targetPriority_Friendly, unit.card.NAME)) // Order by priority
                     .FirstOrDefault(); // Take the first unit
 
                 // If could not find a friendly unit
                 if (priorityTarget_Friendly == null)
                 {
                     priorityTarget = validTargets
-                        .Where(unit => unit != null && targetPriority_Enemy.Contains(unit.name)) // Filter out null units and those not in targetPriority
-                        .OrderBy(unit => Array.IndexOf(targetPriority_Enemy, unit.name)) // Order by priority
+                        .Where(unit => unit != null && unit != attackingUnit && targetPriority_Enemy.Contains(unit.card.NAME) && unit.ownerIndex != _myPlayerIndex) // Filter out null units and those not in targetPriority and friendly units
+                        .OrderBy(unit => Array.IndexOf(targetPriority_Enemy, unit.card.NAME)) // Order by priority
                         .FirstOrDefault(); // Take the first unit
                 }
                 else priorityTarget = priorityTarget_Friendly;
 
                 if (priorityTarget == null)
                 {
-                    GD.PrintErr($"When filtering for priority attack target, the attacking unit came back null. This is likely an error with the LINQ or with the priority list (may be missing a card type)");
+                    GD.Print($"When filtering for priority attack target, the attacking unit came back null");
                     return null;
                 }
                 else return priorityTarget;
             }
             else
             {
-                GD.PrintErr($"When filtering for priority attack target, GetAllAttackTargets can back null.");
+                GD.Print($"When filtering for priority attack target, GetAllAttackTargets can back null");
                 return null;
             }
         }

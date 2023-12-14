@@ -32,7 +32,7 @@ namespace Model
 
         public override bool TryMove(bool isWillful, Unit unit, Axial newPos, out Unit occupant)
         {
-            occupant = null;
+            occupant = Unit.EMPTY;
             return false;
         }
 

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using static Model.ActionPoster;
+using System.Numerics;
 
 namespace Model
 {
@@ -225,8 +226,6 @@ namespace Model
         {
             if (!_isGameStarted)
             {
-                _isGameStarted = true;
-
                 PostAction(OnGameStart, _CardSet, _CardSet_NoBases);
 
                 _roundCounter = 0;
@@ -594,7 +593,7 @@ namespace Model
                 return openAxials.Length > 0;
             }
 
-            openAxials = null;
+            openAxials = new Axial[0];
             return false;
         }
 
@@ -962,21 +961,21 @@ namespace Model
                     else
                     {
                     GD.Print($"Could not place card ({card.NAME}) because no friendly unit had enough HP to place this unit.");
-                    sourceUnit = null;
+                    sourceUnit = Unit.EMPTY;
                     return false;
                     }
                 }
                 else
                 {
                     GD.Print($"Could not place card ({card.NAME}) because no friendly unit is adjacent.");
-                    sourceUnit = null;
+                    sourceUnit = Unit.EMPTY;
                     return false;
                 }
             }
             else
             {
                 // This is not an offense card, so it passes the rule
-                sourceUnit = null;
+                sourceUnit = Unit.EMPTY;
                 return true;
             }
         }
@@ -1119,7 +1118,7 @@ namespace Model
                 return validPlacements.Length > 0;
             }
 
-            validPlacements = null;
+            validPlacements = new Axial[0];
             return false;
         }
 

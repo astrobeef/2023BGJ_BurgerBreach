@@ -9,6 +9,19 @@ public partial class sound_controller : Node3D
 	public const string SFX_CARD_MOVE_NAME = "CardMove";
 	public const string SFX_CARD_PLACE_NAME = "CardPlace";
 	public const string SFX_PLAYER_ATTACK_NAME = "PlayerAttack";
+	public const string SFX_PLAYER_BUFF = "UnitBuff";
+	public const string SFX_UNIT_DEFEAT = "UnitDefeat";
+	public const string SFX_PLAYER_EAT = "PlayerEat";
+	public const string SFX_PLAYER_DRINK = "PlayerDrink";
+	public const string SFX_PLAYER_TURN_START = "PlayerTurnStart";
+	public const string SFX_UI_CLICK = "UIClick";
+	public const string SFX_UI_HOVER = "UIHover";
+	public const string SFX_DIALOGUE_E = "Dialogue_E";
+	public const string SFX_DIALOGUE_I = "Dialogue_I";
+	public const string SFX_DIALOGUE_M = "Dialogue_M";
+	public const string SFX_DIALOGUE_O = "Dialogue_O";
+	public const string SFX_DIALOGUE_S = "Dialogue_S";
+	public const string SFX_DIALOGUE_Y = "Dialogue_Y";
 
 	Dictionary<string, AudioStream> sounds = new Dictionary<string, AudioStream>();
 
@@ -193,7 +206,20 @@ public partial class sound_controller : Node3D
 			sounds["CardMove"] = SFXStreams[2].Stream;
 			sounds["CardPlace"] = SFXStreams[3].Stream;
 			sounds["PlayerAttack"] = SFXStreams[4].Stream;
-			sounds["PlayerBuff"] = SFXStreams[5].Stream;
+			sounds["UnitBuff"] = SFXStreams[5].Stream;
+			sounds["UnitDefeat"] = SFXStreams[6].Stream;
+			sounds["PlayerEat"] = SFXStreams[7].Stream;
+			sounds["PlayerDrink"] = SFXStreams[8].Stream;
+			sounds["PlayerTurnStart"] = SFXStreams[9].Stream;
+			sounds["UIClick"] = SFXStreams[10].Stream;
+			sounds["UIHover"] = SFXSTreams[11].Stream;
+			sounds["Dialogue_E"] = SFXStreams[12].Stream;
+			sounds["Dialogue_I"] = SFXStreams[13].Stream;
+			sounds["Dialogue_M"] = SFXStream[14].Stream;
+			sounds["Dialogue_O"] = SFXStream[15].Stream;
+			sounds["Dialogue_S"] = SFXStream[16].Stream;
+			sounds["Dialogue_Y"] = SFXStream[17].Stream;
+			
 
 		} else {
 			GD.Print("An error occurred when trying to access the path.");

@@ -48,8 +48,8 @@ namespace Controller.AI
                     // --- PLACEMENT ---
                     if (model.EnemyHand.Length > 0)
                     {
-                        // Get a max placements which is at least 1, but otherwise half the amount of cards in hand
-                        int maxPlacements = Math.Min(1, (int)(model.EnemyHand.Length * 0.75f));
+                        // Get a max placements which is at least 1
+                        int maxPlacements = Math.Min(1, (int)(model.EnemyHand.Length * 1.0f));
 
                         int placements = _random.Next(1, maxPlacements);
 
@@ -151,6 +151,15 @@ namespace Controller.AI
 
             return false;
         }
+        
+        private string[] placementSourcePriority = new string[]
+        {
+            Card.BURGER_NAME,
+            Card.MOE_FAMILY_FRIES_NAME,
+            Card.THE_SCRAPS_NAME,
+            Card.CLAM_CHOWDER_NAME,
+            Card.BASE_NAME
+        };
 
         private bool TryPlaceCardRandomly(int cardIndex)
         {
@@ -159,13 +168,47 @@ namespace Controller.AI
             // Place based on offense rules
             if (card.TYPE == Card.CardType.Offense)
             {
-                if (model.GetAllValidOffensePlacements(_myPlayerIndex, card, out Axial[] validPlacements))
+                if (model.GetAllValidOffensePlacements(_myPlayerIndex, card, out Dictionary<Axial,Unit> validPlacements))
                 {
-                    Axial placement = validPlacements[0];
-                    //Place card at first valid placement
-                    if (model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, validPlacements[0]))
+                    KeyValuePair<Axial, Unit>[] sortedList = validPlacements
+                        .OrderBy(pair => Array.IndexOf(placementSourcePriority, pair.Value.card.NAME))
+                        .ToArray();
+
+                    if (sortedList != null && sortedList.Length > 0)
                     {
-                        GD.Print($"AI placed card {card}@{placement} from hand");
+                        Axial placement = Axial.Empty;
+
+                        foreach(KeyValuePair<Axial, Unit> pair in sortedList)
+                        {
+                            Axial place = pair.Key;
+                            Unit resource = pair.Value;
+
+                            //Do not chose base if it has low HP OR if the source is The Scraps and this card has 1 base HP
+                            if(resource.card.NAME == Card.BASE_NAME && resource.hp < resource.card.HP / 2
+                            || resource.card.NAME == Card.THE_SCRAPS_NAME && card.HP == 1)
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                placement = pair.Key;
+                                break;
+                            }
+                        }
+
+                        //If we could not avoid using the base
+                        if(placement == Axial.Empty)
+                        {
+                            GD.Print($"AI chose not to place {card}@{placement} because it would have had to use the base, which has low HP");
+                            return false;
+                        }
+
+                        //Place card at first valid placement
+                        if (model.TryPlaceCard_FromHand(_myPlayerIndex, cardIndex, placement))
+                        {
+                            GD.Print($"AI placed card {card}@{placement} from hand");
+                        }
+                        else GD.Print($"AI could not place card from hand");
                     }
                     else GD.Print($"AI could not place card from hand");
                 }
@@ -240,7 +283,7 @@ namespace Controller.AI
         {
             Unit priorityTarget = GetPriorityAttackTarget_Global(unitToMove);
             
-            GD.PrintErr($"Got global priority target {priorityTarget}");
+            GD.Print($"For movemenet, got global priority target {priorityTarget}");
 
             if (priorityTarget != null)
             {

@@ -1081,44 +1081,41 @@ namespace Model
         /// <summary>
         /// Gets all valid Axials for offense placement
         /// </summary>
+        /// <param name="validPlacements">Dictionary of very valid offense placement and its resource</param>
         /// <returns>True if at least one placement is found, false if not</returns>
-        public bool GetAllValidOffensePlacements(int player_index, Card cardToPlace, out Axial[] validPlacements)
+        public bool GetAllValidOffensePlacements(int player_index, Card cardToPlace, out Dictionary<Axial, Unit> validPlacements)
         {
+            validPlacements = new Dictionary<Axial, Unit>();
+
             if (ActiveBoard_AllNonOffenseFriendlyUnits(player_index, out Unit[] friendlyUnits_nonOf))
             {
-                List<Axial> validPlacements_List = new List<Axial>();
-
                 //For each friendly resource/base unit of the player
                 foreach (Unit friendly_a in friendlyUnits_nonOf)
                 {
-                    //Get all open tiles by this friendly unit
-                    if (ActiveBoard_FindAllOpenNeighbors(friendly_a.pos, out Axial[] openAxials))
+                    //If the resource has enough to place this unit
+                    if (friendly_a.hp >= cardToPlace.HP)
                     {
-                        //For each open tile around this friendly unit
-                        foreach (Axial placement in openAxials)
+                        //Get all open tiles by this friendly unit
+                        if (ActiveBoard_FindAllOpenNeighbors(friendly_a.pos, out Axial[] openAxials))
                         {
-                            if (validPlacements_List.Contains(placement))
-                                continue;
-
-                            //For each neighbor of this placement
-                            foreach (Unit friendly_d in friendlyUnits_nonOf)
+                            //For each open tile around this friendly unit
+                            foreach (Axial placement in openAxials)
                             {
-                                //If the resource has enough to place this unit
-                                if (friendly_d.hp >= cardToPlace.HP)
-                                {
-                                    validPlacements_List.Add(placement);
-                                    break;
-                                }
+                                //Add this placement as an option
+                                if (validPlacements.ContainsKey(placement))
+                                    continue;
+
+                                // Note that one friendly_a can have multiple placement options
+                                validPlacements.Add(placement, friendly_a);
+                                break;
                             }
                         }
                     }
                 }
 
-                validPlacements = validPlacements_List.ToArray();
-                return validPlacements.Length > 0;
+                return validPlacements.Count > 0;
             }
 
-            validPlacements = new Axial[0];
             return false;
         }
 

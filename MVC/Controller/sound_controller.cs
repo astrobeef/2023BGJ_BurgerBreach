@@ -193,6 +193,7 @@ public partial class sound_controller : Node3D
 			sounds["CardMove"] = SFXStreams[2].Stream;
 			sounds["CardPlace"] = SFXStreams[3].Stream;
 			sounds["PlayerAttack"] = SFXStreams[4].Stream;
+			sounds["PlayerBuff"] = SFXStreams[5].Stream;
 
 		} else {
 			GD.Print("An error occurred when trying to access the path.");

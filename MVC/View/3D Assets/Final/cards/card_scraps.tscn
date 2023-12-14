@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3 uid="uid://c0552molxe4d5"]
+
+[ext_resource type="PackedScene" uid="uid://bcdpeqdo00m8g" path="res://MVC/View/3D Assets/glTF/Final Assets/card.glb" id="1_m2sq1"]
+[ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Card3D.cs" id="2_36apw"]
+[ext_resource type="Texture2D" uid="uid://hlw6yrva15cy" path="res://MVC/View/3D Assets/glTF/Final Assets/card textures/card_Scraps_BaseColor.png" id="3_2x0ii"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r6up5"]
+albedo_texture = ExtResource("3_2x0ii")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_o5sk1"]
+size = Vector3(70, 100, 4)
+
+[node name="card_scraps" instance=ExtResource("1_m2sq1")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+script = ExtResource("2_36apw")
+
+[node name="card2" parent="." index="0"]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_r6up5")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1"]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0"]
+transform = Transform3D(1, 0, 7.10543e-15, 0, 1, 0, -7.10543e-15, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape3D_o5sk1")

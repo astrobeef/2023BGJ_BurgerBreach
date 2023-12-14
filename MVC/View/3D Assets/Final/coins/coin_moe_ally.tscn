@@ -1,0 +1,15 @@
+[gd_scene load_steps=5 format=3 uid="uid://3x6wunk4xqow"]
+
+[ext_resource type="PackedScene" uid="uid://cd0ahv8rhl33n" path="res://MVC/View/3D Assets/glTF/Final Assets/coin.glb" id="1_uw1dn"]
+[ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Unit3D.cs" id="2_0u8jn"]
+[ext_resource type="Texture2D" uid="uid://b6to1yvm7nx1y" path="res://MVC/View/3D Assets/glTF/Final Assets/coin textures/coin_Moe_Ally_BaseColor.png" id="2_tcx4m"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vlnr4"]
+albedo_texture = ExtResource("2_tcx4m")
+
+[node name="coin" instance=ExtResource("1_uw1dn")]
+script = ExtResource("2_0u8jn")
+
+[node name="CoinAsset" parent="." index="0"]
+transform = Transform3D(0.01, 0, 0, 0, 0, -0.01, 0, 0.01, 0, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_vlnr4")

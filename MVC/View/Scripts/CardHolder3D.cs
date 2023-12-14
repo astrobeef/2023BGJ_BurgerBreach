@@ -10,14 +10,14 @@ public partial class CardHolder3D : Node3D
 	Card3D[] Cards3D;
 	Node3D[] CardSlots3D;
 
-	private const string CARD_BURGER = "res://MVC/View/3D Assets/Prototype/Card/card_burger.tscn";
-	private const string CARD_MOE = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
-	private const string CARD_BUSSER_RACOON = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
-	private const string CARD_CLAM_CHOWDER = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
-	private const string CARD_EXPO_PIGEON = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
-	private const string CARD_LINE_SQUIRREL = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
-	private const string CARD_MOE_FAMILY_FRIES = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
-	private const string CARD_THE_SCRAPS = "res://MVC/View/3D Assets/Prototype/Card/card_moe.tscn";
+	private const string CARD_BURGER = "res://MVC/View/3D Assets/Final/cards/card_burger.tscn";
+	private const string CARD_MOE = "res://MVC/View/3D Assets/Final/cards/card_moe.tscn";
+	private const string CARD_BUSSER_RACOON = "res://MVC/View/3D Assets/Final/cards/card_racoon.tscn";
+	private const string CARD_CLAM_CHOWDER = "res://MVC/View/3D Assets/Final/cards/card_chowder.tscn";
+	private const string CARD_EXPO_PIGEON = "res://MVC/View/3D Assets/Final/cards/card_pigeon.tscn";
+	private const string CARD_LINE_SQUIRREL = "res://MVC/View/3D Assets/Final/cards/card_squirrel.tscn";
+	private const string CARD_MOE_FAMILY_FRIES = "rres://MVC/View/3D Assets/Final/cards/card_fries.tscn";
+	private const string CARD_THE_SCRAPS = "res://MVC/View/3D Assets/Final/cards/card_scraps.tscn";
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()

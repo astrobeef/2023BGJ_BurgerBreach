@@ -56,8 +56,10 @@ public partial class Hex3D : Node3D
 	{
 		AtkText3D = FindTextMeshChild(_ATK_TEXT_NAME);
 		HpText3D = FindTextMeshChild(_HP_TEXT_NAME);
-		Axial3D = FindTextMeshChild(_AXIAL_TEXT_NAME);
-		Axial3D.Text = AxialPos.ToString();
+		// Axial3D = FindTextMeshChild(_AXIAL_TEXT_NAME);
+		// if(Axial3D != null)
+		// 	Axial3D.Text = AxialPos.ToString();
+
 		SetStatsText(false);
 	}
 

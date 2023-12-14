@@ -27,7 +27,7 @@ text = "(0,0,0)"
 script = ExtResource("1_fq3gy")
 
 [node name="coinSlot" type="Node3D" parent="."]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
+transform = Transform3D(2.2, 0, 0, 0, 2.2, 0, 0, 0, 2.2, 0, 0, 0)
 
 [node name="AtkText3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(3.67977, 0, 0, 0, 1.93219, 3.13166, 0, -3.13166, 1.93219, -0.407738, 0.210062, 0.407066)
@@ -39,5 +39,6 @@ mesh = SubResource("TextMesh_fbp2q")
 
 [node name="Axial3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1.96213, 0, 0, 0, 0.445489, 1.91088, 0, -1.91088, 0.445489, 0.0347614, 0.288922, -0.340654)
+visible = false
 mesh = SubResource("TextMesh_ghaax")
 skeleton = NodePath("../HpText3D")

@@ -20,14 +20,17 @@ public partial class Board3D : Node3D
 	private static Vector2 _offset_2D => new Vector2(_offset.X, _offset.Z);
 
 	private static string COIN_BASE = "res://MVC/View/3D Assets/Prototype/Coin/coin_base.tscn";
-	private static string COIN_MOE = "res://MVC/View/3D Assets/Prototype/Coin/coin_moe.tscn";
-	private static string COIN_BURGER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
-	private static string COIN_BUSSER_RACOON = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
-	private static string COIN_CLAM_CHOWDER = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
-	private static string COIN_EXPO_PIGEON = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
-	private static string COIN_LINE_SQUIRREL = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
-	private static string COIN_MOE_FAMILY_FRIES = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
-	private static string COIN_THE_SCRAPS = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
+	private static string COIN_MOE = "res://MVC/View/3D Assets/Final/coins/coin_moe";
+	private static string COIN_BURGER = "res://MVC/View/3D Assets/Final/plates/plate_burger";
+	private static string COIN_BUSSER_RACOON = "res://MVC/View/3D Assets/Final/coins/coin_racoon";
+	private static string COIN_CLAM_CHOWDER = "res://MVC/View/3D Assets/Final/plates/plate_chowder";
+	private static string COIN_EXPO_PIGEON = "res://MVC/View/3D Assets/Final/coins/coin_pigeon";
+	private static string COIN_LINE_SQUIRREL = "res://MVC/View/3D Assets/Final/coins/coin_squirrel";
+	private static string COIN_MOE_FAMILY_FRIES = "res://MVC/View/3D Assets/Final/plates/plate_fries";
+	private static string COIN_THE_SCRAPS = "res://MVC/View/3D Assets/Final/plates/plate_scraps";
+
+	private static string ALLY_SUFFIX = "_ally.tscn";
+	private static string ENEMY_SUFFIX = "_enemy.tscn";
 
 	
 	private StaticBody3D _body, _body_offBoard;
@@ -192,48 +195,58 @@ public partial class Board3D : Node3D
 	private Unit3D CreateUnit3D(Hex3D parentHex, Unit unitModel)
 	{
 			PackedScene scene = null;
-			switch (unitModel.card.NAME)
-			{
-				case (Card.BASE_NAME):
-					scene = GD.Load<PackedScene>(COIN_BASE);
-					break;
-				case (Card.BURGER_NAME):
-					scene = GD.Load<PackedScene>(COIN_BURGER);
-					break;
-				case (Card.BIG_MOE_NAME):
-					scene = GD.Load<PackedScene>(COIN_MOE);
-					break;
-			}
-
-
 		switch (unitModel.card.NAME)
 		{
 			case Card.BASE_NAME:
 				scene = GD.Load<PackedScene>(COIN_BASE);
 				break;
 			case Card.BIG_MOE_NAME:
-				scene = GD.Load<PackedScene>(COIN_MOE);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_MOE + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_MOE + ENEMY_SUFFIX);
 				break;
 			case Card.BURGER_NAME:
-				scene = GD.Load<PackedScene>(COIN_BURGER);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_BURGER + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_BURGER + ENEMY_SUFFIX);
 				break;
 			case Card.BUSSER_RACOON_NAME:
-				scene = GD.Load<PackedScene>(COIN_BUSSER_RACOON);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_BUSSER_RACOON + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_BUSSER_RACOON + ENEMY_SUFFIX);
 				break;
 			case Card.CLAM_CHOWDER_NAME:
-				scene = GD.Load<PackedScene>(COIN_CLAM_CHOWDER);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_CLAM_CHOWDER + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_CLAM_CHOWDER + ENEMY_SUFFIX);
 				break;
 			case Card.EXPO_PIGEON_NAME:
-				scene = GD.Load<PackedScene>(COIN_EXPO_PIGEON);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_EXPO_PIGEON + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_EXPO_PIGEON + ENEMY_SUFFIX);
 				break;
 			case Card.LINE_SQUIRREL_NAME:
-				scene = GD.Load<PackedScene>(COIN_LINE_SQUIRREL);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_LINE_SQUIRREL + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_LINE_SQUIRREL + ENEMY_SUFFIX);
 				break;
 			case Card.MOE_FAMILY_FRIES_NAME:
-				scene = GD.Load<PackedScene>(COIN_MOE_FAMILY_FRIES);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_MOE_FAMILY_FRIES + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_MOE_FAMILY_FRIES + ENEMY_SUFFIX);
 				break;
 			case Card.THE_SCRAPS_NAME:
-				scene = GD.Load<PackedScene>(COIN_THE_SCRAPS);
+				if (unitModel.ownerIndex == 0)
+					scene = GD.Load<PackedScene>(COIN_THE_SCRAPS + ALLY_SUFFIX);
+				else
+					scene = GD.Load<PackedScene>(COIN_THE_SCRAPS + ENEMY_SUFFIX);
 				break;
 			default:
 				GD.PrintErr($"Uncaught case for card name \"{unitModel.card.NAME}\"");
@@ -258,7 +271,7 @@ public partial class Board3D : Node3D
 		if(IsUnitModelOnBoard3D(unit, out Hex3D hex3D))
 		{
 			Unit3D unit3D = hex3D.activeUnit3D;
-			SetUnitMeshMaterialBasedOnOwnerIndex(unit3D);
+			// SetUnitMeshMaterialBasedOnOwnerIndex(unit3D);
 		}
 	}
 

@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3 uid="uid://bwpvmis2makum"]
+
+[ext_resource type="PackedScene" uid="uid://bcdpeqdo00m8g" path="res://MVC/View/3D Assets/glTF/Final Assets/card.glb" id="1_u8cpn"]
+[ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Card3D.cs" id="2_04pi6"]
+[ext_resource type="Texture2D" uid="uid://v4bnqyvxu3ct" path="res://MVC/View/3D Assets/glTF/Final Assets/card textures/card_Racoon_BaseColor.png" id="3_8u6tl"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tmn3t"]
+albedo_texture = ExtResource("3_8u6tl")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7s5bn"]
+size = Vector3(70, 100, 4)
+
+[node name="card_racoon" instance=ExtResource("1_u8cpn")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+script = ExtResource("2_04pi6")
+
+[node name="card2" parent="." index="0"]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_tmn3t")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1"]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0"]
+transform = Transform3D(1, 0, 7.10543e-15, 0, 1, 0, -7.10543e-15, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape3D_7s5bn")

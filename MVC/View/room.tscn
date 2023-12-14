@@ -31,6 +31,7 @@ script = ExtResource("1_d5ki3")
 DEBUG_selectMarker = NodePath("../DebugMarker")
 
 [node name="CameraMain" type="Camera3D" parent="Player"]
+current = true
 fov = 36.8817
 
 [node name="World" type="Node3D" parent="."]

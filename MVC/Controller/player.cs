@@ -51,7 +51,6 @@ public partial class player : Node3D
 		OnObjectSelected += DEBUG_OnObjectSelected;
 		main.Instance.gameModel.OnUnitMove += DEBUG_OnObjectSelected;
 		OnObjectDeselected += DEBUG_OnObjectDeselected;
-
 	}
 
 	private void OnAwaitTurnActions(int turnPlayerIndex, int turnCounter)
@@ -74,23 +73,26 @@ public partial class player : Node3D
 
 	private void DeselectObject()
 	{
-		OnObjectDeselected?.Invoke(selectedObject);
-		switch (selectedObject)
+		if (selectedObject != null)
 		{
-			case Card3D card3D:
-				card3D.OnObjectDeselected();
-				break;
-			case Unit3D unit3D:
-				unit3D.OnObjectDeselected();
-				break;
-			case Hex3D hex3D:
-				hex3D.OnObjectDeselected();
-				break;
-			default:
-				break;
-		}
+			OnObjectDeselected?.Invoke(selectedObject);
+			switch (selectedObject)
+			{
+				case Card3D card3D:
+					card3D.OnObjectDeselected();
+					break;
+				case Unit3D unit3D:
+					unit3D.OnObjectDeselected();
+					break;
+				case Hex3D hex3D:
+					hex3D.OnObjectDeselected();
+					break;
+				default:
+					break;
+			}
 
-		selectedObject = null;
+			selectedObject = null;
+		}
 	}
 
 	private void DEBUG_OnObjectSelected(Node3D obj)
@@ -293,7 +295,7 @@ public partial class player : Node3D
 
 	public bool HandleObjectClicked(Node3D node3D)
 	{
-		if (playerIntention == PlayerIntention.DISABLED || node3D == selectedObject)
+		if (playerIntention == PlayerIntention.DISABLED || node3D == selectedObject && node3D != null)
 		{
 			GD.Print($"Not handling clicked object because either player intention is disabled({playerIntention == PlayerIntention.DISABLED}) or this Node3D is already selected({node3D == selectedObject})");
 			return false;
@@ -301,6 +303,57 @@ public partial class player : Node3D
 
 		switch (node3D)
 		{
+			// When something irrelevant is selected
+			case null:
+				{
+					switch (playerIntention)
+					{
+						case PlayerIntention.Open:
+							{
+								// If the player is in top down and their intention is open, then we assume that they want to switch back to perspective
+								if (top_down)
+									SwitchToPerspective();
+								break;
+							}
+						case PlayerIntention.PlaceCard:
+							{
+								// If the player currently has a card selected and they've clicked off the board, then we assume they want to deselect the card and return to their deck
+								Card3D selectedCard3D = selectedObject as Card3D;
+
+								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
+								{
+									OnObjectDeselected?.Invoke(selectedCard3D);
+
+									if (top_down)
+										SwitchToPerspective();
+
+									playerIntention = PlayerIntention.Open;
+									selectedObject = null;
+								}
+								else throw new Exception($"Could not select \"{selectedCard3D?.Name}\". Either no card is selected ({selectedCard3D == null}) OR it failed to deselect");
+
+								break;
+							}
+						case PlayerIntention.UnitMove:
+						case PlayerIntention.UnitAttack:
+							{
+								// If the player currently has a unit selected and they've clicked off the board, then we assume they want to deselect the unit but remain in top-down (if they are in top-down)
+								Unit3D selectedUnit3D = selectedObject as Unit3D;
+
+								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
+								{
+									OnObjectDeselected?.Invoke(selectedUnit3D);
+
+									playerIntention = PlayerIntention.Open;
+									selectedObject = null;
+								}
+								else throw new Exception($"Could not select \"{selectedUnit3D?.Name}\". Either no card is selected ({selectedUnit3D == null}) OR it failed to deselect");
+
+								break;
+							}
+					}
+					break;
+				}
 			case Card3D card3D:
 				{
 					switch (playerIntention)
@@ -322,7 +375,7 @@ public partial class player : Node3D
 									selectedObject = cardToSelect;
 									GD.Print($"Selected card {cardToSelect.card.NAME}. Changed player intention to {playerIntention}");
 								}
-								else throw new Exception($"Could not deselect \"{card3D?.Name}\".");
+								else throw new Exception($"Could not select \"{card3D?.Name}\".");
 								break;
 							}
 						case PlayerIntention.PlaceCard:
@@ -337,6 +390,7 @@ public partial class player : Node3D
 								// Deselect current object (should be a card based on state)
 								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
 								{
+									OnObjectDeselected?.Invoke(selectedObject);
 									// Select this card
 									if (cardToSelect != null && cardToSelect.OnObjectSelected())
 									{
@@ -365,6 +419,7 @@ public partial class player : Node3D
 								// Deselect current object (should be a unit based on state)
 								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
 								{
+									OnObjectDeselected?.Invoke(selectedObject);
 									// Select this card
 									if (cardToSelect != null && cardToSelect.OnObjectSelected())
 									{
@@ -422,6 +477,7 @@ public partial class player : Node3D
 								// Deselect current card
 								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
 								{
+									OnObjectDeselected?.Invoke(selectedObject);
 									// Select this unit
 									if (unit3D != null && unit3D.OnObjectSelected())
 									{
@@ -452,6 +508,7 @@ public partial class player : Node3D
 								// Deselect current object (should be a unit)
 								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
 								{
+									OnObjectDeselected?.Invoke(selectedObject);
 									// Select this unit
 									if (unit3D != null && unit3D.OnObjectSelected())
 									{

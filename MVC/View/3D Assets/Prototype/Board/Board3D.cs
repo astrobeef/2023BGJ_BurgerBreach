@@ -30,8 +30,9 @@ public partial class Board3D : Node3D
 	private static string COIN_THE_SCRAPS = "res://MVC/View/3D Assets/Prototype/Coin/coin_burger.tscn";
 
 	
-	private StaticBody3D _body;
-	private static string STATIC_BODY_NAME = "StaticBody3D";
+	private StaticBody3D _body, _body_offBoard;
+	private static string STATIC_BODY_NAME = "StaticBody3D-Board",
+	STATIC_BODY_NAME_OFFBOARD = "StaticBody3D-OffBoard";
 
 	private Hex3D[] _Board3D;
 	private List<Unit3D> _ActiveUnit3Ds = new List<Unit3D>();
@@ -55,6 +56,10 @@ public partial class Board3D : Node3D
 		_body = FindChild(STATIC_BODY_NAME) as StaticBody3D;
 		if (_body == null)
 			GD.PrintErr($"Could not find {STATIC_BODY_NAME} on {this.Name}");
+		
+		_body_offBoard = FindChild(STATIC_BODY_NAME_OFFBOARD) as StaticBody3D;
+		if (_body_offBoard == null)
+			GD.PrintErr($"Could not find {STATIC_BODY_NAME_OFFBOARD} on {this.Name}");
 
 
 		main.Instance.Player.OnCamHoverNewHit += OnCamHoverNewHit;
@@ -64,7 +69,6 @@ public partial class Board3D : Node3D
 		main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
 		main.Instance.Player.OnCamClickOff += OnCamClickOff;
 
-
 		gameModel.OnUnitAddedToBoard += OnUnitAddedToBoard;
 		gameModel.OnUnitAttack += OnUnitAttack;
 		gameModel.OnUnitDamaged += OnUnitDamaged;
@@ -73,7 +77,28 @@ public partial class Board3D : Node3D
 		gameModel.OnUnitDeath += OnUnitDeath;
 		gameModel.OnUnitOwnerChanged += OnUnitOwnerChanged;
 
+		main.Instance.Player.OnObjectSelected += OnObjectSelected;
+
 		GenerateBoard3D(main.Instance?.gameModel?.Board.Axials);
+	}
+
+	private void OnObjectSelected(Node3D node3D)
+	{
+		switch (node3D)
+		{
+			case Card3D card3D:
+				{
+					break;
+				}
+			case Unit3D unit3D:
+				{
+					break;
+				}
+			case Hex3D hex3D:
+				{
+					break;
+				}
+		}
 	}
 
 	private void OnCamHoverNewHit(Hit3D hit)
@@ -106,6 +131,11 @@ public partial class Board3D : Node3D
 			{
 				main.Instance.Player.HandleObjectClicked(hitHex3D);
 			}
+		}
+		else if(hit.collider == _body_offBoard)
+		{
+			GD.Print($"Board3D is firing HandleObjectClicked for 'null' because a click was fired off board");
+			main.Instance.Player.HandleObjectClicked(null);
 		}
 	}
 

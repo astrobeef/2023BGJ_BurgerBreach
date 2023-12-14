@@ -93,7 +93,6 @@ public partial class Card3D : Node3D
 
 	public bool OnObjectDeselected()
 	{
-		// Do anything when this card is deselected
-		return true;
-	}
+        return true;
+    }
 }

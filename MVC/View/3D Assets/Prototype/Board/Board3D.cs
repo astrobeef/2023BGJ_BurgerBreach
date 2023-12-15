@@ -83,6 +83,7 @@ public partial class Board3D : Node3D
 
 		main.Instance.Player.OnObjectSelected += OnObjectSelected;
 		main.Instance.Player.OnObjectDeselected += OnObjectDeselected;
+		main.Instance.Player.OnPlayerAttackMode += OnPlayerAttackMode;
 
 		GenerateBoard3D(main.Instance?.gameModel?.Board.Axials);
 	}
@@ -94,6 +95,16 @@ public partial class Board3D : Node3D
 
 	private void OnObjectDeselected(Node3D node3D) {
 		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
+	}
+
+	private void OnPlayerAttackMode(bool isEntering)
+	{
+		Unit3D selectedUnit3D = main.Instance.Player.selectedObject as Unit3D;
+
+		if (selectedUnit3D != null && selectedUnit3D.unit.ownerIndex == 0)
+		{
+			IndicateUnitActions(selectedUnit3D, isEntering);
+		}
 	}
 
 	private void OnCamHoverNewHit(Hit3D hit)
@@ -348,7 +359,8 @@ public partial class Board3D : Node3D
 				if (destHex3D.activeUnit3D == null)
 				{
 					MoveHexParents(oldHex3D.activeUnit3D, oldHex3D, destHex3D);
-					HandleIndication(destHex3D.activeUnit3D);
+
+					if(movedUnit.ownerIndex == 0) HandleIndication(destHex3D.activeUnit3D);
 				}
 				else GD.PrintErr($"{movedUnit} attempting to move to axial {newPosition}, but that tile is already occupied by {destHex3D.activeUnit3D.unit.name}. This must be an View error since this case should have been checked in the Model");
 			}
@@ -467,8 +479,6 @@ public partial class Board3D : Node3D
 
 	private void HandleIndication(Node3D node3D)
 	{
-		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
-
 		switch (node3D)
 		{
 			case Card3D card3D:
@@ -493,7 +503,7 @@ public partial class Board3D : Node3D
 
 			case Unit3D unit3D:
 				{
-					IndicateUnitActions(unit3D);
+					IndicateUnitActions(unit3D, false);
 					break;
 				}
 
@@ -545,6 +555,8 @@ public partial class Board3D : Node3D
 
 	private void IndicateResourcePlacements()
 	{
+		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
+
 		Axial[] validPlacements = new Axial[_Board3D.Length];
 		main.Instance.gameModel.GetAllOpenResourcePlacements(0, out validPlacements);
 		IndicateHexes(validPlacements, Hex3D.IndicatorState.Selectable);
@@ -552,6 +564,8 @@ public partial class Board3D : Node3D
 
 	private void IndicateOffensePlacements(Card3D card3D)
 	{
+		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
+
 		Dictionary<Axial, Unit> validPlacementDictionary = new Dictionary<Axial, Unit>();
 		main.Instance.gameModel.GetAllValidOffensePlacements(0, card3D.card, out validPlacementDictionary);
 
@@ -569,27 +583,34 @@ public partial class Board3D : Node3D
 		IndicateHexes(placementArray, Hex3D.IndicatorState.Selectable);
 	}
 
-	private void IndicateUnitActions(Unit3D unit3D)
+	private void IndicateUnitActions(Unit3D unit3D, bool isAttacking)
 	{
+		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
+
 		var pos = new Axial[1];
 		pos[0] = unit3D.unit.pos;
 		IndicateHexes(pos, Hex3D.IndicatorState.Selected);
 
-		var movePositions = new Axial[32];
-		unit3D.unit.GetAllMovePositions(out movePositions);
-		IndicateHexes(movePositions, Hex3D.IndicatorState.Selectable);
-
-		var attackUnits = new Unit[32];
-		unit3D.unit.GetAllAttackTargets(out attackUnits);
-		var attackPositions = new Axial[32];
-		int i = 0;
-		foreach (Unit unit in attackUnits)
+		if (isAttacking)
 		{
-			attackPositions[i] = unit.pos;
-			i++;
-		}
+			var attackUnits = new Unit[32];
+			unit3D.unit.GetAllAttackTargets(out attackUnits);
+			var attackPositions = new Axial[32];
+			int i = 0;
+			foreach (Unit unit in attackUnits)
+			{
+				attackPositions[i] = unit.pos;
+				i++;
+			}
 
-		IndicateHexes(attackPositions, Hex3D.IndicatorState.Attackable);
+			IndicateHexes(attackPositions, Hex3D.IndicatorState.Attackable);
+		}
+		else
+		{
+			var movePositions = new Axial[32];
+			unit3D.unit.GetAllMovePositions(out movePositions);
+			IndicateHexes(movePositions, Hex3D.IndicatorState.Movable);
+		}
 	}
 
 	#endregion

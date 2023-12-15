@@ -11,6 +11,7 @@ public partial class Hex3D : Node3D
 	[Export] Material Unselected;
 	[Export] Material Selected;
 	[Export] Material Selectable;
+	[Export] Material Movable;
 	[Export] Material Attackable;
 
 	public AxialCS.Axial AxialPos = AxialCS.Axial.Empty;
@@ -120,7 +121,7 @@ public partial class Hex3D : Node3D
 		return true;
 	}
 
-	public enum IndicatorState {Selected, Selectable, Attackable, Disabled};
+	public enum IndicatorState {Selected, Selectable, Movable, Attackable, Disabled};
 	
 	public void SetIndicator(IndicatorState indi) {
 		MeshInstance3D mesh = GetNode("Indicator/Mesh") as MeshInstance3D;
@@ -132,6 +133,10 @@ public partial class Hex3D : Node3D
 
 			case IndicatorState.Selectable:
 				mesh.SetSurfaceOverrideMaterial(0, Selectable);
+				break;
+
+			case IndicatorState.Movable:
+				mesh.SetSurfaceOverrideMaterial(0, Movable);
 				break;
 
 			case IndicatorState.Attackable:

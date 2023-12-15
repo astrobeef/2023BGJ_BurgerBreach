@@ -8,15 +8,15 @@ albedo_color = Color(1, 1, 1, 0)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xw35l"]
 transparency = 1
-albedo_color = Color(0, 0.301961, 0.823529, 0.627451)
+albedo_color = Color(0.203922, 0.788235, 0.819608, 0.741176)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_db51r"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eqdfk"]
 transparency = 1
-albedo_color = Color(0, 0.639216, 1, 0.627451)
+albedo_color = Color(0.439216, 0.858824, 0.258824, 0.741176)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2tvc3"]
 transparency = 1
-albedo_color = Color(1, 0.0705882, 0.0862745, 0.627451)
+albedo_color = Color(0.839216, 0.270588, 0.439216, 0.686275)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_705qo"]
 albedo_color = Color(1, 0.341176, 0.341176, 1)
@@ -81,8 +81,9 @@ shadow_mesh = SubResource("ArrayMesh_ddxk7")
 [node name="BoardTile" type="Node3D"]
 script = ExtResource("1_fq3gy")
 Unselected = SubResource("StandardMaterial3D_jnshh")
-Selected = SubResource("StandardMaterial3D_xw35l")
-Selectable = SubResource("StandardMaterial3D_db51r")
+Selected = SubResource("StandardMaterial3D_jnshh")
+Selectable = SubResource("StandardMaterial3D_xw35l")
+Movable = SubResource("StandardMaterial3D_eqdfk")
 Attackable = SubResource("StandardMaterial3D_2tvc3")
 
 [node name="coinSlot" type="Node3D" parent="."]

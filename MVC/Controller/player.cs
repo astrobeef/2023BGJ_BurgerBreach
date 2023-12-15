@@ -36,6 +36,11 @@ public partial class player : Node3D
 	public Action<Node3D> OnObjectSelected;
 	public Action<Node3D> OnObjectDeselected;
 
+	/// <summary>
+	/// Fires when the player has entered/exited attack mode (true if enter, false if exit)
+	/// </summary>
+	public Action<bool> OnPlayerAttackMode;
+
 	[Export]
 	public Node3D DEBUG_selectMarker;
 
@@ -273,12 +278,14 @@ public partial class player : Node3D
 				if (playerIntention == PlayerIntention.UnitMove)
 				{
 					playerIntention = PlayerIntention.UnitAttack;
+					OnPlayerAttackMode(true);
 
 					GD.Print($"Changed player intention to {playerIntention}");
 				}
 				else if (playerIntention == PlayerIntention.UnitAttack)
 				{
 					playerIntention = PlayerIntention.UnitMove;
+					OnPlayerAttackMode(false);
 
 					GD.Print($"Changed player intention to {playerIntention}");
 				}
@@ -346,6 +353,7 @@ public partial class player : Node3D
 									OnObjectDeselected?.Invoke(selectedUnit3D);
 
 									playerIntention = PlayerIntention.Open;
+									OnPlayerAttackMode(false);
 									selectedObject = null;
 								}
 								else throw new Exception($"Could not select \"{selectedUnit3D?.Name}\". Either no card is selected ({selectedUnit3D == null}) OR it failed to deselect");
@@ -427,6 +435,7 @@ public partial class player : Node3D
 										OnObjectSelected?.Invoke(cardToSelect);
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
+										OnPlayerAttackMode(false);
 										selectedObject = cardToSelect;
 										GD.Print($"Selected card {cardToSelect.card.NAME}. Changed player intention to {playerIntention}");
 									}
@@ -548,6 +557,7 @@ public partial class player : Node3D
 											{
 												OnObjectDeselected?.Invoke(selectedObject);
 												playerIntention = PlayerIntention.Open;
+												OnPlayerAttackMode(false);
 												selectedObject = null;
 												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
 											}

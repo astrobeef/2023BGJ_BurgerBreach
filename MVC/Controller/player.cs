@@ -354,10 +354,10 @@ public partial class player : Node3D
 
 								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
 								{
+									OnPlayerAttackMode(false);
 									OnObjectDeselected?.Invoke(selectedUnit3D);
 
 									playerIntention = PlayerIntention.Open;
-									OnPlayerAttackMode(false);
 									selectedObject = null;
 								}
 								else throw new Exception($"Could not select \"{selectedUnit3D?.Name}\". Either no card is selected ({selectedUnit3D == null}) OR it failed to deselect");

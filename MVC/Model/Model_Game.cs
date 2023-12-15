@@ -1107,7 +1107,6 @@ namespace Model
 
                                 // Note that one friendly_a can have multiple placement options
                                 validPlacements.Add(placement, friendly_a);
-                                break;
                             }
                         }
                     }

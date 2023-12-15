@@ -96,7 +96,7 @@ public partial class Board3D : Node3D
 				{
 					switch (card3D.card.TYPE) {
 						case Card.CardType.Resource:
-							Axial[] validPlacements = new Axial[32];
+							Axial[] validPlacements = new Axial[_Board3D.Length];
 							main.Instance.gameModel.GetAllOpenResourcePlacements(0, out validPlacements);
 							IndicateHexes(validPlacements, Hex3D.IndicatorState.Selectable);
 							break;
@@ -104,10 +104,10 @@ public partial class Board3D : Node3D
 
 						// GetAllValidOffensePlacements does not work for whatever reason. It does not give you all locations you can place offensive units.
 						case Card.CardType.Offense:
-							var validPlacementDictionary = new Dictionary<Axial, Unit>();
+							Dictionary<Axial, Unit> validPlacementDictionary = new Dictionary<Axial, Unit>();
 							main.Instance.gameModel.GetAllValidOffensePlacements(0, card3D.card, out validPlacementDictionary);
 
-							var placementArray = new Axial[32];
+							Axial[] placementArray = new Axial[_Board3D.Length];
 							int i = 0;
 
 							foreach (KeyValuePair<Axial, Unit> placement in validPlacementDictionary) {

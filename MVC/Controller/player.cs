@@ -638,7 +638,7 @@ public partial class player : Node3D
 
 										GD.Print($"User has successfully moved unit {unitToMove.Name} to {unitToMove.unit.pos}. Player intention set to {playerIntention}");
 									}
-									else throw new Exception($"User tried to move a unit({unitToMove.Name}) to {hex3D.AxialPos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+									else GD.Print($"User tried to move a unit({unitToMove.Name}) to {hex3D.AxialPos}, but it failed.");
 
 								}
 								else

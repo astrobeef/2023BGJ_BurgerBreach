@@ -8,6 +8,11 @@ using Utility;
 
 public partial class Hex3D : Node3D
 {
+	[Export] Material Unselected;
+	[Export] Material Selected;
+	[Export] Material Selectable;
+	[Export] Material Attackable;
+
 	public AxialCS.Axial AxialPos = AxialCS.Axial.Empty;
 	[Export]
 	Vector3 _exportAxial
@@ -113,6 +118,31 @@ public partial class Hex3D : Node3D
 	{
 		// Do anything when this hex is deselected
 		return true;
+	}
+
+	public enum IndicatorState {Selected, Selectable, Attackable, Disabled};
+	
+	public void SetIndicator(IndicatorState indi) {
+		MeshInstance3D mesh = GetNode("Indicator/Mesh") as MeshInstance3D;
+
+		switch(indi) {
+			case IndicatorState.Selected:
+				mesh.SetSurfaceOverrideMaterial(0, Selected);
+				break;
+
+			case IndicatorState.Selectable:
+				mesh.SetSurfaceOverrideMaterial(0, Selectable);
+				break;
+
+			case IndicatorState.Attackable:
+				mesh.SetSurfaceOverrideMaterial(0, Attackable);
+				break;
+
+			case IndicatorState.Disabled:
+				mesh.SetSurfaceOverrideMaterial(0, Unselected);
+				break;
+		}
+
 	}
 
 }

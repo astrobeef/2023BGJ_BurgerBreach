@@ -212,13 +212,13 @@ public partial class sound_controller : Node3D
 			sounds["PlayerDrink"] = SFXStreams[8].Stream;
 			sounds["PlayerTurnStart"] = SFXStreams[9].Stream;
 			sounds["UIClick"] = SFXStreams[10].Stream;
-			sounds["UIHover"] = SFXSTreams[11].Stream;
+			sounds["UIHover"] = SFXStreams[11].Stream;
 			sounds["Dialogue_E"] = SFXStreams[12].Stream;
 			sounds["Dialogue_I"] = SFXStreams[13].Stream;
-			sounds["Dialogue_M"] = SFXStream[14].Stream;
-			sounds["Dialogue_O"] = SFXStream[15].Stream;
-			sounds["Dialogue_S"] = SFXStream[16].Stream;
-			sounds["Dialogue_Y"] = SFXStream[17].Stream;
+			sounds["Dialogue_M"] = SFXStreams[14].Stream;
+			sounds["Dialogue_O"] = SFXStreams[15].Stream;
+			sounds["Dialogue_S"] = SFXStreams[16].Stream;
+			sounds["Dialogue_Y"] = SFXStreams[17].Stream;
 			
 
 		} else {

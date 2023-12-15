@@ -57,7 +57,7 @@ public partial class main : Node
 
 		await Task.Delay(100);
 
-		// SoundController.PlayMusic("battleMusic");
+		SoundController.PlayMusic("battleMusic");
 	}
 
 	public override void _EnterTree()

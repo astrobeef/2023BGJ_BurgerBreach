@@ -23,6 +23,16 @@ public partial class sound_controller : Node3D
 	public const string SFX_DIALOGUE_S = "Dialogue_S";
 	public const string SFX_DIALOGUE_Y = "Dialogue_Y";
 
+	/// <summary>
+	/// Global volume adjustment ranged 0.0f -> 1.0f
+	/// </summary>
+	private float _master_volume_factor = 0.85f;
+	private float _master_volumeDb => -100f * (1f - _master_volume_factor);
+
+	private const float DEFAULT_MUSIC_VOLUME = -35f;
+	private const float DEFAULT_SFX_VOLUME = 0f;
+
+
 	Dictionary<string, AudioStream> sounds = new Dictionary<string, AudioStream>();
 
 	// private AudioStreamPlayer SFX0, SFX1, SFX2, SFX3, SFX4, SFX5;
@@ -73,11 +83,20 @@ public partial class sound_controller : Node3D
 		return false;
 	}
 
-	public AudioStreamPlayer PlaySFX(string soundName) {
+	public AudioStreamPlayer PlaySFX(string soundName)
+	{
+		return PlaySFX(soundName, DEFAULT_SFX_VOLUME);
+	}
+
+	public AudioStreamPlayer PlaySFX(string soundName, float volumeDb)
+	{
 		if (!IsSoundLoaded(soundName)) return null;
 
-		for (int i = 0; i < SFXStreams.Length; i++) {
-			if (!SFXStreams[i].Playing) {
+		for (int i = 0; i < SFXStreams.Length; i++)
+		{
+			if (!SFXStreams[i].Playing)
+			{
+				SFXStreams[i].VolumeDb = _master_volumeDb + volumeDb;
 				SFXStreams[i].Stream = sounds[soundName];
 				SFXStreams[i].Play();
 				return SFXStreams[i];
@@ -88,7 +107,7 @@ public partial class sound_controller : Node3D
 		SFXStreams[0].Play();
 		return SFXStreams[0];
 	}
-	
+
 	// public AudioStreamPlayer PlaySFX(string soundName) {
 	// 	if (!IsSoundLoaded(soundName)) return null;
 
@@ -101,27 +120,27 @@ public partial class sound_controller : Node3D
 	// 		SFX1.Stream = sounds[soundName];
 	// 		SFX1.Play();
 	// 		return SFX1;
-			
+
 	// 	} else if (!SFX2.Playing) {
 	// 		SFX2.Stream = sounds[soundName];
 	// 		SFX2.Play();
 	// 		return SFX2;
-			
+
 	// 	} else if (!SFX3.Playing) {
 	// 		SFX3.Stream = sounds[soundName];
 	// 		SFX3.Play();
 	// 		return SFX3;
-			
+
 	// 	} else if (!SFX4.Playing) {
 	// 		SFX4.Stream = sounds[soundName];
 	// 		SFX4.Play();
 	// 		return SFX4;
-			
+
 	// 	} else if (!SFX5.Playing) {
 	// 		SFX5.Stream = sounds[soundName];
 	// 		SFX5.Play();
 	// 		return SFX5;
-			
+
 	// 	}
 
 	// 	SFX0.Stream = sounds[soundName];
@@ -142,11 +161,19 @@ public partial class sound_controller : Node3D
 		return false;
 	}
 
-	public AudioStreamPlayer PlayMusic(string soundName) {
+	public AudioStreamPlayer PlayMusic(string soundName)
+	{
+		return PlayMusic(soundName, DEFAULT_MUSIC_VOLUME);
+	}
+
+	public AudioStreamPlayer PlayMusic(string soundName, float volumeDb) {
 		if (!IsSoundLoaded(soundName)) return null;
 
-		for (int i = 0; i < MusicStreams.Length; i++) {
-			if (!MusicStreams[i].Playing) {
+		for (int i = 0; i < MusicStreams.Length; i++)
+		{
+			if (!MusicStreams[i].Playing)
+			{
+				MusicStreams[i].VolumeDb = _master_volumeDb + volumeDb;
 				MusicStreams[i].Stream = sounds[soundName];
 				MusicStreams[i].Play();
 				return MusicStreams[i];

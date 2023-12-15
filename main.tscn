@@ -38,44 +38,84 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_2p0hl")
 layout_mode = 2
 alignment = 2
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+[node name="DEBUG_DialogueContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer"]
 custom_minimum_size = Vector2(25, 0)
 layout_mode = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2"]
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer"]
+custom_minimum_size = Vector2(250, 100)
+layout_mode = 2
+size_flags_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(800, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_gh8td")
+
+[node name="DEBUG_DialogueRichText" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "<Moe's Dialogue>"
+
+[node name="MarginContainer3" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3"]
 custom_minimum_size = Vector2(250, 100)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3/PanelContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3/PanelContainer/VBoxContainer"]
 custom_minimum_size = Vector2(10, 10)
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3/PanelContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3/PanelContainer/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(10, 10)
 layout_mode = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3/PanelContainer/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(220, 100)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_gh8td")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer2/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/HBoxContainer3/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
 layout_mode = 2
 text = "- 'C' to switch views
 - '1' or 'A' to toggle attack/move
 "
 
 [node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 470)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]

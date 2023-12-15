@@ -16,11 +16,18 @@ public partial class main : Node
 
 	private static main _instance;
 	public static main Instance => _instance;
+
+	public static int MAIN_THREAD_ID;
+	public static bool IsMainThread()
+	{
+		return Thread.CurrentThread.ManagedThreadId == MAIN_THREAD_ID;
+	}
         
 	private SynchronizationContext _context = SynchronizationContext.Current;
 	public SynchronizationContext Context => _context;
 
-	private Node _currentScene;
+	private static Node _currentScene;
+	public static Node CurrentScene => _currentScene;
 
 	private Utility.MouseMoveObserver _mouseMoveObserver;
 	public Utility.MouseMoveObserver MouseMoveObserver => _mouseMoveObserver;
@@ -28,6 +35,7 @@ public partial class main : Node
 	public Model_Game gameModel;
 	public player Player;
 	public Controller_AI AI;
+	public DialogueSystem DS;
 	public sound_controller SoundController;
 	private const string _SOUND_CONTROLLER_PATH = "res://MVC/View/sound_controller.tscn";
 
@@ -36,6 +44,7 @@ public partial class main : Node
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		MAIN_THREAD_ID = Thread.CurrentThread.ManagedThreadId;
 		_instance = this;
 		_mouseMoveObserver = new Utility.MouseMoveObserver(_instance);
 
@@ -44,6 +53,7 @@ public partial class main : Node
 		if(Player == null) GD.PrintErr($"Could not find player. Node exists? {_currentScene.FindChild("Player", true, false) != null}");
 
 		AI = new Controller_AI(gameModel);
+		DS = new DialogueSystem();
 
 		InstantiateSoundController();
 	}

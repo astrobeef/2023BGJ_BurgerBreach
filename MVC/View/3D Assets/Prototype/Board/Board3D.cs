@@ -396,6 +396,7 @@ public partial class Board3D : Node3D
 		{
 			// Do any death animations here
 			DestroyUnit3D(hex3D);
+			IndicateAllHexes(Hex3D.IndicatorState.Disabled);
 		}
 	}
 

@@ -255,7 +255,7 @@ namespace Model
         /// Damage this unit
         /// </summary>
         /// <param name="amount">POSITIVE amount of damage</param>
-        /// <returns></returns>
+        /// <returns>True if alive, false if dead</returns>
         public virtual bool Damage(int amount)
         {
             if(hp < 0)

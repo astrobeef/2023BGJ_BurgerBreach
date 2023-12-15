@@ -40,9 +40,9 @@ namespace Model
         {
             if (!base.Damage(amount))
             {
-                GD.PrintErr($"Player {ownerIndex} has had their base destroyed! Need to fire an event to end the game.");
-                PostAction(main.Instance.gameModel.OnBaseDestroyed, this);
-                return true;
+                GD.Print($"Round has ended! Player {this.ownerIndex} lost the round! Triggering turn over.");
+                main.Instance.gameModel.TriggerEndTurn = true;      //End the current turn to trigger the round ending
+                return false;
             }
 
             return true;

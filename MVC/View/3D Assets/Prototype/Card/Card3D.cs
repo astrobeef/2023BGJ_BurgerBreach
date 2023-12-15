@@ -36,7 +36,7 @@ public partial class Card3D : Node3D
 		main.Instance.Player.OnCamClickOff -= OnCamClickOff;
     }
 
-    private Vector3 _onHoverDisplace = new Vector3(0, 0.1f, 0.02f);
+    private Vector3 _onHoverDisplace = new Vector3(0, 0.3f, 0.1f);
 	private bool _isOnHoverDisplaced = false;
 
 	private void OnCamHoverNewHit(Hit3D hit)

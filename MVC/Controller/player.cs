@@ -56,6 +56,8 @@ public partial class player : Node3D
 		OnObjectSelected += DEBUG_OnObjectSelected;
 		main.Instance.gameModel.OnUnitMove += DEBUG_OnObjectSelected;
 		OnObjectDeselected += DEBUG_OnObjectDeselected;
+
+		SwitchToPerspective();
 	}
 
 	private void OnAwaitTurnActions(int turnPlayerIndex, int turnCounter)
@@ -273,9 +275,11 @@ public partial class player : Node3D
 
 		if (@event.IsActionPressed("EnableAttack"))
 		{
-			if (selectedObject as Unit3D != null)
+			Unit3D selectedUnit3D = selectedObject as Unit3D;
+
+			if (selectedUnit3D != null)
 			{
-				if (playerIntention == PlayerIntention.UnitMove)
+				if (playerIntention == PlayerIntention.UnitMove && selectedUnit3D.unit.CanAttack())
 				{
 					playerIntention = PlayerIntention.UnitAttack;
 					OnPlayerAttackMode(true);
@@ -568,6 +572,7 @@ public partial class player : Node3D
 										{
 											GD.Print("Switching intention to move since the unit cannot attack anymore, but can move");
 											playerIntention = PlayerIntention.UnitMove;
+											OnPlayerAttackMode(false);
 										}
 
 										GD.Print($"User has successfully attacked ({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}. Player intention set to {playerIntention}");
@@ -642,8 +647,8 @@ public partial class player : Node3D
 								{
 									if (main.Instance.gameModel.Unit_TryMove(true, unitToMove.unit, hex3D.AxialPos))
 									{
-										//If the unit can NOT move anymore,
-										if (!unitToMove.unit.HasMovement(out int dummyInt))
+										//If the unit can NOT move anymore AND cannot attack, then they probably want to deselect this unit
+										if (!unitToMove.unit.HasMovement(out int dummyInt) && !unitToMove.unit.CanAttack())
 										{
 											if (unitToMove.OnObjectDeselected())
 											{
@@ -653,6 +658,10 @@ public partial class player : Node3D
 												GD.Print($"Selected object set to null. Changed player intention to {playerIntention}");
 											}
 											else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
+										}
+										else
+										{
+											// In this case, the unit may be out of movement but still have attack left. They probably want to keep the unit selected.
 										}
 
 										GD.Print($"User has successfully moved unit {unitToMove.Name} to {unitToMove.unit.pos}. Player intention set to {playerIntention}");

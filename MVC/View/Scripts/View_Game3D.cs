@@ -106,6 +106,7 @@ namespace View
 
 			model.OnGameStart += OnGameStart;
 			model.OnRoundStart += OnRoundStart;
+			model.OnRoundEnd += OnRoundEnd;
 			model.OnTurnStart += OnTurnStart;
 			model.OnTurnEnd += OnTurnEnd;
 
@@ -116,7 +117,6 @@ namespace View
 			model.OnUnitAddedToBoard += OnUnitAddedToBoard;
 			model.OnUnitMove += OnUnitMove;
 			model.OnUnitAttack += OnUnitAttack;
-			model.OnBaseDestroyed += OnBaseDestroyed;
 			model.OnUnitDamaged += OnUnitDamaged;
 			model.OnUnitBuffed += OnUnitBuffed;
 			model.OnUnitDeath += OnDeath;
@@ -148,6 +148,32 @@ namespace View
 
 		private void OnRoundStart(int roundCounter)
 		{
+		}
+
+		private void OnRoundEnd(int roundIndex, int winnerIndex)
+		{
+			if (playerInput_1 == null)
+				return;
+
+			if ((roundIndex+1) < Model_Game.MAX_ROUNDS)
+				playerInput_1.Text = "Start Next Round";
+			else
+				playerInput_1.Text = "Exit Game";
+
+			playerInput_1.Visible = true;
+			playerInput_1.Pressed += Handle_RoundEndInput;
+		}
+
+		private void Handle_RoundEndInput()
+		{
+			if (playerInput_1 == null)
+				return;
+
+			GD.Print("Firing input to start next round");
+			playerInput_1.Visible = false;
+			playerInput_1.Text = "";
+			playerInput_1.Pressed -= Handle_RoundEndInput;
+			main.Instance.gameModel.TriggerStartNextRound = true;
 		}
 
 		private void OnTurnStart(int turnPlayerIndex, int turnCounter)
@@ -194,11 +220,6 @@ namespace View
 			Print($"Unit ${unit.name} was buffed!");
 		}
 
-		private void OnBaseDestroyed(Unit Base)
-		{
-			Print($"GAME OVER!");
-		}
-
 		private void OnCollision(Unit mover, Unit occupant)
 		{
 			Print($"Unit ${mover.name} collided with {occupant.name}!");
@@ -240,6 +261,7 @@ namespace View
 				return;
 
 			playerInput_1.Text = "Start Game";
+			playerInput_1.Visible = true;
 			playerInput_1.Pressed += HandleInput_StartGame;
 		}
 
@@ -248,6 +270,7 @@ namespace View
 			if(playerInput_1 == null)
 				return;
 
+			playerInput_1.Visible = false;
 			playerInput_1.Text = "No input Registered";
 			model.triggerStartGame = true;
 			playerInput_1.Pressed -= HandleInput_StartGame;
@@ -259,6 +282,7 @@ namespace View
 				return;
 
 			playerInput_1.Text = "Draw Card";
+			playerInput_1.Visible = true;
 			playerInput_1.Pressed += HandleInput_DrawCard;
 		}
 
@@ -267,6 +291,7 @@ namespace View
 			if(playerInput_1 == null)
 				return;
 				
+			playerInput_1.Visible = false;
 			playerInput_1.Text = "No Input Registered";
 			model.TriggerDrawCard = true;
 			playerInput_1.Pressed -= HandleInput_DrawCard;
@@ -277,6 +302,7 @@ namespace View
 			if (playerIndex == 0)
 			{
 				playerInput_1.Text = "End Turn";
+			playerInput_1.Visible = true;
 				playerInput_1.Pressed += HandleInput_EndTurn;
 			}
 		}
@@ -286,6 +312,7 @@ namespace View
 			if(playerInput_1 == null)
 			return;
 
+			playerInput_1.Visible = false;
 			playerInput_1.Text = "No Input Registered";
 			model.TriggerEndTurn = true;
 			playerInput_1.Pressed -= HandleInput_EndTurn;

@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Godot;
 
 namespace Model
 {
@@ -57,9 +58,23 @@ namespace Model
         }
 
         
+        public static bool AwaitAction(ref bool trigger)
+        {
+            if(main.IsMainThread())
+                throw new Exception("Do not call this method on the main thread as it uses Thread.Sleep");
 
+            while (!trigger)
+            {
+                Thread.Sleep(1);
+            }
+            trigger = false;
+            return true;
+        }
         public static bool AwaitAction(ref bool trigger, Func<bool> action)
         {
+            if(main.IsMainThread())
+                throw new Exception("Do not call this method on the main thread as it uses Thread.Sleep");
+
             while (!trigger)
             {
                 Thread.Sleep(1);
@@ -69,6 +84,9 @@ namespace Model
         }
         public static bool AwaitAction<T1>(ref bool trigger, Func<T1, bool> action, T1 param1)
         {
+            if(main.IsMainThread())
+                throw new Exception("Do not call this method on the main thread as it uses Thread.Sleep");
+
             while (!trigger)
             {
                 Thread.Sleep(1);
@@ -78,6 +96,9 @@ namespace Model
         }
         public static bool AwaitAction<T1, T2>(ref bool trigger, Func<T1, T2, bool> action, T1 param1, T2 param2)
         {
+            if(main.IsMainThread())
+                throw new Exception("Do not call this method on the main thread as it uses Thread.Sleep");
+                
             while (!trigger)
             {
                 Thread.Sleep(1);
@@ -87,6 +108,9 @@ namespace Model
         }
         public static bool AwaitAction<T1, T2, T3>(ref bool trigger, Func<T1, T2, T3, bool> action, T1 param1, T2 param2, T3 param3)
         {
+            if(main.IsMainThread())
+                throw new Exception("Do not call this method on the main thread as it uses Thread.Sleep");
+                
             while (!trigger)
             {
                 Thread.Sleep(1);

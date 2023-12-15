@@ -37,6 +37,8 @@ namespace Model
 
         private const int _RESOURCE_SPAWN_RADIUS = 1;
 
+        public const int MAX_ROUNDS = 3;
+
         private static readonly int _waitTime = 5;
 
         // CARD SET
@@ -50,6 +52,7 @@ namespace Model
             new Card(false, Card.BUSSER_RACOON_NAME, 2, 1, 1, 1),
             new Card(false, Card.CLAM_CHOWDER_NAME, Card.CardType.Resource, 1),
             new Card(false, Card.BURGER_NAME, Card.CardType.Resource, 3),
+            new Card(false, Card.MOE_FAMILY_FRIES_NAME, Card.CardType.Resource, 2),
             new Card(false, Card.THE_SCRAPS_NAME, Card.CardType.Resource, 5)
         };
 
@@ -64,6 +67,7 @@ namespace Model
         #region  SESSION DATA       // Data scoped to a session instance
 
         private int _roundCounter = 0;
+        public int RoundCounter => _roundCounter;
 
         private Card[][] _Decks = new Card[PLAYER_COUNT][];
         private Card[] _userDeck
@@ -89,10 +93,86 @@ namespace Model
             }
         }
 
+        private Card[] _DeckRound1 = new Card[]{
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+        };
+        
+        private Card[] _DeckRound2 = new Card[]{
+            new Card(true, _CardSet_NoBases[7]),    //Scraps
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[4]),    //Chowder
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[6]),    //Fries
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[6]),    //Fries
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[7]),    //Scraps
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+        };
+        
+        private Card[] _DeckRound3 = new Card[]{
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[7]),    //Scraps
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[4]),    //Chowder
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[7]),    //Scraps
+            new Card(true, _CardSet_NoBases[6]),    //Fries
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[7]),    //Scraps
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[6]),    //Fries
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[5]),    //Burger
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[0]),    //Moe
+            new Card(true, _CardSet_NoBases[3]),    //Racoon
+            new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[1]),    //Squirrel
+        };
+
+        private Card[][] _RoundDecks => new Card[][] { _DeckRound1, _DeckRound2, _DeckRound3 };
+
         #endregion
 
         #region ROUND DATA          // Data scoped to a round instance
-        
+
         private Axial[] _base_locations = new Axial[] {
             Axial.Direction(Axial.Cardinal.SW),
             Axial.Direction(Axial.Cardinal.NE)
@@ -155,6 +235,7 @@ namespace Model
 
         public Action<Card[], Card[]> OnGameStart;
         public Action<int> OnRoundStart;
+        public Action<int, int> OnRoundEnd;
         public Action<int, int> OnTurnStart;
         public Action<int, int> OnTurnEnd;
 
@@ -174,7 +255,6 @@ namespace Model
         /// (<see cref="Unit"/> attacker, <see cref="Unit"/> target)
         /// </summary>
         public Action<Unit, Unit> OnUnitAttack;
-        public Action<Unit> OnBaseDestroyed;
         public Action<Unit, Unit> OnUnitDamaged;
         public Action<Unit> OnUnitBuffed;
         public Action<Unit> OnUnitDeath;
@@ -195,7 +275,8 @@ namespace Model
         // Await Triggers
         public bool triggerStartGame = false,
         TriggerDrawCard = false,
-        TriggerEndTurn = false;
+        TriggerEndTurn = false,
+        TriggerStartNextRound = false;
 
         #region  Post Action
 
@@ -230,9 +311,25 @@ namespace Model
 
                 _roundCounter = 0;
 
-                InitDecks();
+                while (_roundCounter < MAX_ROUNDS)
+                {
+                    InitDecks_Fixed(_roundCounter);
+                    StartRound(_roundCounter);      //This method will have sleeps with in, so its not like this while runs every 10ms
+                    _roundCounter++;
 
-                StartRound(ref _roundCounter);
+                    Thread.Sleep(10);
+
+                    GD.Print("Waiting for player input to start next round");
+
+                    ResetBoardForRound();
+
+                    if (AwaitAction(ref TriggerStartNextRound))
+                        GD.Print("Successfully ended the round");
+                    else
+                        GD.PrintErr("Failed to end the round");
+                }
+
+                main.Instance.GetTree().Quit();
 
                 return true;
             }
@@ -242,7 +339,7 @@ namespace Model
             }
         }
 
-        private void InitDecks()
+        private void InitDecks_Random()
         {
             for (int i = 0; i < PLAYER_COUNT; i++)
             {
@@ -262,8 +359,23 @@ namespace Model
                 PostAction(OnDeckBuildFinished, i);
             }
         }
+        
+        private void InitDecks_Fixed(int roundCounter)
+        {
+            for (int i = 0; i < PLAYER_COUNT; i++)
+            {
+                PostAction(OnDeckBuildStart, i);
 
-        private void StartRound(ref int roundCounter)
+                ref Card[] refDeck = ref _Decks[i];
+                refDeck = _RoundDecks[roundCounter];
+
+                Thread.Sleep(10);
+
+                PostAction(OnDeckBuildFinished, i);
+            }
+        }
+
+        private void StartRound(int roundCounter)
         {
             PostAction(OnRoundStart, roundCounter);
 
@@ -274,8 +386,9 @@ namespace Model
             InitBases();
 
             while(!IsRoundOver(_turnCounter)){
-                StartTurn(ref _turnCounter);
+                StartTurn(ref _turnCounter);        //This method will have sleeps within it, so its not like this while runs every 10ms
                 _turnCounter++;
+                Thread.Sleep(10);
             }
         }
         
@@ -345,6 +458,42 @@ namespace Model
             PostAction(OnTurnEnd, _turnPlayerIndex, _turnCounter);
             // No need to increment turn counter or start next turn, turns run in a while loop until the round is over.
             return true;
+        }
+
+        private void ResetBoardForRound()
+        {
+            // Remove all units from board
+            foreach (Unit unit in _activeBoard)
+            {
+                int wait = _random.Next(50, 250);
+                ActiveBoard_RemoveUnit(unit, out Unit removedUnit);
+                Thread.Sleep(wait);
+            }
+
+            // Remove all cards from hands
+            for (int iPlayerIndex = 0; iPlayerIndex < PLAYER_COUNT; iPlayerIndex++)
+            {
+                int failsafe = 0, failsafe_max = 100;
+
+                while (_Hands[iPlayerIndex].Length > 0 && failsafe < failsafe_max)
+                {
+                    failsafe++;
+
+                    int wait = _random.Next(25, 150);
+                    RemoveCardFromHand(iPlayerIndex, 0);
+                    Thread.Sleep(wait);
+                }
+            }
+
+            // Reset cards drawn
+            for (int i = 0; i < _CardsDrawn.Length; i++)
+            {
+                ref int drawn = ref _CardsDrawn[i];
+
+                drawn = 0;
+            }
+
+            GD.Print("Successfully reset board for next round");
         }
 
         private Axial CardSet_GetBaseLocation(int player_index){
@@ -613,15 +762,56 @@ namespace Model
 
         public bool IsRoundOver(int turnCounter){
 
+            bool isRoundOver = false;
+            int winnerIndex = -1;
+
+            //Check if any base is dead
             for(int i = 0; i < PLAYER_COUNT; i++){
                 if(ActiveBoard_TryGetBaseUnit(i, out Unit playerBase)){
                     if(playerBase.hp <= 0){
-                        return true;
+                        isRoundOver = true;
+                        winnerIndex = 1 - i;
                     }
                 }
+                //Else, the base unit could not be found, meaning it was destroyed
+                else
+                {
+                    isRoundOver = true;
+                    winnerIndex = 1 - i;
+                }
             }
-            
-            return turnCounter >= 100;
+
+            // If we've reached a turn cap OR neither player has anymore cards to play
+            if (turnCounter >= 50
+            || _Hands[0].Length == 0 && _CardsDrawn[0] == _DECK_COUNT
+                && _Hands[1].Length == 0 && _CardsDrawn[1] == _DECK_COUNT)
+            {
+                isRoundOver = true;
+                int[] sum_hps = new int[PLAYER_COUNT];
+
+                for (int i = 0; i < ActiveBoard.Length; i++)
+                {
+                    Unit unit = ActiveBoard[i];
+                    if (unit != null)
+                        sum_hps[unit.ownerIndex] += unit.hp;
+                    else
+                    {
+                        GD.PrintErr($"Found null unit at {i} index of ActiveBoard");
+                    }
+                }
+
+                winnerIndex = (sum_hps[0] > sum_hps[1]) ? 0 : 1;
+            }
+
+            //If the round is over
+            if(isRoundOver)
+            {
+                GD.Print($"Round {_roundCounter + 1} has ended! Player {winnerIndex} won the round!");
+                if(winnerIndex == -1) GD.PrintErr($"Round has ended but the winner index was not assigned");
+                PostAction(OnRoundEnd, _roundCounter, winnerIndex);
+            }
+
+            return isRoundOver;
         }
 
         public bool Unit_TryMove(bool isWillful, int playerIndex, Axial unitPos, Axial destination)
@@ -862,10 +1052,17 @@ namespace Model
         {
             Unit Unit = CreateUnitClass(player_index, location, card);
 
-            ActiveBoard_AddUnit(Unit);
+            if(Unit != Unit.EMPTY)
+            {
+                ActiveBoard_AddUnit(Unit);
 
-            if (friendlyResourceUnit != null)
-                friendlyResourceUnit.TryDamage(Unit, card.HP, friendlyResourceUnit);
+                if (friendlyResourceUnit != null && friendlyResourceUnit != Unit.EMPTY)
+                    friendlyResourceUnit.TryDamage(Unit, card.HP, friendlyResourceUnit);
+            }
+            else
+            {
+                GD.PrintErr($"Unit is empty, when trying to place from unit from void at {location}");
+            }
         }
 
         private Unit CreateUnitClass(int player_index, Axial location, Card card)
@@ -1135,7 +1332,7 @@ namespace Model
 
         private void ActiveBoard_AddUnit(Unit newUnit)
         {
-            if (_activeBoard != null)
+            if (_activeBoard != null && newUnit != null && newUnit != Unit.EMPTY)
             {
                 Unit[] newActiveBoard = new Unit[_activeBoard.Length + 1];
                 _activeBoard.CopyTo(newActiveBoard, 0);

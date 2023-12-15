@@ -298,6 +298,7 @@ public partial class player : Node3D
 		if (playerIntention == PlayerIntention.DISABLED || node3D == selectedObject && node3D != null)
 		{
 			GD.Print($"Not handling clicked object because either player intention is disabled({playerIntention == PlayerIntention.DISABLED}) or this Node3D is already selected({node3D == selectedObject})");
+			GD.PrintErr("Play input error SFX here");
 			return false;
 		}
 
@@ -561,7 +562,11 @@ public partial class player : Node3D
 
 										GD.Print($"User has successfully attacked ({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}. Player intention set to {playerIntention}");
 									}
-									else throw new Exception($"Player tried to attack({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+									else
+									{
+										GD.Print($"Player tried to attack({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+										GD.PrintErr("Play input error SFX here");
+									}
 
 
 								}
@@ -604,7 +609,11 @@ public partial class player : Node3D
 										}
 										else throw new Exception($"Could not deselect \"{selectedObject?.Name}\".");
 									}
-									else throw new Exception($"User tried to place a card({cardToPlace.card.NAME})@{hex3D.AxialPos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
+									else
+									{
+										GD.Print($"User tried to place a card({cardToPlace.card.NAME})@{hex3D.AxialPos}, but it failed.");
+										GD.PrintErr("Play input error SFX here");
+									}
 								}
 								else
 									throw new Exception($"User has clicked a hex with the intenion \"{playerIntention}\", but either no card is currently selected({cardToPlace == null}) OR the hex3D is null ({hex3D == null}). Neither should be possible.");
@@ -638,7 +647,11 @@ public partial class player : Node3D
 
 										GD.Print($"User has successfully moved unit {unitToMove.Name} to {unitToMove.unit.pos}. Player intention set to {playerIntention}");
 									}
-									else GD.Print($"User tried to move a unit({unitToMove.Name}) to {hex3D.AxialPos}, but it failed.");
+									else
+									{
+										GD.Print($"User tried to move a unit({unitToMove.Name}) to {hex3D.AxialPos}, but it failed.");
+										GD.PrintErr("Play input error SFX here");
+									}
 
 								}
 								else

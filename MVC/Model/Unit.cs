@@ -215,7 +215,7 @@ namespace Model
 
         public virtual bool TryAttack(Unit attacker, Unit target)
         {
-            if (CanAttack(target))
+            if (this.CanAttack(target) && target.CanBeDamaged())
             {
                 PostAction(main.Instance.gameModel.OnUnitAttack, attacker, target);
                 return Attack(target);

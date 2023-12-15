@@ -9,6 +9,7 @@ using System.Threading;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using static Model.ActionPoster;
+using static DialogueUtility;
 using System.Numerics;
 
 namespace Model
@@ -303,6 +304,14 @@ namespace Model
             });
         }
 
+        private string[] OnRoundStartMessages = new string[]
+        {
+            $"Hey! Thanks for coming in, I'm Moe and this here is Moe's Game. If you can beat me in three rounds, you get all your food for free! I'll go easy mode the first round, I promise.",
+            $"Yeah... that move reminds me of the mode of '87. This drifter came in from out of town demanding I sell him a burger for {C_(RED)}87 cents{C_()}. So, you know, I say {C_(TEAL)}\"why would I do that\"{C_()} and he says {C_(RED)}\"its the mode\".{C_()} What does that mean? \"Its the mode\"...",
+            $"You know how I was talking about the mode of '87? Well, there's more to it. The {C_(GREEN)}NEXT DAY{C_()}, this physicist comes in babbling about how he deserves to have a {C_(RED)}free burger{C_()} for the discovery he made. Apparently, he had just discovered that a strange pattern of motion in which all parts of the system move sinusoidally, and that all points are at the same frequency. So, you know, I say {C_(TEAL)}\"what does that even mean? Why would I give you a free burger for that?\"{C_()} And he says back to me with DISDAIN: {C_(RED)}\"Its the mode\"{C_()}.",
+            $"So you probably thought: \"Huh, two weird people come in talking about mode, I guess that's why he calls its the mode of '87'\". But there's more... We'd agree wednesday is the third day of the week, right? Well, on the third Wednesday of March in '87, these triplets come strolling in at 3:33pm hootin and howlerin about how they just won the lottery. Next thing you know this drifter, same guy I was talking about earlier, stops eating his burger after the third bite and pulls out a triple barreled sawed off shotgun and he says to them: \"Easy mode or hard mode, doesn't matter to me. Either way I'm getting that lotto.\""
+        };
+
         private bool StartGame()
         {
             if (!_isGameStarted)
@@ -313,11 +322,13 @@ namespace Model
 
                 while (_roundCounter < MAX_ROUNDS)
                 {
+                    main.Instance.DS.QueueMessage(true, OnRoundStartMessages[_roundCounter]);
+
                     InitDecks_Fixed(_roundCounter);
                     StartRound(_roundCounter);      //This method will have sleeps with in, so its not like this while runs every 10ms
                     _roundCounter++;
 
-                    Thread.Sleep(10);
+                    Thread.Sleep(250);
 
                     GD.Print("Waiting for player input to start next round");
 
@@ -465,7 +476,7 @@ namespace Model
             // Remove all units from board
             foreach (Unit unit in _activeBoard)
             {
-                int wait = _random.Next(50, 250);
+                int wait = _random.Next(75, 400);
                 ActiveBoard_RemoveUnit(unit, out Unit removedUnit);
                 Thread.Sleep(wait);
             }
@@ -479,7 +490,7 @@ namespace Model
                 {
                     failsafe++;
 
-                    int wait = _random.Next(25, 150);
+                    int wait = _random.Next(50, 250);
                     RemoveCardFromHand(iPlayerIndex, 0);
                     Thread.Sleep(wait);
                 }

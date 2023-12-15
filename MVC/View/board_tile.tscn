@@ -1,6 +1,22 @@
-[gd_scene load_steps=8 format=3 uid="uid://dhfhwx13amxsa"]
+[gd_scene load_steps=15 format=3 uid="uid://dhfhwx13amxsa"]
 
 [ext_resource type="Script" path="res://MVC/View/Scripts/Hex3D.cs" id="1_fq3gy"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jnshh"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xw35l"]
+transparency = 1
+albedo_color = Color(0, 0.301961, 0.823529, 0.627451)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_db51r"]
+transparency = 1
+albedo_color = Color(0, 0.639216, 1, 0.627451)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2tvc3"]
+transparency = 1
+albedo_color = Color(1, 0.0705882, 0.0862745, 0.627451)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_705qo"]
 albedo_color = Color(1, 0.341176, 0.341176, 1)
@@ -23,8 +39,51 @@ albedo_color = Color(0.0392157, 0.0196078, 0.0862745, 1)
 material = SubResource("StandardMaterial3D_hyibk")
 text = "(0,0,0)"
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nj6t2"]
+resource_name = "lambert1"
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.665185, 0.665185, 0.665185, 1)
+metallic = 0.2
+roughness = 0.8
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ddxk7"]
+_surfaces = [{
+"aabb": AABB(-1, 1, -0.866026, 2.00001, 1.00136e-05, 1.73205),
+"format": 4097,
+"index_count": 18,
+"index_data": PackedByteArray(0, 0, 2, 0, 1, 0, 3, 0, 2, 0, 0, 0, 4, 0, 2, 0, 3, 0, 5, 0, 2, 0, 4, 0, 6, 0, 2, 0, 5, 0, 1, 0, 2, 0, 6, 0),
+"lods": [1e-10, PackedByteArray(3, 0, 1, 0, 0, 0, 4, 0, 1, 0, 3, 0, 5, 0, 1, 0, 4, 0, 6, 0, 1, 0, 5, 0)],
+"name": "lambert1",
+"primitive": 3,
+"vertex_count": 7,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 4, 0, 0, 63, 0, 0, 128, 63, 213, 179, 93, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 254, 255, 255, 62, 0, 0, 128, 63, 216, 179, 93, 63, 2, 0, 0, 191, 0, 0, 128, 63, 215, 179, 93, 63, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 32, 180, 251, 255, 255, 190, 0, 0, 128, 63, 217, 179, 93, 191)
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_7sg84"]
+resource_name = "Root Scene_pCylinder2"
+_surfaces = [{
+"aabb": AABB(-1, 1, -0.866026, 2.00001, 1.00136e-05, 1.73205),
+"attribute_data": PackedByteArray(0, 0, 40, 63, 0, 0, 32, 62, 0, 0, 20, 63, 192, 124, 171, 60, 0, 0, 0, 63, 0, 0, 32, 62, 1, 0, 20, 63, 52, 72, 149, 62, 1, 0, 216, 62, 52, 72, 149, 62, 0, 0, 176, 62, 0, 0, 32, 62, 0, 0, 216, 62, 192, 124, 171, 60),
+"format": 4119,
+"index_count": 18,
+"index_data": PackedByteArray(0, 0, 2, 0, 1, 0, 3, 0, 2, 0, 0, 0, 4, 0, 2, 0, 3, 0, 5, 0, 2, 0, 4, 0, 6, 0, 2, 0, 5, 0, 1, 0, 2, 0, 6, 0),
+"lods": [1e-10, PackedByteArray(3, 0, 1, 0, 0, 0, 4, 0, 1, 0, 3, 0, 5, 0, 1, 0, 4, 0, 6, 0, 1, 0, 5, 0)],
+"material": SubResource("StandardMaterial3D_nj6t2"),
+"name": "lambert1",
+"primitive": 3,
+"vertex_count": 7,
+"vertex_data": PackedByteArray(0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 255, 127, 255, 255, 255, 255, 255, 191, 4, 0, 0, 63, 0, 0, 128, 63, 213, 179, 93, 191, 255, 127, 255, 255, 254, 255, 255, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 255, 127, 255, 255, 254, 255, 255, 191, 254, 255, 255, 62, 0, 0, 128, 63, 216, 179, 93, 63, 255, 127, 255, 255, 255, 255, 255, 191, 2, 0, 0, 191, 0, 0, 128, 63, 215, 179, 93, 63, 255, 127, 255, 255, 254, 255, 255, 191, 0, 0, 128, 191, 0, 0, 128, 63, 0, 0, 32, 180, 255, 127, 255, 255, 254, 255, 255, 191, 251, 255, 255, 190, 0, 0, 128, 63, 217, 179, 93, 191, 255, 127, 255, 255, 254, 255, 255, 191)
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_ddxk7")
+
 [node name="BoardTile" type="Node3D"]
 script = ExtResource("1_fq3gy")
+Unselected = SubResource("StandardMaterial3D_jnshh")
+Selected = SubResource("StandardMaterial3D_xw35l")
+Selectable = SubResource("StandardMaterial3D_db51r")
+Attackable = SubResource("StandardMaterial3D_2tvc3")
 
 [node name="coinSlot" type="Node3D" parent="."]
 transform = Transform3D(2.2, 0, 0, 0, 2.2, 0, 0, 0, 2.2, 0, 0, 0)
@@ -42,3 +101,11 @@ transform = Transform3D(1.96213, 0, 0, 0, 0.445489, 1.91088, 0, -1.91088, 0.4454
 visible = false
 mesh = SubResource("TextMesh_ghaax")
 skeleton = NodePath("../HpText3D")
+
+[node name="Indicator" type="StaticBody3D" parent="."]
+transform = Transform3D(-3.93403e-08, 0.9, -3.93403e-08, -1.37214e-23, -3.93403e-08, -0.9, -0.9, -3.93403e-08, 1.71962e-15, 0, 0.203039, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Indicator"]
+transform = Transform3D(1, -8.78943e-17, -6.789e-16, -9.21424e-17, -5.50763e-09, 1, -6.97574e-16, -0.126, -4.37114e-08, 2.08165e-12, 2.08189e-12, 0)
+mesh = SubResource("ArrayMesh_7sg84")
+skeleton = NodePath("")

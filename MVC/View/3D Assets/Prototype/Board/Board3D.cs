@@ -81,27 +81,90 @@ public partial class Board3D : Node3D
 		gameModel.OnUnitOwnerChanged += OnUnitOwnerChanged;
 
 		main.Instance.Player.OnObjectSelected += OnObjectSelected;
+		main.Instance.Player.OnObjectDeselected += OnObjectDeselected;
 
 		GenerateBoard3D(main.Instance?.gameModel?.Board.Axials);
 	}
 
 	private void OnObjectSelected(Node3D node3D)
-	{
+	{	
+		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
+
 		switch (node3D)
 		{
 			case Card3D card3D:
 				{
+					switch (card3D.card.TYPE) {
+						case Card.CardType.Resource:
+							Axial[] validPlacements = new Axial[32];
+							main.Instance.gameModel.GetAllOpenResourcePlacements(0, out validPlacements);
+							IndicateHexes(validPlacements, Hex3D.IndicatorState.Selectable);
+							break;
+
+
+						// GetAllValidOffensePlacements does not work for whatever reason. It does not give you all locations you can place offensive units.
+						case Card.CardType.Offense:
+							var validPlacementDictionary = new Dictionary<Axial, Unit>();
+							main.Instance.gameModel.GetAllValidOffensePlacements(0, card3D.card, out validPlacementDictionary);
+
+							var placementArray = new Axial[32];
+							int i = 0;
+
+							foreach (KeyValuePair<Axial, Unit> placement in validPlacementDictionary) {
+								placementArray[i] = placement.Key;
+								GD.Print(placement.Key);
+								GD.Print(placement.Value);
+								i++;
+							}
+
+							IndicateHexes(placementArray, Hex3D.IndicatorState.Selectable);
+
+							break;
+					}
+
 					break;
 				}
+
 			case Unit3D unit3D:
 				{
+					var pos = new Axial[1];
+					pos[0] = unit3D.unit.pos;
+					IndicateHexes(pos, Hex3D.IndicatorState.Selected);
+
+					var movePositions = new Axial[32];
+					unit3D.unit.GetAllMovePositions(out movePositions);
+					IndicateHexes(movePositions, Hex3D.IndicatorState.Selectable);
+					
+					var attackUnits = new Unit[32];
+					unit3D.unit.GetAllAttackTargets(out attackUnits);
+					var attackPositions = new Axial[32];
+					int i = 0;
+					foreach (Unit unit in attackUnits) {
+						attackPositions[i] = unit.pos;
+						i++;
+					}
+
+					IndicateHexes(attackPositions, Hex3D.IndicatorState.Attackable);
+
+
 					break;
 				}
+
 			case Hex3D hex3D:
 				{
 					break;
 				}
+				
+			case null:
+				{
+					IndicateAllHexes(Hex3D.IndicatorState.Disabled);
+					break;
+				}
 		}
+	}
+
+	private void OnObjectDeselected(Node3D node3D) {
+		IndicateAllHexes(Hex3D.IndicatorState.Disabled);
 	}
 
 	private void OnCamHoverNewHit(Hit3D hit)
@@ -454,6 +517,7 @@ public partial class Board3D : Node3D
 			boardTile3D.Name = $"Hex@{ax.ToString()}";
 			boardTile3D.AxialPos = ax;
 			boardTile3D.Position = pos;
+			boardTile3D.SetIndicator(Hex3D.IndicatorState.Disabled);
 
 			_Board3D[i] = boardTile3D;
 			AddChild(boardTile3D);
@@ -465,6 +529,39 @@ public partial class Board3D : Node3D
 			{
 				_side_length = (hexZero.GlobalPosition - hexEast.GlobalPosition).Length() / (float)Axial._SQ3;
 				_offset = this.GlobalPosition;
+			}
+		}
+	}
+
+	private void IndicateAllHexes(Hex3D.IndicatorState indi) {
+		foreach (Hex3D hex in _Board3D) {
+			hex.SetIndicator(indi);
+		}
+	}
+
+	private void IndicateHexes(Axial[] axials, Hex3D.IndicatorState indi) {
+		// GD.Print("Start of Hexes");
+		// for (int i = 0; i < axials.Length; i++) {
+		// 	try {
+		// 		GD.Print(axials[i]);
+		// 	} catch (Exception e) {
+		// 		GD.Print("Null detectded");
+		// 	}
+		// }
+		// GD.Print("End of Hexes");
+
+		for (int i = 0; i < axials.Length; i++) {
+			try {
+				GD.Print(axials[i]);
+
+				Hex3D hex = new Hex3D();
+
+				if (IsAxialOnBoard3D(axials[i], out hex)) {
+					hex.SetIndicator(indi);
+				}
+
+			} catch (Exception e) {
+				return;
 			}
 		}
 	}

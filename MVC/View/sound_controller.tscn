@@ -22,7 +22,7 @@
 
 [node name="SoundController" type="Node3D" node_paths=PackedStringArray("SFXStreams", "MusicStreams")]
 script = ExtResource("1_c6u2s")
-SFXStreams = [NodePath("AudioStreamPlayer0"), NodePath("AudioStreamPlayer1"), NodePath("AudioStreamPlayer2"), NodePath("AudioStreamPlayer3"), NodePath("AudioStreamPlayer4"), NodePath("AudioStreamPlayer5")]
+SFXStreams = [NodePath("AudioStreamPlayer0"), NodePath("AudioStreamPlayer1"), NodePath("AudioStreamPlayer2"), NodePath("AudioStreamPlayer3"), NodePath("AudioStreamPlayer4"), NodePath("AudioStreamPlayer5"), NodePath("AudioStreamPlayer6"), NodePath("AudioStreamPlayer7"), NodePath("AudioStreamPlayer8"), NodePath("AudioStreamPlayer9"), NodePath("AudioStreamPlayer10"), NodePath("AudioStreamPlayer11"), NodePath("AudioStreamPlayer12"), NodePath("AudioStreamPlayer13"), NodePath("AudioStreamPlayer14"), NodePath("AudioStreamPlayer15"), NodePath("AudioStreamPlayer16"), NodePath("AudioStreamPlayer17")]
 MusicStreams = [NodePath("AudioStreamPlayer7"), NodePath("AudioStreamPlayer6")]
 
 [node name="AudioStreamPlayer0" type="AudioStreamPlayer" parent="."]

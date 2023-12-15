@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Godot;
 
@@ -15,13 +17,7 @@ namespace Model
         private const int END_SENTENCE_DELAY = 500; // Delay for period, exclamation, question mark
         private const int OTHER_CHAR_DELAY = 30; // Delay for other characters
 
-        private enum CharType {letter, comma, end, other};
-
-        private static string ORANGE = "#ff8629",
-        RED = "#e63119",
-        GREEN = "#41f27f",
-        PINK = "#ed58aa",
-        TEAL = "#2fd4ad";
+        private enum CharType { letter, comma, end, other };
 
         public RichTextLabel DEBUG_richTextLabel;
 
@@ -31,23 +27,25 @@ namespace Model
         public DialogueSystem()
         {
             DEBUG_richTextLabel = main.CurrentScene.FindChild("DEBUG_DialogueRichText") as RichTextLabel;
-            if(DEBUG_richTextLabel == null) throw new Exception("Could not find richTextLabel named \"DEBUG_DialogueRichText\"");
-            
-            DisplayMessage("So you probably thought: \"Huh, two weird people come in talking about mode, I guess that's why he calls its the mode of '87'\". But there's more... We'd agree wednesday is the third day of the week, right? Well, on the third Wednesday of March in '87, these triplets come strolling in at 3:33pm hootin and howlerin about how they just won the lottery. Next thing you know this drifter, same guy I was talking about earlier, stops eating his burger after the third bite and pulls out a triple barreled sawed off shotgun and he says to them: \"Easy mode or hard mode, doesn't matter to me. Either way I'm getting that lotto.\"");
-        }
-        
-        private static string C_()
-        {
-            return "[/color]";
+            if (DEBUG_richTextLabel == null) throw new Exception("Could not find richTextLabel named \"DEBUG_DialogueRichText\"");
         }
 
-        private string C_(string hexColor)
-        {
-            return $"[color={hexColor}]";
-        }
+        bool isWriting = false, skipPendingMessages = false;
 
-        public void DisplayMessage(string message)
+        private CancellationTokenSource cancellationTokenSource;
+
+        private async void DisplayMessage(string message)
         {
+            CancellationToken cancellationToken = cancellationDictionary[message];
+
+            if (!main.IsMainThread())
+            {
+                GD.PrintErr("Cannot execute this method from an offload thread");
+                cancellationDictionary.Remove(message);
+                isWriting = false;
+                return;
+            }
+
             int charCount = 0, charCountMax = 3;
 
             IProgress<(string, CharType)> ProgressReporter = new Progress<(string, CharType)>((tuple) =>
@@ -75,28 +73,35 @@ namespace Model
                 }
             });
 
-            Task display = new Task(() =>
+            Task display = new Task(async () =>
             {
                 StringBuilder sb = new StringBuilder();
-            bool insideBBCodeTag = false;
+                bool insideBBCodeTag = false;
 
-            // Build the message letter by letter
-            foreach (char c in message)
-            {
-                CharType charType;
-                // If BBcode is starting
-                if (c == '[')
+                // Build the message letter by letter
+                foreach (char c in message)
                 {
-                    insideBBCodeTag = true;
-                }
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        cancellationDictionary.Remove(message);
+                        isWriting = false;
+                        return;
+                    }
 
-                sb.Append(c);
+                    CharType charType;
+                    // If BBcode is starting
+                    if (c == '[')
+                    {
+                        insideBBCodeTag = true;
+                    }
 
-                // If BBcode is ending
-                if (c == ']' && insideBBCodeTag)
-                {
-                    insideBBCodeTag = false;
-                }
+                    sb.Append(c);
+
+                    // If BBcode is ending
+                    if (c == ']' && insideBBCodeTag)
+                    {
+                        insideBBCodeTag = false;
+                    }
 
                     // Neglect to report BBcode, only report when we're outside of BBcode
                     if (!insideBBCodeTag)
@@ -125,16 +130,20 @@ namespace Model
                         switch (charType)
                         {
                             case CharType.letter:
-                                System.Threading.Thread.Sleep(LETTER_DELAY);
+                                // System.Threading.Thread.Sleep(LETTER_DELAY);
+                                await Task.Delay(LETTER_DELAY);
                                 break;
                             case CharType.comma:
-                                System.Threading.Thread.Sleep(PAUSE_DELAY);
+                                // System.Threading.Thread.Sleep(PAUSE_DELAY);
+                                await Task.Delay(PAUSE_DELAY);
                                 break;
                             case CharType.end:
-                                System.Threading.Thread.Sleep(END_SENTENCE_DELAY);
+                                // System.Threading.Thread.Sleep(END_SENTENCE_DELAY);
+                                await Task.Delay(END_SENTENCE_DELAY);
                                 break;
                             case CharType.other:
-                                System.Threading.Thread.Sleep(OTHER_CHAR_DELAY);
+                                // System.Threading.Thread.Sleep(OTHER_CHAR_DELAY);
+                                await Task.Delay(OTHER_CHAR_DELAY);
                                 break;
                         }
                     }
@@ -142,22 +151,60 @@ namespace Model
 
             });
 
+            display.RunSynchronously();
 
+            await Task.WhenAll(new Task[] { display });
 
-            // Ensure this is run off main thread
+            cancellationDictionary.Remove(message);
+            isWriting = false;
+        }
+
+        Dictionary<string, CancellationToken> cancellationDictionary = new Dictionary<string, CancellationToken>();
+
+        public async void QueueMessage(bool interrupt, string message)
+        {
+            // Always interrupting because I can't figure out why messages are conflicting when they don't interrupt
+            interrupt = true;
+
+            if (cancellationDictionary.ContainsKey(message))
+                return;
+
+            if (interrupt)
+            {
+                if (cancellationTokenSource != null)
+                {
+                    // Cancel the ongoing task and skip pending messages
+                    cancellationTokenSource.Cancel();
+                    skipPendingMessages = true;
+                }
+            }
+
+            // Wait for the previous message to finish or be skipped
+            while (!interrupt && isWriting && !skipPendingMessages)
+            {
+                await Task.Delay(50);
+            }
+
+            if (skipPendingMessages && !interrupt)
+            {
+                // Skip this message as an interrupt has occurred
+                return;
+            }
+
+            isWriting = true;
+            skipPendingMessages = false;
+
+            cancellationTokenSource = new CancellationTokenSource();
+            cancellationDictionary.Add(message, cancellationTokenSource.Token);
+
             if (main.IsMainThread())
             {
-                display.Start();
+                DisplayMessage(message);
             }
             else
             {
-                display.RunSynchronously();
+                ActionPoster.PostAction(DisplayMessage, message);
             }
-        }
-
-        public void QueueMessage(string message)
-        {
-
         }
     }
 }

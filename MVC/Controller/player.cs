@@ -3,7 +3,11 @@ using Deck;
 using Godot;
 using Model;
 using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Utility;
+using static DialogueUtility;
 
 public partial class player : Node3D
 {
@@ -13,10 +17,10 @@ public partial class player : Node3D
 	[Export] private Vector3 top_down_position = new Vector3(0, 1.3f, 0.00f);
 	[Export] private Vector3 top_down_rotation = new Vector3(-90, 0, 0);
 	[Export] private Vector3 perspective_position = new Vector3(0f, 0.9f, 0.7f);
-	[Export] private Vector3 perspective_rotation = new Vector3(-35, 0, 0);
+	[Export] private Vector3 perspective_rotation = new Vector3(-28, 0, 0);
 	[Export] private float transition_time = 0.4f;
 
-	private bool top_down = false;
+	private bool top_down = true;
 
 	private Hit3D _camHoverHit;
 	public Hit3D CamHoverHit => _camHoverHit;
@@ -57,7 +61,14 @@ public partial class player : Node3D
 		main.Instance.gameModel.OnUnitMove += DEBUG_OnObjectSelected;
 		OnObjectDeselected += DEBUG_OnObjectDeselected;
 
-		SwitchToPerspective();
+
+		var async = async () =>
+		{
+			await Task.Delay(500);
+			SwitchToPerspective();
+		};
+
+		async.Invoke();
 	}
 
 	private void OnAwaitTurnActions(int turnPlayerIndex, int turnCounter)
@@ -308,6 +319,17 @@ public partial class player : Node3D
 	{
 		if (playerIntention == PlayerIntention.DISABLED || node3D == selectedObject && node3D != null)
 		{
+			if(playerIntention == PlayerIntention.DISABLED && node3D != null)
+			{
+				if(main.Instance.gameModel.TurnPlayerIndex == 0)
+				{
+					main.Instance.DS.QueueMessage(true, $"You need to {C_(GREEN)}draw a card{C_()} before you can play. Sorry if that's confusing, {C_(ORANGE)}John B. Modeson{C_()} is still working on the details of the game.");
+				}
+				else
+				{
+					main.Instance.DS.QueueMessage(true, $"Are you trying to play on my turn? I wish it worked that way... I'll talk to the {C_(ORANGE)}Sous Chef{C_()} about that.");
+				}
+			}
 			GD.Print($"Not handling clicked object because either player intention is disabled({playerIntention == PlayerIntention.DISABLED}) or this Node3D is already selected({node3D == selectedObject})");
 			GD.PrintErr("Play input error SFX here");
 			return false;
@@ -331,9 +353,12 @@ public partial class player : Node3D
 							{
 								// If the player currently has a card selected and they've clicked off the board, then we assume they want to deselect the card and return to their deck
 								Card3D selectedCard3D = selectedObject as Card3D;
+								
 
 								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
 								{
+									main.Instance.DS.QueueMessage(false, $"You decided you didn't want to play your {C_(ORANGE)}{selectedCard3D.card.NAME}{C_()}, huh?");
+
 									OnObjectDeselected?.Invoke(selectedCard3D);
 
 									if (top_down)
@@ -354,7 +379,8 @@ public partial class player : Node3D
 
 								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
 								{
-									OnPlayerAttackMode(false);
+									main.Instance.DS.QueueMessage(false, $"You've gone and pulled the tomato right out the buns. I thought you were gonna fry me up with your {C_(ORANGE)}{selectedUnit3D.unit.card.NAME}{C_()}");
+
 									OnObjectDeselected?.Invoke(selectedUnit3D);
 
 									playerIntention = PlayerIntention.Open;
@@ -369,6 +395,13 @@ public partial class player : Node3D
 				}
 			case Card3D card3D:
 				{
+					
+
+					DisplayMessageOnCardSelect(card3D);
+
+
+
+
 					switch (playerIntention)
 					{
 						case PlayerIntention.Open:
@@ -557,6 +590,7 @@ public partial class player : Node3D
 										//If the unit can no longer attack AND cannot move,
 										if (!attackUnit3D.unit.CanAttack() && !attackUnit3D.unit.HasMovement(out int dummyInt))
 										{
+											main.Instance.DS.QueueMessage(false, $"That was a good attack. But that {C_(ORANGE)}{attackUnit3D.unit.card.NAME}{C_()} is all done for this turn.");
 											if (attackUnit3D.OnObjectDeselected())
 											{
 												OnObjectDeselected?.Invoke(selectedObject);
@@ -617,6 +651,7 @@ public partial class player : Node3D
 									{
 										if (cardToPlace.OnObjectDeselected())
 										{
+											main.Instance.DS.QueueMessage(false, $"Nice play.");
 											OnObjectDeselected?.Invoke(selectedObject);
 											playerIntention = PlayerIntention.Open;
 											selectedObject = null;
@@ -626,6 +661,7 @@ public partial class player : Node3D
 									}
 									else
 									{
+										main.Instance.DS.QueueMessage(true, $"Sorry, I know your new to this. You can't place your {C_(ORANGE)}{cardToPlace.card.NAME}{C_()} at {hex3D.AxialPos}.");
 										GD.Print($"User tried to place a card({cardToPlace.card.NAME})@{hex3D.AxialPos}, but it failed.");
 										GD.PrintErr("Play input error SFX here");
 									}
@@ -652,6 +688,7 @@ public partial class player : Node3D
 										{
 											if (unitToMove.OnObjectDeselected())
 											{
+												main.Instance.DS.QueueMessage(false, $"Your unit is entering \"do nothing\" mode.");
 												OnObjectDeselected?.Invoke(selectedObject);
 												playerIntention = PlayerIntention.Open;
 												selectedObject = null;
@@ -661,6 +698,7 @@ public partial class player : Node3D
 										}
 										else
 										{
+											main.Instance.DS.QueueMessage(false, $"You're out of moves with your {C_(ORANGE)}{unitToMove.unit.card.NAME}{C_()}, but you can still attack if you'd like.");
 											// In this case, the unit may be out of movement but still have attack left. They probably want to keep the unit selected.
 										}
 
@@ -694,5 +732,33 @@ public partial class player : Node3D
 			return false;
 
 		return false;
+	}
+
+	int onCardSelectMsgIndex = 0;
+	Random random = new Random();
+
+	private void DisplayMessageOnCardSelect(Card3D card3D)
+	{
+		int ran = random.Next(0, 2);
+		if (ran != 0)
+			return;
+
+		string[] onCardSelectMsgs = new string[]
+		{
+		$"Ah, looking to play {card3D.card.NAME}? I believe that's the Sicilian Pizza defense... a classic.",
+		$"Ah, looking to play {card3D.card.NAME}? I think that's a wise decision. Maybe you'd like to apply as a line cook after this? Seriously. We're really understaffed.",
+		$"Ah, looking to play {card3D.card.NAME}? That's not the mode I would've taken, but I can respect it.",
+		$"Ah, looking to play {card3D.card.NAME}? That reminds me of the time I dropped my phone in the fryer back when I was a young, dumb line boy. Without a second thought I reached in to grab it. My hand went fried mode real quick",
+		$"Ah, looking to play {card3D.card.NAME}? You ever watch Bob's Burgers? Or Spongebob Squarepants? My burgers beat both their burgers.",
+		$"Ah, looking to play-- did you hear that? No, no, no, I can't believe it... newbie's making a code 13 on the lettuce! I'll be right back...",
+		$"Ah, looking to play {card3D.card.NAME}? That reminds me of the mode of '87.",
+		$"Ah, looking to play... have I-- have I ever told you about the mode of-- Nevermind",
+		$"Ah, looking to play {card3D.card.NAME}? I totally would play that. That's a great move.",
+		$"Ah, looking to play... look I'm running out of the mental bandwidth to keep coming up with new things to say. I'm just gonna start repeating things and hope you don't notice."
+		};
+
+
+		main.Instance.DS.QueueMessage(false, onCardSelectMsgs[onCardSelectMsgIndex % onCardSelectMsgs.Length]);
+		onCardSelectMsgIndex++;
 	}
 }

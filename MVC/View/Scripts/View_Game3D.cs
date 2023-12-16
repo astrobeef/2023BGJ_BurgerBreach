@@ -163,6 +163,9 @@ namespace View
 
 			playerInput_1.Visible = true;
 			playerInput_1.Pressed += Handle_RoundEndInput;
+			
+			playerInput_1.Pressed -= HandleInput_EndTurn;
+			playerInput_1.Pressed -= HandleInput_DrawCard;
 		}
 
 		private void Handle_RoundEndInput()

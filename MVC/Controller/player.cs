@@ -321,11 +321,11 @@ public partial class player : Node3D
 		{
 			if (playerIntention == PlayerIntention.DISABLED && node3D != null)
 			{
-				if (main.Instance.gameModel.TurnPlayerIndex == 0)
+				if (main.Instance.gameModel.TurnPlayerIndex == 0 && main.Instance.gameModel.RoundCounter == 0)
 				{
 					main.Instance.DS.QueueMessage(true, $"You need to {C_(GREEN)}draw a card{C_()} before you can play. Sorry if that's confusing, {C_(ORANGE)}John B. Modeson{C_()} is still working on the details of the game.");
 				}
-				else
+				else if(main.Instance.gameModel.TurnPlayerIndex == 0)
 				{
 					main.Instance.DS.QueueMessage(true, $"Are you trying to play on my turn? I wish it worked that way... I'll talk to the {C_(ORANGE)}Sous Chef{C_()} about that.");
 				}
@@ -359,7 +359,9 @@ public partial class player : Node3D
 
 								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
 								{
-									main.Instance.DS.QueueMessage(false, $"You decided you didn't want to play your {C_(ORANGE)}{selectedCard3D.card.NAME}{C_()}, huh?");
+									int rand = random.Next(0, 5);
+									if (rand == 0)
+										main.Instance.DS.QueueMessage(false, $"You decided you didn't want to play your {C_(ORANGE)}{selectedCard3D.card.NAME}{C_()}, huh?");
 
 									OnObjectDeselected?.Invoke(selectedCard3D);
 
@@ -381,7 +383,9 @@ public partial class player : Node3D
 
 								if (selectedUnit3D != null && selectedUnit3D.OnObjectDeselected())
 								{
-									main.Instance.DS.QueueMessage(false, $"You've gone and pulled the tomato right out the buns. I thought you were gonna fry me up with your {C_(ORANGE)}{selectedUnit3D.unit.card.NAME}{C_()}");
+									int rand = random.Next(0, 5);
+									if (rand == 0)
+										main.Instance.DS.QueueMessage(false, $"You've gone and pulled the tomato right out the buns. I thought you were gonna fry me up with your {C_(ORANGE)}{selectedUnit3D.unit.card.NAME}{C_()}");
 
 									OnObjectDeselected?.Invoke(selectedUnit3D);
 
@@ -591,7 +595,10 @@ public partial class player : Node3D
 										//If the unit can no longer attack AND cannot move,
 										if (!attackUnit3D.unit.CanAttack() && !attackUnit3D.unit.HasMovement(out int dummyInt))
 										{
-											main.Instance.DS.QueueMessage(false, $"That was a good attack. But that {C_(ORANGE)}{attackUnit3D.unit.card.NAME}{C_()} is all done for this turn.");
+											int rand = random.Next(0, 5);
+											if (rand == 0)
+												main.Instance.DS.QueueMessage(false, $"That was a good attack. But that {C_(ORANGE)}{attackUnit3D.unit.card.NAME}{C_()} is all done for this turn.");
+
 											if (attackUnit3D.OnObjectDeselected())
 											{
 												OnObjectDeselected?.Invoke(selectedObject);
@@ -653,7 +660,11 @@ public partial class player : Node3D
 									{
 										if (cardToPlace.OnObjectDeselected())
 										{
-											main.Instance.DS.QueueMessage(false, $"Nice play.");
+
+											int rand = random.Next(0, 5);
+											if (rand == 0)
+												main.Instance.DS.QueueMessage(false, $"Nice play.");
+
 											OnObjectDeselected?.Invoke(selectedObject);
 											playerIntention = PlayerIntention.Open;
 											selectedObject = null;
@@ -663,7 +674,11 @@ public partial class player : Node3D
 									}
 									else
 									{
-										main.Instance.DS.QueueMessage(true, $"Sorry, I know your new to this. You can't place your {C_(ORANGE)}{cardToPlace.card.NAME}{C_()} at {hex3D.AxialPos}.");
+
+										int rand = random.Next(0, 3);
+										if (rand == 0)
+											main.Instance.DS.QueueMessage(true, $"Sorry, I know your new to this. You can't place your {C_(ORANGE)}{cardToPlace.card.NAME}{C_()} at {hex3D.AxialPos}.");
+
 										GD.Print($"User tried to place a card({cardToPlace.card.NAME})@{hex3D.AxialPos}, but it failed.");
 										main.Instance.SoundController.Play(sound_controller.SFX_UI_FAIL);
 									}
@@ -690,7 +705,11 @@ public partial class player : Node3D
 										{
 											if (unitToMove.OnObjectDeselected())
 											{
-												main.Instance.DS.QueueMessage(false, $"Your unit is entering \"do nothing\" mode.");
+
+												int rand = random.Next(0, 5);
+												if (rand == 0)
+													main.Instance.DS.QueueMessage(false, $"Your unit is entering \"do nothing\" mode.");
+
 												OnObjectDeselected?.Invoke(selectedObject);
 												playerIntention = PlayerIntention.Open;
 												selectedObject = null;

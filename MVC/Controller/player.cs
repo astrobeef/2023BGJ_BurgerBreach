@@ -384,7 +384,6 @@ public partial class player : Node3D
 									OnObjectDeselected?.Invoke(selectedUnit3D);
 
 									playerIntention = PlayerIntention.Open;
-									OnPlayerAttackMode(false);
 									selectedObject = null;
 								}
 								else throw new Exception($"Could not select \"{selectedUnit3D?.Name}\". Either no card is selected ({selectedUnit3D == null}) OR it failed to deselect");
@@ -473,7 +472,6 @@ public partial class player : Node3D
 										OnObjectSelected?.Invoke(cardToSelect);
 										// Set intention to 'PlaceCard'
 										playerIntention = PlayerIntention.PlaceCard;
-										OnPlayerAttackMode(false);
 										selectedObject = cardToSelect;
 										GD.Print($"Selected card {cardToSelect.card.NAME}. Changed player intention to {playerIntention}");
 									}
@@ -749,7 +747,7 @@ public partial class player : Node3D
 		$"Ah, looking to play {card3D.card.NAME}? I believe that's the Sicilian Pizza defense... a classic.",
 		$"Ah, looking to play {card3D.card.NAME}? I think that's a wise decision. Maybe you'd like to apply as a line cook after this? Seriously. We're really understaffed.",
 		$"Ah, looking to play {card3D.card.NAME}? That's not the mode I would've taken, but I can respect it.",
-		$"Ah, looking to play {card3D.card.NAME}? That reminds me of the time I dropped my phone in the fryer back when I was a young, dumb line boy. Without a second thought I reached in to grab it. My hand went fried mode real quick",
+		$"Ah, looking to play {card3D.card.NAME}? That reminds me of the time I dropped my phone in the fryer back when I was a young, dumb line boy. Without a second thought I reached in to grab it. My hand went fried mode real quick.",
 		$"Ah, looking to play {card3D.card.NAME}? You ever watch Bob's Burgers? Or Spongebob Squarepants? My burgers beat both their burgers.",
 		$"Ah, looking to play-- did you hear that? No, no, no, I can't believe it... newbie's making a code 13 on the lettuce! I'll be right back...",
 		$"Ah, looking to play {card3D.card.NAME}? That reminds me of the mode of '87.",

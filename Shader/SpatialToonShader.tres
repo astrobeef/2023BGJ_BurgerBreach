@@ -1,0 +1,300 @@
+[gd_resource type="VisualShader" load_steps=25 format=3 uid="uid://1pulhy11u6y4"]
+
+[sub_resource type="VisualShaderNodeFloatConstant" id="VisualShaderNodeFloatConstant_sxudw"]
+constant = -0.99
+
+[sub_resource type="VisualShaderNodeVaryingGetter" id="VisualShaderNodeVaryingGetter_he7wx"]
+varying_name = "passed_normal"
+varying_type = 4
+
+[sub_resource type="VisualShaderNodeTexture2DParameter" id="VisualShaderNodeTexture2DParameter_sookl"]
+parameter_name = "Texture2DParameter"
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_blxob"]
+source = 5
+
+[sub_resource type="VisualShaderNodeVaryingSetter" id="VisualShaderNodeVaryingSetter_xlidl"]
+varying_name = "main_color"
+varying_type = 4
+
+[sub_resource type="VisualShaderNodeExpression" id="VisualShaderNodeExpression_nqgeo"]
+size = Vector2(865.795, 576.769)
+expression = "// Assuming 'passed_normal' is the normal passed from the vertex shader
+vec3 normal = normalize(passed_normal);
+vec3 view_direction = normalize(VIEW); // Use view direction for edge detection
+
+// Calculate the dot product between the normal and the view direction
+float edge_factor = dot(normal, view_direction);
+
+// Apply a threshold to detect edges
+bool is_edge = edge_factor < edge_threshold;
+
+// Determine color based on edge detection
+vec3 edge_color = vec3(0.0, 0.0, 0.0); // Color for edges (e.g., black)
+vec3 base_color = vec3(1.0, 1.0, 1.0); // Base color (e.g., white)
+vec3 final_color = mix(base_color, edge_color, float(is_edge));
+
+out_color = final_color; // 'color' is the output variable in the expression
+"
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_x5a7k"]
+default_input_values = [0, Quaternion(0, 0, 0, 0), 1, Quaternion(0, 0, 0, 0)]
+op_type = 2
+operator = 2
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_jpduu"]
+default_input_values = [0, Quaternion(0, 0, 0, 0), 1, Quaternion(0, 0, 0, 0)]
+op_type = 2
+operator = 11
+
+[sub_resource type="VisualShaderNodeFloatConstant" id="VisualShaderNodeFloatConstant_132x1"]
+constant = 0.6
+
+[sub_resource type="VisualShaderNodeMix" id="VisualShaderNodeMix_brc8e"]
+default_input_values = [0, Quaternion(0, 0, 0, 0), 1, Quaternion(1, 1, 1, 1), 2, Quaternion(0.5, 0.5, 0.5, 0.5)]
+op_type = 5
+
+[sub_resource type="VisualShaderNodeColorConstant" id="VisualShaderNodeColorConstant_n0jtd"]
+constant = Color(0.118665, 0.0180093, 0.139649, 1)
+
+[sub_resource type="VisualShaderNodeVaryingGetter" id="VisualShaderNodeVaryingGetter_hgv6p"]
+varying_name = "main_color"
+varying_type = 4
+
+[sub_resource type="VisualShaderNodeMix" id="VisualShaderNodeMix_uh0fa"]
+default_input_values = [0, Vector3(0, 0, 0), 1, Vector3(1, 1, 1), 2, Vector3(0.5, 0.5, 0.5)]
+op_type = 3
+
+[sub_resource type="VisualShaderNodeColorConstant" id="VisualShaderNodeColorConstant_67bkm"]
+constant = Color(0.85, 0.8194, 0.7735, 1)
+
+[sub_resource type="VisualShaderNodeVaryingGetter" id="VisualShaderNodeVaryingGetter_hbu0a"]
+varying_name = "main_color"
+varying_type = 4
+
+[sub_resource type="VisualShaderNodeMix" id="VisualShaderNodeMix_x34e6"]
+default_input_values = [0, Vector3(0, 0, 0), 1, Vector3(1, 1, 1), 2, Vector3(0.5, 0.5, 0.5)]
+op_type = 3
+
+[sub_resource type="VisualShaderNodeFloatConstant" id="VisualShaderNodeFloatConstant_nmbxa"]
+constant = 0.6
+
+[sub_resource type="VisualShaderNodeFloatConstant" id="VisualShaderNodeFloatConstant_betdb"]
+constant = 0.1
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_ibho5"]
+expanded_output_ports = [0]
+input_name = "light"
+
+[sub_resource type="VisualShaderNodeDotProduct" id="VisualShaderNodeDotProduct_60f1p"]
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_pjxxh"]
+input_name = "normal"
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_fux85"]
+expanded_output_ports = [0]
+input_name = "light_color"
+
+[sub_resource type="VisualShaderNodeExpression" id="VisualShaderNodeExpression_1b58v"]
+size = Vector2(539.19, 267.37)
+expression = "passed_normal = NORMAL;"
+
+[sub_resource type="VisualShaderNodeVaryingSetter" id="VisualShaderNodeVaryingSetter_xes3h"]
+varying_name = "passed_normal"
+varying_type = 4
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
+
+
+// Varyings
+varying vec3 main_color;
+varying vec3 passed_normal;
+
+uniform sampler2D Texture2DParameter;
+
+
+
+void vertex() {
+	vec3 n_out2p0;
+// Expression:2
+	n_out2p0 = vec3(0.0, 0.0, 0.0);
+	{
+		n_out2p0 = NORMAL;
+	}
+
+
+// VaryingSetter:3
+	passed_normal = n_out2p0;
+
+
+}
+
+void fragment() {
+	vec4 n_out13p0;
+// Texture2D:13
+	n_out13p0 = texture(Texture2DParameter, UV);
+
+
+// Output:0
+	ALBEDO = vec3(n_out13p0.xyz);
+
+
+// VaryingSetter:7
+	main_color = vec3(n_out13p0.xyz);
+
+
+}
+
+void light() {
+// ColorConstant:16
+	vec4 n_out16p0 = vec4(0.118665, 0.018009, 0.139649, 1.000000);
+
+
+// VaryingGetter:18
+	vec3 n_out18p0 = main_color;
+
+
+// FloatConstant:25
+	float n_out25p0 = 0.100000;
+
+
+// Mix:19
+	vec3 n_out19p0 = mix(vec3(n_out16p0.xyz), n_out18p0, vec3(n_out25p0));
+
+
+// ColorConstant:21
+	vec4 n_out21p0 = vec4(0.850000, 0.819400, 0.773500, 1.000000);
+
+
+// VaryingGetter:22
+	vec3 n_out22p0 = main_color;
+
+
+// FloatConstant:24
+	float n_out24p0 = 0.600000;
+
+
+// Mix:23
+	vec3 n_out23p0 = mix(vec3(n_out21p0.xyz), n_out22p0, vec3(n_out24p0));
+
+
+// FloatConstant:14
+	float n_out14p0 = 0.600000;
+
+
+// Input:9
+	vec3 n_out9p0 = LIGHT_COLOR;
+
+
+// Input:6
+	vec3 n_out6p0 = LIGHT;
+
+
+// Input:8
+	vec3 n_out8p0 = NORMAL;
+
+
+// DotProduct:7
+	float n_out7p0 = dot(n_out6p0, n_out8p0);
+
+
+// VectorOp:10
+	vec4 n_out10p0 = vec4(n_out9p0, 0.0) * vec4(n_out7p0);
+
+
+// VectorOp:13
+	vec4 n_out13p0 = step(vec4(n_out14p0), n_out10p0);
+
+
+// Mix:15
+	vec4 n_out15p0 = mix(vec4(n_out19p0, 0.0), vec4(n_out23p0, 0.0), n_out13p0);
+
+
+// Output:0
+	DIFFUSE_LIGHT = vec3(n_out15p0.xyz);
+
+
+}
+"
+graph_offset = Vector2(-372.715, 396.897)
+varyings/main_color = "1,4"
+varyings/passed_normal = "0,4"
+nodes/vertex/2/node = SubResource("VisualShaderNodeExpression_1b58v")
+nodes/vertex/2/position = Vector2(-480, 180)
+nodes/vertex/2/size = Vector2(539.19, 267.37)
+nodes/vertex/2/input_ports = ""
+nodes/vertex/2/output_ports = "0,4,passed_normal;"
+nodes/vertex/2/expression = "passed_normal = NORMAL;"
+nodes/vertex/3/node = SubResource("VisualShaderNodeVaryingSetter_xes3h")
+nodes/vertex/3/position = Vector2(120, 180)
+nodes/vertex/connections = PackedInt32Array(2, 0, 3, 0)
+nodes/fragment/0/position = Vector2(1820, 100)
+nodes/fragment/7/node = SubResource("VisualShaderNodeVaryingSetter_xlidl")
+nodes/fragment/7/position = Vector2(1720, -20)
+nodes/fragment/8/node = SubResource("VisualShaderNodeExpression_nqgeo")
+nodes/fragment/8/position = Vector2(-80, 340)
+nodes/fragment/8/size = Vector2(865.795, 576.769)
+nodes/fragment/8/input_ports = "0,4,passed_normal;1,0,edge_threshold;"
+nodes/fragment/8/output_ports = "0,4,out_color;"
+nodes/fragment/8/expression = "// Assuming 'passed_normal' is the normal passed from the vertex shader
+vec3 normal = normalize(passed_normal);
+vec3 view_direction = normalize(VIEW); // Use view direction for edge detection
+
+// Calculate the dot product between the normal and the view direction
+float edge_factor = dot(normal, view_direction);
+
+// Apply a threshold to detect edges
+bool is_edge = edge_factor < edge_threshold;
+
+// Determine color based on edge detection
+vec3 edge_color = vec3(0.0, 0.0, 0.0); // Color for edges (e.g., black)
+vec3 base_color = vec3(1.0, 1.0, 1.0); // Base color (e.g., white)
+vec3 final_color = mix(base_color, edge_color, float(is_edge));
+
+out_color = final_color; // 'color' is the output variable in the expression
+"
+nodes/fragment/10/node = SubResource("VisualShaderNodeFloatConstant_sxudw")
+nodes/fragment/10/position = Vector2(-380, 480)
+nodes/fragment/11/node = SubResource("VisualShaderNodeVaryingGetter_he7wx")
+nodes/fragment/11/position = Vector2(-600, 160)
+nodes/fragment/12/node = SubResource("VisualShaderNodeTexture2DParameter_sookl")
+nodes/fragment/12/position = Vector2(940, 140)
+nodes/fragment/13/node = SubResource("VisualShaderNodeTexture_blxob")
+nodes/fragment/13/position = Vector2(1380, 140)
+nodes/fragment/connections = PackedInt32Array(10, 0, 8, 1, 11, 0, 8, 0, 12, 0, 13, 2, 13, 0, 0, 0, 13, 0, 7, 0)
+nodes/light/0/position = Vector2(1260, 260)
+nodes/light/6/node = SubResource("VisualShaderNodeInput_ibho5")
+nodes/light/6/position = Vector2(-400, 300)
+nodes/light/7/node = SubResource("VisualShaderNodeDotProduct_60f1p")
+nodes/light/7/position = Vector2(20, 420)
+nodes/light/8/node = SubResource("VisualShaderNodeInput_pjxxh")
+nodes/light/8/position = Vector2(-340, 480)
+nodes/light/9/node = SubResource("VisualShaderNodeInput_fux85")
+nodes/light/9/position = Vector2(-120, 160)
+nodes/light/10/node = SubResource("VisualShaderNodeVectorOp_x5a7k")
+nodes/light/10/position = Vector2(240, 180)
+nodes/light/13/node = SubResource("VisualShaderNodeVectorOp_jpduu")
+nodes/light/13/position = Vector2(440, 340)
+nodes/light/14/node = SubResource("VisualShaderNodeFloatConstant_132x1")
+nodes/light/14/position = Vector2(240, 480)
+nodes/light/15/node = SubResource("VisualShaderNodeMix_brc8e")
+nodes/light/15/position = Vector2(720, 480)
+nodes/light/16/node = SubResource("VisualShaderNodeColorConstant_n0jtd")
+nodes/light/16/position = Vector2(60, 580)
+nodes/light/18/node = SubResource("VisualShaderNodeVaryingGetter_hgv6p")
+nodes/light/18/position = Vector2(60, 680)
+nodes/light/19/node = SubResource("VisualShaderNodeMix_uh0fa")
+nodes/light/19/position = Vector2(280, 600)
+nodes/light/21/node = SubResource("VisualShaderNodeColorConstant_67bkm")
+nodes/light/21/position = Vector2(100, 920)
+nodes/light/22/node = SubResource("VisualShaderNodeVaryingGetter_hbu0a")
+nodes/light/22/position = Vector2(100, 1020)
+nodes/light/23/node = SubResource("VisualShaderNodeMix_x34e6")
+nodes/light/23/position = Vector2(380, 940)
+nodes/light/24/node = SubResource("VisualShaderNodeFloatConstant_nmbxa")
+nodes/light/24/position = Vector2(60, 820)
+nodes/light/25/node = SubResource("VisualShaderNodeFloatConstant_betdb")
+nodes/light/25/position = Vector2(-140, 760)
+nodes/light/connections = PackedInt32Array(8, 0, 7, 1, 6, 0, 7, 0, 7, 0, 10, 1, 9, 0, 10, 0, 14, 0, 13, 0, 10, 0, 13, 1, 13, 0, 15, 2, 16, 0, 19, 0, 18, 0, 19, 1, 19, 0, 15, 0, 21, 0, 23, 0, 22, 0, 23, 1, 24, 0, 23, 2, 23, 0, 15, 1, 15, 0, 0, 0, 25, 0, 19, 2)

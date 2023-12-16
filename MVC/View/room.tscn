@@ -63,6 +63,7 @@ transform = Transform3D(1.19548, 0, -0.906002, 0, 1.5, 0, 0.906002, 0, 1.19548, 
 [node name="CardHolder" type="Node3D" parent="."]
 transform = Transform3D(0.0701535, -1.16059e-23, 6.96356e-24, 1.62483e-23, 0.0492507, 0.0499589, 1.39271e-23, -0.0499589, 0.0492507, 0.0077132, 0.736653, 0.53313)
 script = ExtResource("10_qvydx")
+_ownerIndex = 0
 
 [node name="cardSlot1" type="Node3D" parent="CardHolder"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.256, 0, 0)
@@ -88,3 +89,29 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27017, 0.212481, -0.209483)
 [node name="DebugMarker" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.0360454, 0, 0, 0, 0.0360454, 0, 0, 0, 0.0360454, 0, 0.574264, 1.00388)
 mesh = SubResource("SphereMesh_fxbos")
+
+[node name="CardHolder2" type="Node3D" parent="."]
+transform = Transform3D(-0.0701535, 4.36687e-09, -4.30632e-09, 0, 0.0492585, 0.0499512, 6.13302e-09, 0.0499512, -0.0492585, 0.0077132, 0.557066, -0.324166)
+script = ExtResource("10_qvydx")
+_ownerIndex = 1
+
+[node name="cardSlot1" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.256, 0, 0)
+
+[node name="cardSlot2" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.879147, 0.0484397, -0.0477533)
+
+[node name="cardSlot3" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.442671, 0.0842886, -0.0830946)
+
+[node name="cardSlot4" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0234748, 0.108257, -0.106724)
+
+[node name="cardSlot5" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.400328, 0.156698, -0.154478)
+
+[node name="cardSlot6" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.836804, 0.192545, -0.189819)
+
+[node name="cardSlot7" type="Node3D" parent="CardHolder2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27017, 0.212481, -0.209483)

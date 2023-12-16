@@ -14,19 +14,25 @@ public partial class Card3D : Node3D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		main.Instance.Player.OnCamHoverNewHit += OnCamHoverNewHit;
-		main.Instance.Player.OnCamHoverOff += OnCamHoverOff;
-
-		main.Instance.Player.OnCamClickNewHit += OnCamClickNewHit;
-		main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
-		main.Instance.Player.OnCamClickOff += OnCamClickOff;
-
 		_body = FindChild(STATIC_BODY_NAME) as StaticBody3D;
 		if (_body == null)
 			GD.PrintErr($"Could not find {STATIC_BODY_NAME} on {this.Name}");
 	}
 
-    public override void _ExitTree()
+	public void EnablePlayerEvents(int ownerIndex)
+	{
+		if (ownerIndex == 0)
+		{
+			main.Instance.Player.OnCamHoverNewHit += OnCamHoverNewHit;
+			main.Instance.Player.OnCamHoverOff += OnCamHoverOff;
+
+			main.Instance.Player.OnCamClickNewHit += OnCamClickNewHit;
+			main.Instance.Player.OnCamClickUpdate += OnCamClickUpdate;
+			main.Instance.Player.OnCamClickOff += OnCamClickOff;
+		}
+	}
+
+	public override void _ExitTree()
     {
 		main.Instance.Player.OnCamHoverNewHit -= OnCamHoverNewHit;
 		main.Instance.Player.OnCamHoverOff -= OnCamHoverOff;

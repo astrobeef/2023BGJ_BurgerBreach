@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://cxhllvolv8otr"]
+[gd_scene load_steps=7 format=3 uid="uid://cxhllvolv8otr"]
 
 [ext_resource type="PackedScene" uid="uid://dkdscj0cwt3g3" path="res://MVC/View/room.tscn" id="1_8c1un"]
 [ext_resource type="Script" path="res://MVC/View/Scripts/roomReferences.cs" id="2_rmn8b"]
 [ext_resource type="Script" path="res://MVC/View/Scripts/View_Game3D.cs" id="3_u0o2o"]
+[ext_resource type="Texture2D" uid="uid://bldxbc5dacui" path="res://MVC/View/2D Assets/big_moe_766.png" id="4_8ie50"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2p0hl"]
 
@@ -61,21 +62,55 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(10, 10)
+custom_minimum_size = Vector2(10, 150)
 layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+texture = ExtResource("4_8ie50")
+expand_mode = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(800, 100)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_gh8td")
 
-[node name="DEBUG_DialogueRichText" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer/VBoxContainer/MarginContainer"]
 layout_mode = 2
 bbcode_enabled = true
-text = "<Moe's Dialogue>"
+text = "[color=#ff8629]Big Moe[/color]"
+scroll_active = false
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DEBUG_DialogueRichText" type="RichTextLabel" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+bbcode_enabled = true
+scroll_following = true
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer/HBoxContainer/PanelContainer/HBoxContainer"]
+custom_minimum_size = Vector2(15, 0)
+layout_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer/DEBUG_DialogueContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 2
 
 [node name="MarginContainer3" type="MarginContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 325)
 layout_mode = 2
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/View/PanelContainer/VBoxContainer"]

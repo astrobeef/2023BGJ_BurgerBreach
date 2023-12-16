@@ -2,10 +2,14 @@ using Godot;
 using Model;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 public partial class CardHolder3D : Node3D
 {
 	private Model_Game _gameModel;
+
+	[Export]
+	private int _ownerIndex = -1;
 
 	Card3D[] Cards3D;
 	Node3D[] CardSlots3D;
@@ -55,7 +59,7 @@ public partial class CardHolder3D : Node3D
 
 	private void OnCardDrawn(int playerIndex, Card cardDrawn, Card[] hand, int drawnCount)
 	{
-		if (playerIndex == 0)
+		if (playerIndex == _ownerIndex)
 		{
 			main.Instance.SoundController?.Play(sound_controller.SFX_CARD_DRAW_NAME);
 
@@ -76,7 +80,7 @@ public partial class CardHolder3D : Node3D
 
 	private void OnCardRemoved(int playerIndex, Card cardRemoved, Card[] hand)
 	{
-		if (playerIndex == 0)
+		if (playerIndex == _ownerIndex)
 		{
 			Card3D cardRemoved3D = null;
 
@@ -171,6 +175,7 @@ public partial class CardHolder3D : Node3D
 		Card3D card3D = (Card3D)scene.Instantiate();
 		card3D.card = cardModel;
 		parentSlot.AddChild(card3D);
+		card3D.EnablePlayerEvents(_ownerIndex);
 	}
 
 	private bool IsHandModelMatchingVisual(Card[] handModel)

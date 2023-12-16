@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://yva661fe541"]
+[gd_scene load_steps=9 format=3 uid="uid://yva661fe541"]
 
 [ext_resource type="PackedScene" uid="uid://6dhb4av4iaum" path="res://MVC/View/3D Assets/glTF/Final Assets/plate.glb" id="1_aup51"]
 [ext_resource type="Texture2D" uid="uid://e520d27rkdg" path="res://MVC/View/3D Assets/glTF/Final Assets/plate textures/plate_Fries_Ally_BaseColor.png" id="2_hipqd"]
 [ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Unit3D.cs" id="2_wssyk"]
+[ext_resource type="PackedScene" uid="uid://ba6nl25ywkuc0" path="res://fries_3DAsset.tscn" id="4_fi7yf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qlntu"]
 albedo_texture = ExtResource("2_hipqd")
@@ -52,3 +53,6 @@ script = ExtResource("2_wssyk")
 transform = Transform3D(0.01, 0, 0, 0, 0, -0.01, 0, 0.01, 0, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_qlntu")
 mesh = SubResource("ArrayMesh_yaj3n")
+
+[node name="fries_3D" parent="." index="1" instance=ExtResource("4_fi7yf")]
+transform = Transform3D(-0.988494, 0, -0.151261, -0.135573, 0.443478, 0.885972, 0.0670809, 0.896285, -0.438375, 0.0275535, 0.111581, -0.103353)

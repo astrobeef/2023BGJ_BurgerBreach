@@ -738,6 +738,31 @@ public partial class player : Node3D
 
 	private void DisplayMessageOnCardSelect(Card3D card3D)
 	{
+		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.BUSSER_RACOON_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"That unit will make more sense next round. It can steal resources, but, to keep things simple, we don't have those in our decks right right now.");
+			return;
+		}
+		
+		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.BIG_MOE_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"That's me. I'm a hungry man, but I hit hard and knock back units. If they can't move, they take more damage. Anything it collides with takes damage too.");
+			return;
+		}
+		
+		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.EXPO_PIGEON_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"Fastest expo I've ever seen. He can move fast AND move over units. But he's weak.");
+			return;
+		}
+		
+		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.EXPO_PIGEON_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"Fastest expo I've ever seen. He can move fast AND move over units. But he's weak.");
+			return;
+		}
+
+
 		int ran = random.Next(0, 2);
 		if (ran != 0)
 			return;

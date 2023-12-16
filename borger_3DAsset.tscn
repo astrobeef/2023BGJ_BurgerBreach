@@ -1,0 +1,42 @@
+[gd_scene load_steps=9 format=3 uid="uid://6561m4apmth"]
+
+[ext_resource type="PackedScene" uid="uid://dyx4r144unf6k" path="res://MVC/View/3D Assets/glTF/Final Assets/borger.fbx" id="1_1eady"]
+[ext_resource type="Texture2D" uid="uid://dspfpesnhpdo2" path="res://MVC/View/3D Assets/glTF/Final Assets/borger_burgerMat_BaseColor.png" id="2_p4ov2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sgrd8"]
+albedo_texture = ExtResource("2_p4ov2")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e1g4h"]
+albedo_texture = ExtResource("2_p4ov2")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tqbql"]
+albedo_texture = ExtResource("2_p4ov2")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qioi4"]
+albedo_texture = ExtResource("2_p4ov2")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d6dbv"]
+albedo_texture = ExtResource("2_p4ov2")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yorvq"]
+albedo_texture = ExtResource("2_p4ov2")
+
+[node name="borger" instance=ExtResource("1_1eady")]
+
+[node name="borger" parent="RootNode" index="0"]
+material_override = SubResource("StandardMaterial3D_sgrd8")
+
+[node name="lettuce" parent="RootNode/borger" index="0"]
+material_override = SubResource("StandardMaterial3D_e1g4h")
+
+[node name="topbun" parent="RootNode/borger" index="1"]
+material_override = SubResource("StandardMaterial3D_tqbql")
+
+[node name="cheese" parent="RootNode/borger" index="2"]
+material_override = SubResource("StandardMaterial3D_qioi4")
+
+[node name="bottom_bun" parent="RootNode/borger" index="3"]
+material_override = SubResource("StandardMaterial3D_d6dbv")
+
+[node name="tomatoe" parent="RootNode/borger" index="4"]
+material_override = SubResource("StandardMaterial3D_yorvq")

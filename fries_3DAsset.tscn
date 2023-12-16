@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://ba6nl25ywkuc0"]
+
+[ext_resource type="PackedScene" uid="uid://cvcxbbaeostfv" path="res://MVC/View/3D Assets/glTF/Final Assets/fries_3D.glb" id="1_n66ac"]
+[ext_resource type="Texture2D" uid="uid://ca7gulmwsjm53" path="res://MVC/View/3D Assets/glTF/Final Assets/fries.png" id="2_nnthn"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u6v2l"]
+albedo_texture = ExtResource("2_nnthn")
+
+[node name="fries_3D" instance=ExtResource("1_n66ac")]
+
+[node name="fries" parent="." index="0"]
+transform = Transform3D(0.00301693, -0.000331003, -8.32054e-05, -9.17162e-05, -7.33056e-05, -0.00303391, 0.000328746, 0.00301719, -8.28398e-05, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_u6v2l")

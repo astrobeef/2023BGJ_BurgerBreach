@@ -9,6 +9,7 @@ using EditorTools;
 using Godot;
 using Model;
 using Utility;
+using static DialogueUtility;
 
 namespace View
 {
@@ -290,6 +291,11 @@ namespace View
 		{
 			if(playerInput_1 == null)
 				return;
+
+			if(main.Instance.gameModel.TurnCounter < 1 && main.Instance.gameModel.RoundCounter == 0)
+			{
+				main.Instance.DS.QueueMessage(false, $"Right now you've got only {C_(RED)}offense units{C_()}. Playing an offense unit costs HP from a {C_(TEAL)}base{C_()} or {C_(GREEN)}resource unit{C_()}. We'll introduce resource units next round, so for now you just have your base.");
+			}
 				
 			playerInput_1.Visible = false;
 			playerInput_1.Text = "No Input Registered";

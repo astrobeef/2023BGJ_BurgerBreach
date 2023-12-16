@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://c5rkyc3pnyjae"]
+[gd_scene load_steps=9 format=3 uid="uid://c5rkyc3pnyjae"]
 
 [ext_resource type="PackedScene" uid="uid://6dhb4av4iaum" path="res://MVC/View/3D Assets/glTF/Final Assets/plate.glb" id="1_r10wo"]
 [ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Unit3D.cs" id="2_f1cjh"]
 [ext_resource type="Texture2D" uid="uid://bbranegdxedec" path="res://MVC/View/3D Assets/glTF/Final Assets/plate textures/plate_Chowder_Enemy_BaseColor.png" id="2_vvll4"]
+[ext_resource type="PackedScene" uid="uid://bx1xn5scralou" path="res://chowda_3DAsset.tscn" id="4_jer4x"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5p0kl"]
 albedo_texture = ExtResource("2_vvll4")
@@ -52,3 +53,6 @@ script = ExtResource("2_f1cjh")
 transform = Transform3D(0.01, 0, 0, 0, 0, -0.01, 0, 0.01, 0, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_5p0kl")
 mesh = SubResource("ArrayMesh_yaj3n")
+
+[node name="chowda" parent="." index="1" instance=ExtResource("4_jer4x")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00549652, 0.0598434, -0.138855)

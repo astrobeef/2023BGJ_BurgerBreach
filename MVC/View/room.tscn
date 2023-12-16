@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dkdscj0cwt3g3"]
+[gd_scene load_steps=14 format=3 uid="uid://dkdscj0cwt3g3"]
 
 [ext_resource type="Script" path="res://MVC/Controller/player.cs" id="1_d5ki3"]
 [ext_resource type="PackedScene" uid="uid://wbe1hvc8f4lw" path="res://MVC/View/table.tscn" id="3_58uyu"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://dih65wa8mt7d4" path="res://MVC/View/ketchup.tscn" id="7_xara2"]
 [ext_resource type="PackedScene" uid="uid://p4nrole5g5lk" path="res://MVC/View/napkin.tscn" id="8_40lig"]
 [ext_resource type="Script" path="res://MVC/View/Scripts/CardHolder3D.cs" id="10_qvydx"]
+[ext_resource type="PackedScene" uid="uid://cvqr1mgi3r42q" path="res://full_scene.tscn" id="11_hcs5t"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qhvpd"]
 albedo_color = Color(1, 0.721569, 0.301961, 1)
@@ -115,3 +116,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.836804, 0.192545, -0.189819
 
 [node name="cardSlot7" type="Node3D" parent="CardHolder2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27017, 0.212481, -0.209483)
+
+[node name="full_scene" parent="." instance=ExtResource("11_hcs5t")]
+transform = Transform3D(0.387772, 0, 0, 0, 0.387772, 0, 0, 0, 0.387772, 0.156651, 0.53247, 0.013831)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://chruixwpi465y"]
+[gd_scene load_steps=18 format=3 uid="uid://chruixwpi465y"]
 
 [ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Unit3D.cs" id="1_2biqk"]
 [ext_resource type="Texture2D" uid="uid://cycyoy7xwq4b6" path="res://MVC/View/3D Assets/Prototype/Coin/coin_texture/coin_prototype_coinInside_BaseColor.png" id="1_j6fmy"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://3wufqslebhie" path="res://MVC/View/3D Assets/glTF/coin_mainImage.png" id="4_u6f54"]
 [ext_resource type="Texture2D" uid="uid://cpqptcmkixfay" path="res://MVC/View/3D Assets/glTF/coin_hp.png" id="5_mdmnd"]
 [ext_resource type="Texture2D" uid="uid://bejonpd1chks4" path="res://MVC/View/3D Assets/glTF/coin_prototype_damageImage_BaseColor.png" id="6_yewap"]
+[ext_resource type="PackedScene" uid="uid://b1vadvjk0ctr3" path="res://base_3d.tscn" id="9_vhbhi"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p7pbb"]
 resource_name = "coinInside"
@@ -195,4 +196,8 @@ shadow_mesh = SubResource("ArrayMesh_wbhm4")
 script = ExtResource("1_2biqk")
 
 [node name="coin_001" parent="." index="0"]
+visible = false
 mesh = SubResource("ArrayMesh_5s7ft")
+
+[node name="base_3D" parent="." index="1" instance=ExtResource("9_vhbhi")]
+transform = Transform3D(1.60578, 0, 0, 0, 1.60578, 0, 0, 0, 1.60578, 0.0322132, 0, -0.0172024)

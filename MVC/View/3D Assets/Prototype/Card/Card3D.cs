@@ -49,6 +49,7 @@ public partial class Card3D : Node3D
 	{
 		if (hit.collider == _body)
 		{
+			main.Instance.SoundController.Play(sound_controller.SFX_UI_HOVER);
 			if (!_isOnHoverDisplaced)
 			{
 				_isOnHoverDisplaced = true;

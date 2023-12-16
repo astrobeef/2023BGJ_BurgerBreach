@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://hlw6yrva15cy" path="res://MVC/View/3D Assets/glTF/Final Assets/card textures/card_Scraps_BaseColor.png" id="3_2x0ii"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r6up5"]
+shading_mode = 0
 albedo_texture = ExtResource("3_2x0ii")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_o5sk1"]

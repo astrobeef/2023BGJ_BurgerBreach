@@ -16,6 +16,7 @@ public partial class sound_controller : Node3D
 	public const string SFX_PLAYER_TURN_START = "PlayerTurnStart";
 	public const string SFX_UI_CLICK = "UIClick";
 	public const string SFX_UI_HOVER = "UIHover";
+	public const string SFX_UI_FAIL = "InputFail";
 	public const string SFX_DIALOGUE_E = "Dialogue_E";
 	public const string SFX_DIALOGUE_I = "Dialogue_I";
 	public const string SFX_DIALOGUE_M = "Dialogue_M";
@@ -29,7 +30,7 @@ public partial class sound_controller : Node3D
 	private float _master_volume_factor = 0.85f;
 	private float _master_volumeDb => -100f * (1f - _master_volume_factor);
 
-	private const float DEFAULT_MUSIC_VOLUME = -35f;
+	private const float DEFAULT_MUSIC_VOLUME = -25f;
 	private const float DEFAULT_SFX_VOLUME = 0f;
 
 
@@ -246,6 +247,7 @@ public partial class sound_controller : Node3D
 			sounds["Dialogue_O"] = SFXStreams[15].Stream;
 			sounds["Dialogue_S"] = SFXStreams[16].Stream;
 			sounds["Dialogue_Y"] = SFXStreams[17].Stream;
+			sounds["InputFail"] = SFXStreams[18].Stream;
 			
 
 		} else {

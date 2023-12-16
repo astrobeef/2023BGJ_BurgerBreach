@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://q8kjfitqc0bd" path="res://MVC/View/3D Assets/glTF/Final Assets/card textures/card_Burger_BaseColor.png" id="3_10jcw"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c5pix"]
+shading_mode = 0
 albedo_texture = ExtResource("3_10jcw")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0uvy8"]

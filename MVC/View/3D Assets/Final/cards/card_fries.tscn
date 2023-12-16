@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://dl5e442eagaru" path="res://MVC/View/3D Assets/glTF/Final Assets/card textures/card_Fries_BaseColor.png" id="3_sgs14"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s2f48"]
+shading_mode = 0
 albedo_texture = ExtResource("3_sgs14")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5dold"]

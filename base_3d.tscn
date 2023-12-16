@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1vadvjk0ctr3"]
+
+[ext_resource type="PackedScene" uid="uid://bdj3e2xs2pqn6" path="res://MVC/View/3D Assets/glTF/Final Assets/base_3D.glb" id="1_pbtxa"]
+[ext_resource type="Texture2D" uid="uid://cthxwdfbg85ji" path="res://MVC/View/3D Assets/glTF/Final Assets/sceneAssets/full_scene_Tower_player_BAKE.png" id="2_xr3lb"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lbwoh"]
+albedo_texture = ExtResource("2_xr3lb")
+
+[node name="base_3D" instance=ExtResource("1_pbtxa")]
+
+[node name="cup_moe" parent="." index="0"]
+transform = Transform3D(-0.00817843, -0.00575441, -8.9407e-10, -2.98023e-10, 1.19209e-09, -0.01, 0.00575441, -0.00817843, -2.38419e-09, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_lbwoh")

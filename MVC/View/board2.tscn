@@ -125,6 +125,7 @@ coinInside_Friendly = ExtResource("3_ocvbn")
 coinInside_Enemy = ExtResource("4_25wb8")
 
 [node name="gameboard" parent="RootNode" index="0"]
+visible = false
 surface_material_override/0 = SubResource("StandardMaterial3D_em051")
 surface_material_override/1 = SubResource("StandardMaterial3D_hl3ek")
 surface_material_override/2 = SubResource("StandardMaterial3D_4c2dh")

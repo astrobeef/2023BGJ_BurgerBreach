@@ -179,6 +179,7 @@ namespace View
 
 		private void OnTurnStart(int turnPlayerIndex, int turnCounter)
 		{
+				main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_TURN_START);
 		}
 
 		private void OnTurnEnd(int playerIndex, int turnIndex)
@@ -296,6 +297,17 @@ namespace View
 			{
 				main.Instance.DS.QueueMessage(false, $"Right now you've got only {C_(RED)}offense units{C_()}. Playing an offense unit costs HP from a {C_(TEAL)}base{C_()} or {C_(GREEN)}resource unit{C_()}. We'll introduce resource units next round, so for now you just have your base.");
 			}
+			
+			if(main.Instance.gameModel.TurnCounter < 1 && main.Instance.gameModel.RoundCounter == 1)
+			{
+				main.Instance.DS.QueueMessage(false, $"Alright now this gets more interesting. As you've learned, offense units cost HP to be played. Resources units live to feed the offense units, but they have unique benefits too. They can't move, so their initial placement is important. I'll explain what each unit does.");
+			}
+			
+			if(main.Instance.gameModel.TurnCounter < 1 && main.Instance.gameModel.RoundCounter == 2)
+			{
+				main.Instance.DS.QueueMessage(false, $"This has been fun. But I've been going easy on you. You're about to get {C_(RED)}BIG MOE'D{C_()}");
+			}
+				
 				
 			playerInput_1.Visible = false;
 			playerInput_1.Text = "No Input Registered";

@@ -55,4 +55,4 @@ material_override = SubResource("StandardMaterial3D_jeofh")
 mesh = SubResource("ArrayMesh_yaj3n")
 
 [node name="borger" parent="." index="1" instance=ExtResource("4_b7ao7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0136833, 0.0500147, -0.11037)
+transform = Transform3D(0.719268, 0, 0, 0, 0.719268, 0, 0, 0, 0.719268, -0.00196223, 0.0518744, -0.13772)

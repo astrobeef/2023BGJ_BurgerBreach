@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bx1xn5scralou"]
+[gd_scene load_steps=19 format=3 uid="uid://bx1xn5scralou"]
 
 [ext_resource type="PackedScene" uid="uid://oesrh2f5bb21" path="res://MVC/View/3D Assets/glTF/Final Assets/chowda.fbx" id="1_iln0g"]
 [ext_resource type="Texture2D" uid="uid://bj7achewdmroi" path="res://MVC/View/3D Assets/glTF/Final Assets/chowda.png" id="2_p1jh0"]
@@ -37,6 +37,15 @@ albedo_texture = ExtResource("2_p1jh0")
 albedo_texture = ExtResource("2_p1jh0")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ctdwv"]
+albedo_texture = ExtResource("2_p1jh0")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rkyds"]
+albedo_texture = ExtResource("2_p1jh0")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2pxrd"]
+albedo_texture = ExtResource("2_p1jh0")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aqnku"]
 albedo_texture = ExtResource("2_p1jh0")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dgx5d"]
@@ -79,6 +88,15 @@ material_override = SubResource("StandardMaterial3D_a4vwf")
 
 [node name="pCylinder6" parent="RootNode/chowda" index="15"]
 material_override = SubResource("StandardMaterial3D_ctdwv")
+
+[node name="pCylinder7" parent="RootNode/chowda" index="16"]
+material_override = SubResource("StandardMaterial3D_rkyds")
+
+[node name="pCylinder9" parent="RootNode/chowda" index="18"]
+material_override = SubResource("StandardMaterial3D_2pxrd")
+
+[node name="pCylinder10" parent="RootNode/chowda" index="19"]
+material_override = SubResource("StandardMaterial3D_aqnku")
 
 [node name="pCube12" parent="RootNode/chowda" index="20"]
 material_override = SubResource("StandardMaterial3D_dgx5d")

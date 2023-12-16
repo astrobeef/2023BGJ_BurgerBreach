@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://ccmnbcji0rng6" path="res://MVC/View/3D Assets/glTF/Final Assets/card textures/card_Squirrel_BaseColor.png" id="3_q6vul"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5vta5"]
+shading_mode = 0
 albedo_texture = ExtResource("3_q6vul")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gc8sg"]

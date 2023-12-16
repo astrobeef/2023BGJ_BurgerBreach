@@ -319,9 +319,9 @@ public partial class player : Node3D
 	{
 		if (playerIntention == PlayerIntention.DISABLED || node3D == selectedObject && node3D != null)
 		{
-			if(playerIntention == PlayerIntention.DISABLED && node3D != null)
+			if (playerIntention == PlayerIntention.DISABLED && node3D != null)
 			{
-				if(main.Instance.gameModel.TurnPlayerIndex == 0)
+				if (main.Instance.gameModel.TurnPlayerIndex == 0)
 				{
 					main.Instance.DS.QueueMessage(true, $"You need to {C_(GREEN)}draw a card{C_()} before you can play. Sorry if that's confusing, {C_(ORANGE)}John B. Modeson{C_()} is still working on the details of the game.");
 				}
@@ -331,7 +331,9 @@ public partial class player : Node3D
 				}
 			}
 			GD.Print($"Not handling clicked object because either player intention is disabled({playerIntention == PlayerIntention.DISABLED}) or this Node3D is already selected({node3D == selectedObject})");
-			GD.PrintErr("Play input error SFX here");
+
+
+			main.Instance.SoundController.Play(sound_controller.SFX_UI_FAIL);
 			return false;
 		}
 
@@ -353,7 +355,7 @@ public partial class player : Node3D
 							{
 								// If the player currently has a card selected and they've clicked off the board, then we assume they want to deselect the card and return to their deck
 								Card3D selectedCard3D = selectedObject as Card3D;
-								
+
 
 								if (selectedCard3D != null && selectedCard3D.OnObjectDeselected())
 								{
@@ -395,7 +397,7 @@ public partial class player : Node3D
 				}
 			case Card3D card3D:
 				{
-					
+
 
 					DisplayMessageOnCardSelect(card3D);
 
@@ -613,7 +615,8 @@ public partial class player : Node3D
 									else
 									{
 										GD.Print($"Player tried to attack({target3D.Name})@{target3D.unit.pos} with {attackUnit3D.Name}@{attackUnit3D.unit.pos}, but it failed. Given all conditions so far, it should not fail. There is likely a discrepency between the Model and the View");
-										GD.PrintErr("Play input error SFX here");
+
+										main.Instance.SoundController.Play(sound_controller.SFX_UI_FAIL);
 									}
 
 
@@ -662,7 +665,7 @@ public partial class player : Node3D
 									{
 										main.Instance.DS.QueueMessage(true, $"Sorry, I know your new to this. You can't place your {C_(ORANGE)}{cardToPlace.card.NAME}{C_()} at {hex3D.AxialPos}.");
 										GD.Print($"User tried to place a card({cardToPlace.card.NAME})@{hex3D.AxialPos}, but it failed.");
-										GD.PrintErr("Play input error SFX here");
+										main.Instance.SoundController.Play(sound_controller.SFX_UI_FAIL);
 									}
 								}
 								else
@@ -740,25 +743,52 @@ public partial class player : Node3D
 	{
 		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.BUSSER_RACOON_NAME)
 		{
-			main.Instance.DS.QueueMessage(false, $"That unit will make more sense next round. It can steal resources, but, to keep things simple, we don't have those in our decks right right now.");
+			main.Instance.DS.QueueMessage(false, $"That {C_(ORANGE)}{Model.Card.BUSSER_RACOON_NAME}{C_()} will make more sense next round. It can steal resources, but, to keep things simple, we don't have those in our decks right right now.");
 			return;
 		}
-		
+
 		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.BIG_MOE_NAME)
 		{
-			main.Instance.DS.QueueMessage(false, $"That's me. I'm a hungry man, but I hit hard and knock back units. If they can't move, they take more damage. Anything it collides with takes damage too.");
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.BIG_MOE_NAME}{C_()}. That's me. I'm a hungry man, but I hit hard and knock back units. If they can't move, they take more damage. Anything it collides with takes damage too.");
 			return;
 		}
-		
+
 		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.EXPO_PIGEON_NAME)
 		{
-			main.Instance.DS.QueueMessage(false, $"Fastest expo I've ever seen. He can move fast AND move over units. But he's weak.");
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.EXPO_PIGEON_NAME}{C_()} is the fastest expo I've ever seen. He can move fast AND move over units. But he's weak.");
 			return;
 		}
-		
-		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.EXPO_PIGEON_NAME)
+
+		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.LINE_SQUIRREL_NAME)
 		{
-			main.Instance.DS.QueueMessage(false, $"Fastest expo I've ever seen. He can move fast AND move over units. But he's weak.");
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.LINE_SQUIRREL_NAME}{C_()}. Ah, he's a wily one. He's a season veteran from the {C_(RED)}Nut Wars of 92{C_()}. He's going through some things, but what matters is that he's a good shot and great cook.");
+			return;
+		}
+
+
+		//Round 2
+
+		if (main.Instance.gameModel.RoundCounter == 1 && card3D.card.NAME == Model.Card.CLAM_CHOWDER_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"That {C_(ORANGE)}{Model.Card.CLAM_CHOWDER_NAME}{C_()} will make more sense next round. It can steal resources, but, to keep things simple, we don't have those in our decks right right now.");
+			return;
+		}
+
+		if (main.Instance.gameModel.RoundCounter == 1 && card3D.card.NAME == Model.Card.MOE_FAMILY_FRIES_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.MOE_FAMILY_FRIES_NAME}{C_()}. Fun for the whole family, right? This unit will {C_(GREEN)}heal itself fully{C_()} at the end of every round and it will {C_(GREEN)}heal nearby units{C_()}.");
+			return;
+		}
+
+		if (main.Instance.gameModel.RoundCounter == 1 && card3D.card.NAME == Model.Card.BURGER_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.BIG_MOE_NAME}{C_()} this is my main stay. Delicious, greatest, juicy-- oh it, uh, it {C_(GREEN)}boosts (HP/ATK) units that damage it{C_()} (including spawning). Friend or foe. I don't have prejudce against who eats my food. The good and the bad deserve the greatest food.");
+			return;
+		}
+
+		if (main.Instance.gameModel.RoundCounter == 1 && card3D.card.NAME == Model.Card.THE_SCRAPS_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"Oh-- I thought we scrapped that. {C_(ORANGE)}{Model.Card.THE_SCRAPS_NAME}{C_()}. I'm not sure, {C_(ORANGE)}John{C_()} was really cooking it up when he made that one. It {C_(RED)}damages any unit that damages it{C_()} (including spawning). Friend or foe. Please don't eat it, I can't take another health violation.");
 			return;
 		}
 

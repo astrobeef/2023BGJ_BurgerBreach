@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://bbu0fceh3cr42"]
+[gd_scene load_steps=9 format=3 uid="uid://bbu0fceh3cr42"]
 
 [ext_resource type="PackedScene" uid="uid://6dhb4av4iaum" path="res://MVC/View/3D Assets/glTF/Final Assets/plate.glb" id="1_qqkgn"]
 [ext_resource type="Script" path="res://MVC/View/3D Assets/Prototype/Card/Unit3D.cs" id="2_0djw7"]
 [ext_resource type="Texture2D" uid="uid://c4k6hq8iypcby" path="res://MVC/View/3D Assets/glTF/Final Assets/plate textures/plate_Scraps_Enemy_BaseColor.png" id="2_t2464"]
+[ext_resource type="PackedScene" uid="uid://c5c4cnuq72pwi" path="res://scraps_3DAsset.tscn" id="4_qgtaj"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fygxw"]
 albedo_texture = ExtResource("2_t2464")
@@ -52,3 +53,6 @@ script = ExtResource("2_0djw7")
 transform = Transform3D(0.01, 0, 0, 0, 0, -0.01, 0, 0.01, 0, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_fygxw")
 mesh = SubResource("ArrayMesh_yaj3n")
+
+[node name="scraps_3D" parent="." index="1" instance=ExtResource("4_qgtaj")]
+transform = Transform3D(0.328503, 0, -0.510382, 0, 0.606963, 0, 0.510382, 0, 0.328503, 0.00193049, 0.0564227, -0.0622315)

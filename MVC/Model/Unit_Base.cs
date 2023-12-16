@@ -42,6 +42,8 @@ namespace Model
             {
                 GD.Print($"Round has ended! Player {this.ownerIndex} lost the round! Triggering turn over.");
                 main.Instance.gameModel.TriggerEndTurn = true;      //End the current turn to trigger the round ending
+                
+                main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_DRINK);
                 return false;
             }
 

@@ -122,6 +122,7 @@ namespace Model
         {
             if(target == this)
             {
+                main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_BUFF);
             }
         }
 
@@ -129,6 +130,7 @@ namespace Model
         {
             if (deadUnit == this)
             {
+                main.Instance.SoundController.Play(sound_controller.SFX_UNIT_DEFEAT);
                 UnsubscribeEvents();
             }
         }

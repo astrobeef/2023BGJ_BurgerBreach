@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://dkavq0o6irgjt"]
+[gd_scene load_steps=21 format=3 uid="uid://dkavq0o6irgjt"]
 
 [ext_resource type="Script" path="res://MVC/Controller/sound_controller.cs" id="1_c6u2s"]
 [ext_resource type="AudioStream" uid="uid://dipfrnyxu4rxi" path="res://MVC/View/Audio/Music/battleMusic.ogg" id="2_5vvq0"]
@@ -19,6 +19,7 @@
 [ext_resource type="AudioStream" uid="uid://dpjk87jpcb0gh" path="res://MVC/View/Audio/SFX/DialogueM/Mid_O.ogg" id="17_faoum"]
 [ext_resource type="AudioStream" uid="uid://c6y8y55c3tyf3" path="res://MVC/View/Audio/SFX/DialogueM/Mid_S.ogg" id="18_uoifq"]
 [ext_resource type="AudioStream" uid="uid://b6akfls7ssub8" path="res://MVC/View/Audio/SFX/DialogueM/Mid_Y.ogg" id="19_3tihs"]
+[ext_resource type="AudioStream" uid="uid://blbth5dk4hsb3" path="res://MVC/View/Audio/SFX/InputFail.ogg" id="20_421ji"]
 
 [node name="SoundController" type="Node3D" node_paths=PackedStringArray("SFXStreams", "MusicStreams")]
 script = ExtResource("1_c6u2s")
@@ -79,3 +80,6 @@ stream = ExtResource("18_uoifq")
 
 [node name="AudioStreamPlayer17" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("19_3tihs")
+
+[node name="AudioStreamPlayer18" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("20_421ji")

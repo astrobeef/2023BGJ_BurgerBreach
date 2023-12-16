@@ -109,7 +109,7 @@ public partial class Board3D : Node3D
 
 	private void OnCamHoverNewHit(Hit3D hit)
 	{
-		if(IsHitOnBoard(hit, out Hex3D hitHex3D))
+		if (IsHitOnBoard(hit, out Hex3D hitHex3D))
 		{
 			hitHex3D.activeUnit3D?.OnHover();
 		}

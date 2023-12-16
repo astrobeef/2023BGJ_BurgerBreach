@@ -12,10 +12,10 @@ namespace Model
         public string CurrentMessage => _currentMessage;
         private string _currentMessage;
 
-        private const int LETTER_DELAY = 50; // Delay for letters and numbers
-        private const int PAUSE_DELAY = 250; // Delay for commas
-        private const int END_SENTENCE_DELAY = 500; // Delay for period, exclamation, question mark
-        private const int OTHER_CHAR_DELAY = 30; // Delay for other characters
+        private const int LETTER_DELAY = 20; // Delay for letters and numbers
+        private const int PAUSE_DELAY = 100; // Delay for commas
+        private const int END_SENTENCE_DELAY = 200; // Delay for period, exclamation, question mark
+        private const int OTHER_CHAR_DELAY = 10; // Delay for other characters
 
         private enum CharType { letter, comma, end, other };
 

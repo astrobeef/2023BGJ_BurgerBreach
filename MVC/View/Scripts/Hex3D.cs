@@ -14,6 +14,8 @@ public partial class Hex3D : Node3D
 	[Export] Material Movable;
 	[Export] Material Attackable;
 
+	[Export] AnimationPlayer animationPlayer;
+
 	public AxialCS.Axial AxialPos = AxialCS.Axial.Empty;
 	[Export]
 	Vector3 _exportAxial
@@ -62,9 +64,6 @@ public partial class Hex3D : Node3D
 	{
 		AtkText3D = FindTextMeshChild(_ATK_TEXT_NAME);
 		HpText3D = FindTextMeshChild(_HP_TEXT_NAME);
-		// Axial3D = FindTextMeshChild(_AXIAL_TEXT_NAME);
-		// if(Axial3D != null)
-		// 	Axial3D.Text = AxialPos.ToString();
 
 		SetStatsText(false);
 	}
@@ -76,6 +75,8 @@ public partial class Hex3D : Node3D
 	{
 		if (!reset && activeUnitModel != null)
 		{
+			if (AtkText3D.Text == "" && HpText3D.Text == "") animationPlayer.Play("ShowValues");
+
 			AtkText3D.Text = activeUnitModel.atk.ToString();
 			HpText3D.Text = activeUnitModel.hp.ToString();
 		}
@@ -83,6 +84,8 @@ public partial class Hex3D : Node3D
 		{
 			AtkText3D.Text = "";
 			HpText3D.Text = "";
+			
+			animationPlayer.Play("HideValues");
 		}
 	}
 
@@ -147,7 +150,6 @@ public partial class Hex3D : Node3D
 				mesh.SetSurfaceOverrideMaterial(0, Unselected);
 				break;
 		}
-
 	}
 
 }

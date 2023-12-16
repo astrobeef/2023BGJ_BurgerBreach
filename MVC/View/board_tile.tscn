@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dhfhwx13amxsa"]
+[gd_scene load_steps=18 format=3 uid="uid://dhfhwx13amxsa"]
 
 [ext_resource type="Script" path="res://MVC/View/Scripts/Hex3D.cs" id="1_fq3gy"]
 
@@ -78,13 +78,76 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_ddxk7")
 
-[node name="BoardTile" type="Node3D"]
+[sub_resource type="Animation" id="Animation_beuxk"]
+resource_name = "HideValues"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AtkText3D:transparency")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("HpText3D:transparency")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+
+[sub_resource type="Animation" id="Animation_m0m8d"]
+resource_name = "ShowValues"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AtkText3D:transparency")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.0, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("HpText3D:transparency")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.0, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_b1qi0"]
+_data = {
+"HideValues": SubResource("Animation_beuxk"),
+"ShowValues": SubResource("Animation_m0m8d")
+}
+
+[node name="BoardTile" type="Node3D" node_paths=PackedStringArray("animationPlayer")]
 script = ExtResource("1_fq3gy")
 Unselected = SubResource("StandardMaterial3D_jnshh")
 Selected = SubResource("StandardMaterial3D_jnshh")
 Selectable = SubResource("StandardMaterial3D_xw35l")
 Movable = SubResource("StandardMaterial3D_eqdfk")
 Attackable = SubResource("StandardMaterial3D_2tvc3")
+animationPlayer = NodePath("AnimationPlayer")
 
 [node name="coinSlot" type="Node3D" parent="."]
 transform = Transform3D(2.2, 0, 0, 0, 2.2, 0, 0, 0, 2.2, 0, 0, 0)
@@ -110,3 +173,8 @@ transform = Transform3D(-3.93403e-08, 0.9, -3.93403e-08, -1.37214e-23, -3.93403e
 transform = Transform3D(1, -8.78943e-17, -6.789e-16, -9.21424e-17, -5.50763e-09, 1, -6.97574e-16, -0.126, -4.37114e-08, 2.08165e-12, 2.08189e-12, 0)
 mesh = SubResource("ArrayMesh_7sg84")
 skeleton = NodePath("")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_b1qi0")
+}

@@ -50,9 +50,10 @@ public partial class Unit3D : Node3D
 	public void OnUnitMove(Vector3 destination)
 	{
 		// Move the unit here
-		Position = destination;
+		// Position = destination;
 
-		
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(this, "position", destination, 0.3f).SetTrans(Tween.TransitionType.Sine);
 
 		//Update name to show position. Just for debugging
 		Name = $"[{unit.name}@{unit.pos}]";
@@ -65,7 +66,9 @@ public partial class Unit3D : Node3D
 
 	public void OnUnitDamaged()
 	{
-		// Damaged VFX here
+		// Tween tween = GetTree().CreateTween();
+		// tween.TweenProperty(this, "scale", 0.8f, 0.15f).SetTrans(Tween.TransitionType.Sine);
+		// tween.TweenProperty(this, "scale", 1.0f, 0.15f).SetTrans(Tween.TransitionType.Sine);
 	}
 
 	public void OnUnitBuffed()

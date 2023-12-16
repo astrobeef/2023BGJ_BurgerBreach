@@ -528,20 +528,8 @@ public partial class Board3D : Node3D
 	}
 
 	private void IndicateHexes(Axial[] axials, Hex3D.IndicatorState indi) {
-		// GD.Print("Start of Hexes");
-		// for (int i = 0; i < axials.Length; i++) {
-		// 	try {
-		// 		GD.Print(axials[i]);
-		// 	} catch (Exception e) {
-		// 		GD.Print("Null detectded");
-		// 	}
-		// }
-		// GD.Print("End of Hexes");
-
 		for (int i = 0; i < axials.Length; i++) {
 			try {
-				GD.Print(axials[i]);
-
 				Hex3D hex = new Hex3D();
 
 				if (IsAxialOnBoard3D(axials[i], out hex)) {
@@ -576,8 +564,6 @@ public partial class Board3D : Node3D
 		foreach (KeyValuePair<Axial, Unit> placement in validPlacementDictionary)
 		{
 			placementArray[i] = placement.Key;
-			GD.Print(placement.Key);
-			GD.Print(placement.Value);
 			i++;
 		}
 

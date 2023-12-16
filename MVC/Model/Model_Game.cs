@@ -95,16 +95,16 @@ namespace Model
         }
 
         private Card[] _DeckRound1 = new Card[]{
-            new Card(true, _CardSet_NoBases[0]),    //Moe
             new Card(true, _CardSet_NoBases[2]),    //Pigeon
             new Card(true, _CardSet_NoBases[1]),    //Squirrel
             new Card(true, _CardSet_NoBases[3]),    //Racoon
             new Card(true, _CardSet_NoBases[1]),    //Squirrel
+            new Card(true, _CardSet_NoBases[0]),    //Moe
             new Card(true, _CardSet_NoBases[2]),    //Pigeon
             new Card(true, _CardSet_NoBases[3]),    //Racoon
-            new Card(true, _CardSet_NoBases[0]),    //Moe
             new Card(true, _CardSet_NoBases[1]),    //Squirrel
             new Card(true, _CardSet_NoBases[2]),    //Pigeon
+            new Card(true, _CardSet_NoBases[0]),    //Moe
         };
         
         private Card[] _DeckRound2 = new Card[]{

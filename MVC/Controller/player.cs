@@ -325,13 +325,12 @@ public partial class player : Node3D
 				{
 					main.Instance.DS.QueueMessage(true, $"You need to {C_(GREEN)}draw a card{C_()} before you can play. Sorry if that's confusing, {C_(ORANGE)}John B. Modeson{C_()} is still working on the details of the game.");
 				}
-				else if(main.Instance.gameModel.TurnPlayerIndex == 0)
+				else if(main.Instance.gameModel.TurnPlayerIndex != 0)
 				{
 					main.Instance.DS.QueueMessage(true, $"Are you trying to play on my turn? I wish it worked that way... I'll talk to the {C_(ORANGE)}Sous Chef{C_()} about that.");
 				}
 			}
 			GD.Print($"Not handling clicked object because either player intention is disabled({playerIntention == PlayerIntention.DISABLED}) or this Node3D is already selected({node3D == selectedObject})");
-
 
 			main.Instance.SoundController.Play(sound_controller.SFX_UI_FAIL);
 			return false;
@@ -492,6 +491,12 @@ public partial class player : Node3D
 				}
 			case Unit3D unit3D:
 				{
+
+					if (main.Instance.gameModel.RoundCounter == 0 && main.Instance.gameModel.TurnCounter < 3)
+					{
+							main.Instance.DS.QueueMessage(false, $"To attack with a unit, you have to press '1' or 'A' to enter attack mode. The same input will bring you back to movement mode.");
+					}
+
 					switch (playerIntention)
 					{
 						// TL;DR : Select this unit
@@ -780,7 +785,7 @@ public partial class player : Node3D
 
 		if (main.Instance.gameModel.RoundCounter == 0 && card3D.card.NAME == Model.Card.LINE_SQUIRREL_NAME)
 		{
-			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.LINE_SQUIRREL_NAME}{C_()}. Ah, he's a wily one. He's a season veteran from the {C_(RED)}Nut Wars of 92{C_()}. He's going through some things, but what matters is that he's a good shot and great cook.");
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.LINE_SQUIRREL_NAME}{C_()}. Ah, he's a wily one. He's a seasoned veteran from the {C_(RED)}Nut Wars of 92{C_()}. He's going through some things, but what matters is that he's a good shot and great cook.");
 			return;
 		}
 
@@ -808,6 +813,12 @@ public partial class player : Node3D
 		if (main.Instance.gameModel.RoundCounter == 1 && card3D.card.NAME == Model.Card.THE_SCRAPS_NAME)
 		{
 			main.Instance.DS.QueueMessage(false, $"Oh-- I thought we scrapped that. {C_(ORANGE)}{Model.Card.THE_SCRAPS_NAME}{C_()}. I'm not sure, {C_(ORANGE)}John{C_()} was really cooking it up when he made that one. It {C_(RED)}damages any unit that damages it{C_()} (including spawning). Friend or foe. Please don't eat it, I can't take another health violation.");
+			return;
+		}
+		
+		if (main.Instance.gameModel.RoundCounter == 1 && card3D.card.NAME == Model.Card.BUSSER_RACOON_NAME)
+		{
+			main.Instance.DS.QueueMessage(false, $"{C_(ORANGE)}{Model.Card.BUSSER_RACOON_NAME}{C_()} can steal resources only if there is a space behind it. It will flip the resource and make it your own, as well as damage the resource.");
 			return;
 		}
 

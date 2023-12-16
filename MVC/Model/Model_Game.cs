@@ -427,6 +427,12 @@ namespace Model
             for(int i = 0; i < PLAYER_COUNT; i++){
                 Card BaseFromSet = _CardSet[0];
                 Card BaseCard = new Card(true, BaseFromSet);
+
+                if(RoundCounter == 0)
+                {
+                    BaseCard = new Card(false, Card.BASE_NAME, Card.CardType.Base, 6);
+                }
+
                 Axial BaseLocation = CardSet_GetBaseLocation(i);
 
                 if(TryPlaceCard_FromVoid(i, BaseLocation, BaseCard))
@@ -440,6 +446,8 @@ namespace Model
         {
             _turnPlayerIndex = turnCounter % PLAYER_COUNT;
             PostAction(OnTurnStart, _turnPlayerIndex, turnCounter);
+
+            Thread.Sleep(2);
 
             // 1. Draw a card
             for (int iDraw = 0; iDraw < _CARDS_DRAWN_PER_TURN; iDraw++)

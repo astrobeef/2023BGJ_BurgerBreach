@@ -218,7 +218,6 @@ void light() {
 
 }
 "
-graph_offset = Vector2(-372.715, 396.897)
 varyings/main_color = "1,4"
 varyings/passed_normal = "0,4"
 nodes/vertex/2/node = SubResource("VisualShaderNodeExpression_1b58v")

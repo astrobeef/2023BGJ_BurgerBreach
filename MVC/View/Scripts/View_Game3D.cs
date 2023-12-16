@@ -149,6 +149,8 @@ namespace View
 
 		private void OnRoundStart(int roundCounter)
 		{
+			playerInput_1.Pressed -= HandleInput_EndTurn;
+			playerInput_1.Pressed -= HandleInput_DrawCard;
 		}
 
 		private void OnRoundEnd(int roundIndex, int winnerIndex)
@@ -183,6 +185,8 @@ namespace View
 		private void OnTurnStart(int turnPlayerIndex, int turnCounter)
 		{
 				main.Instance.SoundController.Play(sound_controller.SFX_PLAYER_TURN_START);
+			playerInput_1.Pressed -= HandleInput_EndTurn;
+			playerInput_1.Pressed -= HandleInput_DrawCard;
 		}
 
 		private void OnTurnEnd(int playerIndex, int turnIndex)
@@ -310,7 +314,6 @@ namespace View
 			{
 				main.Instance.DS.QueueMessage(false, $"This has been fun. But I've been going easy on you. You're about to get {C_(RED)}BIG MOE'D{C_()}");
 			}
-				
 				
 			playerInput_1.Visible = false;
 			playerInput_1.Text = "No Input Registered";
